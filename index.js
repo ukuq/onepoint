@@ -15,20 +15,22 @@ const G_CONFIG = {
     FILE_COOKIE: 'cookieee'
 };
 
+/**
+ * 进一步简化配置过程,配置时只需要配置shareUrl,如按建议,建立/share为默认文件夹,则 postRawDir无需配置
+ */
 const MSUrls = {
     '/mmx': {
         shareUrl: 'https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/Es6CMetI4fJCr4GqWZ3uvA0BEnzJxxb4CU-iQr04VYomLQ?e=C9K35U',
-        postRawUrl: "https://lovelearn-my.sharepoint.com/personal/admin_share_onesrc_cc/_api/web/GetList(@a1)/RenderListDataAsStream?@a1='/personal/admin_share_onesrc_cc/Documents'&RootFolder=/personal/admin_share_onesrc_cc/Documents/image"
-
+        postRawDir: '/image'//自定义分享文件夹,分享的文件夹名称为 /image
     },
     '/': {
-        shareUrl: 'https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/EkEBAXfrK01JiBdQUQKm7O0BlHt50NS45RP9WKSCvEY9Sg?e=bkFrDs',
-        postRawUrl: "https://lovelearn-my.sharepoint.com/personal/admin_share_onesrc_cc/_api/web/GetList(@a1)/RenderListDataAsStream?@a1='/personal/admin_share_onesrc_cc/Documents'&RootFolder=/personal/admin_share_onesrc_cc/Documents/share"
+        shareUrl: 'https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/EkEBAXfrK01JiBdQUQKm7O0BlHt50NS45RP9WKSCvEY9Sg?e=bkFrDs'
     }
 }
 let dataCache = {};
 let cookieMap = {};
-let POST_OPTIONS = {
+
+const POST_OPTIONS = {
     method: "POST",
     headers: {
         "accept": "application/json;odata=verbose",
@@ -44,6 +46,11 @@ let POST_OPTIONS = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0",
         "Cookie": ""
     }
+}
+
+for (let m in MSUrls) {
+    let tmp = /https:\/\/([^/]*)\/:f:\/g\/personal\/([^/]*)/.exec(MSUrls[m].shareUrl);
+    MSUrls[m].postRawUrl = `https://${tmp[1]}/personal/${tmp[2]}/_api/web/GetList(@a1)/RenderListDataAsStream?@a1='/personal/${tmp[2]}/Documents'&RootFolder=/personal/${tmp[2]}/Documents${MSUrls[m].postRawDir || '/share'}`;
 }
 
 /**
@@ -383,7 +390,7 @@ function renden2(jsonData, reqPath) {
         if (fs.existsSync(path.resolve(__dirname, './README.md'))) readme = fs.readFileSync(path.resolve(__dirname, './README.md')).toString();
         readme = readme.replace(/[\n\r]/g, '\\n');
         html += `<div id="readme"></div></div>`;//${readme} 简化安装过程, 由前端实现解析
-        html += `<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script><script>document.getElementById('readme').innerHTML =marked('${readme}');</script>`;
+        html += `<script src="https://cdn.bootcss.com/marked/0.7.0/marked.js"></script><script>document.getElementById('readme').innerHTML =marked('${readme}');</script>`;
     }
     html += `<a href="javascript:window.scrollTo(0,0);" class="mdui-fab mdui-fab-fixed mdui-ripple mdui-color-theme-accent"><i class="mdui-icon material-icons">flight</i></a></div>`;
     html += '<script>let rfiles = document.querySelectorAll("li.realFile");if(rfiles.length%30==0){let tmp = `<li class="mdui-list-item mdui-ripple"><a href="${window.location.pathname}?nextPage=${rfiles[rfiles.length-1].querySelector("span").innerText}"><div class="mdui-col-xs-12 mdui-col-sm-7"><i class="mdui-icon material-icons">arrow_downward</i>more... </div> <div class="mdui-col-sm-3 mdui-text-right"></div><div class="mdui-col-sm-2 mdui-text-right"></div></a></li>`;document.querySelector(".mdui-list").innerHTML+=tmp};function thumb(){alert("暂不支持该功能!!!");}</script>';
@@ -423,7 +430,7 @@ exports.main_handler = async (event, context, callback) => {
     event = decodeEvent(event);//处理中文字符
     console.log(event);
     let reqPath = event['path'];
-    if(G_CONFIG.pathPrefix.length>0)reqPath= reqPath.slice(G_CONFIG.pathPrefix.length-G_CONFIG.pathPrefix.lastIndexOf('/')) || '/';// 由scf 网关api决定 
+    if (G_CONFIG.pathPrefix.length > 0) reqPath = reqPath.slice(G_CONFIG.pathPrefix.length - G_CONFIG.pathPrefix.lastIndexOf('/')) || '/';// 由scf 网关api决定 
     if (reqPath.endsWith('/') && reqPath.length > 1) reqPath = reqPath.slice(0, -1);//规范化请求路径
     console.log(new Date().toLocaleString(), 'utf-8');
     console.info('reqPath:' + reqPath);
@@ -466,4 +473,4 @@ exports.main_handler = async (event, context, callback) => {
     return endMsg(200, { 'Content-Type': 'text/html' }, html);
 };
 
-//exports.main_handler({ path: '/onepoint/', queryString: { refresh: undefined } });//nextPage: undefined, isJson: true 
+exports.main_handler({ path: '/onepoint/', queryString: { refresh: undefined } });//nextPage: undefined, isJson: true 
