@@ -95,16 +95,20 @@ function getDirList(reqPath, postUrl, refreshForce, nextPage) {
                         //rData['spItemUrl'] = e['.spItemUrl']; 暂时不需要,可隐去
                         rData['name'] = e['FileLeafRef'];
                         rData['size'] = formatSize(e['FileSizeDisplay']);
-                        rData['modified'] = e['Modified'];
-                        rData['fileType'] = e['File_x0020_Type'];
-                        rData['childCount'] = e['ItemChildCount'];
+                        rData['modified'] = e['Modified.'];
+                        rData['fileType'] = e['.fileType'];
+                        rData['childCount'] = Number(e['ItemChildCount']) + Number(e['FolderChildCount']);
                         rDatas.push(rData);
-                        console.log("push---" + rData.name);
+                        console.log("push---" + rData.name + "---" + rData.id);
                     });
                     if (rDatas.length === 0) {
                         jsonData.urlType = 0;//为文件或者空文件夹
                         jsonData.spItemUrl = g_listData.ListData.CurrentFolderSpItemUrl;//空文件夹 或 文件
                     }
+                    jsonData['PrevHref'] = g_listData.ListData['PrevHref'];
+                    jsonData['NextHref'] = g_listData.ListData['NextHref'];
+                    console.log("prev:" + jsonData['PrevHref']);
+                    console.log("next:" + jsonData['NextHref']);
                     if (!nextPage) dataCache[reqPath] = jsonData;//只在请求第一页数据时写入缓存
                     else if (dataCache[reqPath] && rDatas.length > 0) {//缓存有数据且需要添加本次新数据
                         let r2Datas = dataCache[reqPath].rDatas;
@@ -473,4 +477,4 @@ exports.main_handler = async (event, context, callback) => {
     return endMsg(200, { 'Content-Type': 'text/html' }, html);
 };
 
-exports.main_handler({ path: '/onepoint/', queryString: { refresh: undefined } });//nextPage: undefined, isJson: true 
+//exports.main_handler({ path: '/onepoint/', queryString: { refresh: undefined} });//nextPage: undefined, isJson: true 
