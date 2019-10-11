@@ -66,10 +66,13 @@ function getDirList(reqPath, postUrl, refreshForce, nextPage) {
     if (!reqPath.startsWith('/')) { throw "403: wrong format"; }
     if (reqPath.endsWith('/') && reqPath.length > 1) reqPath = reqPath.slice(0, -1);//合并 目录 加斜线的情况  (reqPath通常已提前处理,这里为其他api保留)
     console.log("getting data from cache ...");
-    if (!nextPage && !refreshForce && dataCache[reqPath]) return dataCache[reqPath];//请求不是nextpage,没有要求刷新,且有缓存,直接返回
+    if (!refreshForce) {//请求没有要求刷新,且有缓存,直接返回
+        if (!nextPage && dataCache[reqPath]) return dataCache[reqPath];
+        else if (nextPage && dataCache[`${reqPath}?${nextPage}`]) return dataCache[`${reqPath}?${nextPage}`];
+    }
     console.log("getting data from net ...");
     if (!nextPage) postUrl = `${postUrl}&TryNewExperienceSingle=TRUE`;
-    else postUrl = `${postUrl}&TryNewExperienceSingle=TRUE&Paged=TRUE&p_SortBehavior=1&p_FileLeafRef=${nextPage}`;
+    else postUrl = `${postUrl}&TryNewExperienceSingle=TRUE&${nextPage}`;
     return new Promise((resolve) => {
         let tmpurl = url.parse(encodeURI(postUrl));
         POST_OPTIONS.path = tmpurl.path;
@@ -105,19 +108,12 @@ function getDirList(reqPath, postUrl, refreshForce, nextPage) {
                         jsonData.urlType = 0;//为文件或者空文件夹
                         jsonData.spItemUrl = g_listData.ListData.CurrentFolderSpItemUrl;//空文件夹 或 文件
                     }
-                    jsonData['PrevHref'] = g_listData.ListData['PrevHref'];
-                    jsonData['NextHref'] = g_listData.ListData['NextHref'];
+                    jsonData['PrevHref'] = nextInfoFilter(g_listData.ListData['PrevHref']);
+                    jsonData['NextHref'] = nextInfoFilter(g_listData.ListData['NextHref']);
                     console.log("prev:" + jsonData['PrevHref']);
                     console.log("next:" + jsonData['NextHref']);
                     if (!nextPage) dataCache[reqPath] = jsonData;//只在请求第一页数据时写入缓存
-                    else if (dataCache[reqPath] && rDatas.length > 0) {//缓存有数据且需要添加本次新数据
-                        let r2Datas = dataCache[reqPath].rDatas;
-                        let r2Data = r2Datas[r2Datas.length - 1];//取前一页的最后一位,和请求的nextPage参数比较
-                        if (r2Data && r2Data.name === nextPage) {
-                            console.log("add---" + rDatas.length);
-                            rDatas.forEach(e => r2Datas.push(e));
-                        }
-                    }
+                    else dataCache[`${reqPath}?${nextPage}`] = jsonData;
                     resolve(jsonData);
                 }
                 let chunks = [];//默认gzip
@@ -297,6 +293,11 @@ function decodeEvent(event) {
     return event;
 }
 
+function nextInfoFilter(url) {
+    console.log(url);
+    return decodeURIComponent(url).slice(1).split('&').filter(e => { return e.startsWith("Paged") || e.startsWith('p_SortBehavior') || e.startsWith('p_Modified') || e.startsWith('p_ID') || e.startsWith("PageFirstRow") || e.startsWith('View') }).join('&');
+}
+
 /**
  * 需要与MSUrls相对应,二者负责完成不同分享链接的路径映射,返回{reqPath,shareUrl,postUrl}
  * @param {*} reqPath 相对请求路径
@@ -373,7 +374,9 @@ function renden2(jsonData, reqPath) {
     });
     html += `</div></div>`;
     html += `<div class="mdui-container-fluid"><style>.thumb .th{display:none}.thumb .mdui-text-right{display:none}.thumb .mdui-list-item a,.thumb .mdui-list-item{width:217px;height:230px;float:left;margin:10px 10px!important}.thumb .mdui-col-xs-12,.thumb .mdui-col-sm-7{width:100%!important;height:230px}.thumb .mdui-list-item .mdui-icon{font-size:100px;display:block;margin-top:40px;color:#7ab5ef}.thumb .mdui-list-item span{float:left;display:block;text-align:center;width:100%;position:absolute;top:180px}</style><div class="nexmoe-item"><div class="mdui-row"><ul class="mdui-list"><li class="mdui-list-item th"><div class="mdui-col-xs-12 mdui-col-sm-7">文件 <i class="mdui-icon material-icons icon-sort" data-sort="name" data-order="downward">expand_more</i></div><div class="mdui-col-sm-3 mdui-text-right">修改时间 <i class="mdui-icon material-icons icon-sort" data-sort="date" data-order="downward">expand_more</i></div><div class="mdui-col-sm-2 mdui-text-right">大小 <i class="mdui-icon material-icons icon-sort" data-sort="size" data-order="downward">expand_more</i></div></li>`;
-    if (reqPath != '/') {
+    if (jsonData.PrevHref) {
+        html += `<li class="mdui-list-item mdui-ripple"><a href="${G_CONFIG.pathPrefix}${reqPath}?nextPage=${encodeURIComponent(jsonData.PrevHref)}"><div class="mdui-col-xs-12 mdui-col-sm-7"><i class="mdui-icon material-icons">arrow_upward</i>上一页</div><div class="mdui-col-sm-3 mdui-text-right"></div><div class="mdui-col-sm-2 mdui-text-right"></div></a></li>`;
+    } else if (reqPath != '/') {
         html += `<li class="mdui-list-item mdui-ripple"><a href="${G_CONFIG.pathPrefix}${reqPath.slice(0, reqPath.lastIndexOf('/')) || '/'}"><div class="mdui-col-xs-12 mdui-col-sm-7"><i class="mdui-icon material-icons">arrow_upward</i>.. </div><div class="mdui-col-sm-3 mdui-text-right"></div><div class="mdui-col-sm-2 mdui-text-right"></div></a></li>`;
     } else {
         reqPath = '';//路径修正
@@ -387,6 +390,7 @@ function renden2(jsonData, reqPath) {
         //console.log(`"${G_CONFIG.pathPrefix}${reqPath}/${e.name}"`);
     });
 
+    if (jsonData.NextHref) html += `<li class="mdui-list-item mdui-ripple"><a href="${G_CONFIG.pathPrefix}${reqPath}?nextPage=${encodeURIComponent(jsonData.NextHref)}"><div class="mdui-col-xs-12 mdui-col-sm-7"><i class="mdui-icon material-icons">arrow_downward</i>下一页</div><div class="mdui-col-sm-3 mdui-text-right"></div><div class="mdui-col-sm-2 mdui-text-right"></div></a></li>`;
     html += `</ul></div></div></div>`;
     if (G_CONFIG.rootReadme && reqPath === '') {
         html += `<div class="mdui-typo mdui-shadow-3" style="padding: 20px;margin: 30px 0px 0px 0px; border-radius: 5px;"><div class="mdui-chip"><span class="mdui-chip-icon"><i class="mdui-icon material-icons">face</i></span><span class="mdui-chip-title">README.md</span></div>`;
@@ -397,7 +401,7 @@ function renden2(jsonData, reqPath) {
         html += `<script src="https://cdn.bootcss.com/marked/0.7.0/marked.js"></script><script>document.getElementById('readme').innerHTML =marked('${readme}');</script>`;
     }
     html += `<a href="javascript:window.scrollTo(0,0);" class="mdui-fab mdui-fab-fixed mdui-ripple mdui-color-theme-accent"><i class="mdui-icon material-icons">flight</i></a></div>`;
-    html += '<script>let rfiles = document.querySelectorAll("li.realFile");if(rfiles.length%30==0){let tmp = `<li class="mdui-list-item mdui-ripple"><a href="${window.location.pathname}?nextPage=${rfiles[rfiles.length-1].querySelector("span").innerText}"><div class="mdui-col-xs-12 mdui-col-sm-7"><i class="mdui-icon material-icons">arrow_downward</i>more... </div> <div class="mdui-col-sm-3 mdui-text-right"></div><div class="mdui-col-sm-2 mdui-text-right"></div></a></li>`;document.querySelector(".mdui-list").innerHTML+=tmp};function thumb(){alert("暂不支持该功能!!!");}</script>';
+    // html += '<script>let rfiles = document.querySelectorAll("li.realFile");if(rfiles.length%30==0){let tmp = `<li class="mdui-list-item mdui-ripple"><a href="${window.location.pathname}?nextPage=${rfiles[rfiles.length-1].querySelector("span").innerText}"><div class="mdui-col-xs-12 mdui-col-sm-7"><i class="mdui-icon material-icons">arrow_downward</i>more... </div> <div class="mdui-col-sm-3 mdui-text-right"></div><div class="mdui-col-sm-2 mdui-text-right"></div></a></li>`;document.querySelector(".mdui-list").innerHTML+=tmp};function thumb(){alert("暂不支持该功能!!!");}</script>';
     html += `</body></html>`;
     return html;
 }
@@ -477,4 +481,4 @@ exports.main_handler = async (event, context, callback) => {
     return endMsg(200, { 'Content-Type': 'text/html' }, html);
 };
 
-//exports.main_handler({ path: '/onepoint/', queryString: { refresh: undefined} });//nextPage: undefined, isJson: true 
+//exports.main_handler({ path: '/onepoint/whuhu/50Files', queryString: { refresh: true, nextPage: 'p_SortBehavior=1&p_Modified=20190928 15:12:55&PageFirstRow=1&View=ba5fe8bd-11f5-4a70-a678-2779f6bdd6de' } });//nextPage: undefined, isJson: true 
