@@ -419,7 +419,7 @@ exports.main_handler = async (event, context, callback) => {
     if (requestContext_path === '/') requestContext_path = '';
     if (event['headers']['host'].startsWith(event['requestContext']['serviceId'])) {
         G_CONFIG.pathPrefix = `/${event['requestContext']['stage']}${requestContext_path}`;
-        reqPath = reqPath.slice(requestContext_path.length);// 由scf 网关api决定
+        reqPath = reqPath.slice(requestContext_path.length) || '/';// 由scf 网关api决定
     } else {
         G_CONFIG.pathPrefix = domainMap['host'] || requestContext_path;
         reqPath = reqPath.slice(G_CONFIG.pathPrefix.length);
