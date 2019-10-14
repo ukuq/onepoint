@@ -8,13 +8,17 @@ const zlib = require('zlib');
 const url = require('url');
 const path = require('path');
 const G_CONFIG = {
-    pathPrefix: '/release/onePoint',
     saveFile: false,
     rootReadme: true,
     FILE_DATACACHE: 'dataCacheee',
     FILE_COOKIE: 'cookieee'
 };
-
+const SITEINFO = {
+    title: "onePoint Demo",
+    icon: "",
+    keywords: "onePoint",
+    description: "onePoint description"
+};
 /**
  * 进一步简化配置过程,配置时只需要配置shareUrl,如按建议,建立/share为默认文件夹,则 postRawDir无需配置
  */
@@ -27,6 +31,9 @@ const MSUrls = {
         shareUrl: 'https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/EkEBAXfrK01JiBdQUQKm7O0BlHt50NS45RP9WKSCvEY9Sg?e=bkFrDs'
     }
 }
+
+const domainMap = {};//域名映射,生成pathPreFix时自动调用,默认为空
+
 let dataCache = {};
 let cookieMap = {};
 
@@ -54,7 +61,7 @@ for (let m in MSUrls) {
 }
 
 /**
- * 传入一个 / 开头的路径字符串,返回值为 {urlType:"文件(夹)",rDatas:"子节点信息", url:"reqPath",reqPathspItemUrl:"本节点信息url"}
+ * 传入一个 / 开头的路径字符串,返回值为 {urlType:"文件(夹)",rDatas:"子节点信息", url:"reqPath",reqPathspItemUrl:"本节点信息url",PrevHref,NextHref}
  * @param {*} reqPath 相对于pathPrefix的路径
  * @param {*} postUrl 需要发送post请求的完整url
  * @param {*} refreshForce 强制刷新,不接受缓存信息
@@ -68,13 +75,13 @@ function getDirList(reqPath, postUrl, refreshForce, nextPage) {
     console.log("getting data from cache ...");
     if (!refreshForce) {//请求没有要求刷新,且有缓存,直接返回
         if (!nextPage && dataCache[reqPath]) return dataCache[reqPath];
-        else if (nextPage && dataCache[`${reqPath}?${nextPage}`]) return dataCache[`${reqPath}?${nextPage}`];
+        else if (nextPage && dataCache[reqPath + "?" + nextPage]) return dataCache[reqPath + "?" + nextPage];
     }
     console.log("getting data from net ...");
     if (!nextPage) postUrl = `${postUrl}&TryNewExperienceSingle=TRUE`;
-    else postUrl = `${postUrl}&TryNewExperienceSingle=TRUE&${nextPage}`;
+    else postUrl = `${postUrl}&TryNewExperienceSingle=TRUE&${decodeURIComponent(nextPage)}`;
     return new Promise((resolve) => {
-        let tmpurl = url.parse(encodeURI(postUrl));
+        let tmpurl = url.parse(postUrl);
         POST_OPTIONS.path = tmpurl.path;
         POST_OPTIONS.hostname = tmpurl.hostname;
         POST_OPTIONS.headers.origin = `https://${tmpurl.hostname}`;
@@ -113,7 +120,7 @@ function getDirList(reqPath, postUrl, refreshForce, nextPage) {
                     console.log("prev:" + jsonData['PrevHref']);
                     console.log("next:" + jsonData['NextHref']);
                     if (!nextPage) dataCache[reqPath] = jsonData;//只在请求第一页数据时写入缓存
-                    else dataCache[`${reqPath}?${nextPage}`] = jsonData;
+                    else dataCache[reqPath + "?" + nextPage] = jsonData;
                     resolve(jsonData);
                 }
                 let chunks = [];//默认gzip
@@ -164,7 +171,7 @@ function getDirList(reqPath, postUrl, refreshForce, nextPage) {
  */
 function getFileInfo(spItemUrl) {
     return new Promise((resolve) => {
-        let tmpurl = url.parse(encodeURI(spItemUrl));
+        let tmpurl = url.parse(spItemUrl);
         https.get({
             path: tmpurl.path,
             hostname: tmpurl.hostname,
@@ -272,30 +279,18 @@ function refreshCookie(shareUrl) {
             if (G_CONFIG.saveFile) fs.writeFile(G_CONFIG.FILE_COOKIE, JSON.stringify(cookieMap), (err) => {
                 if (err) throw err;
                 console.log("write cookie to local file: success");
-                resolve();
             });
-            else resolve();
+            resolve();
         }).on('error', (e) => {
             throw e;
         });
     });
 }
 
-/**
- * 解码encode内容,中文友好;---为支持#$*等特殊符号文件或文件夹,以后可能弃用
- * @param {*} event 
- */
-function decodeEvent(event) {
-    event['path'] = decodeURI(event['path']);
-    for (let k in event['queryString']) {
-        if (event['queryString'][k]) event['queryString'][k] = decodeURI(event['queryString'][k]);
-    }
-    return event;
-}
-
 function nextInfoFilter(url) {
+    if (!url) return url;
     console.log(url);
-    return decodeURIComponent(url).slice(1).split('&').filter(e => { return e.startsWith("Paged") || e.startsWith('p_SortBehavior') || e.startsWith('p_Modified') || e.startsWith('p_ID') || e.startsWith("PageFirstRow") || e.startsWith('View') }).join('&');
+    return encodeURIComponent(url.slice(1).split('&').filter(e => { return e.startsWith("Paged") || e.startsWith('p_SortBehavior') || e.startsWith('p_FileLeafRef') || e.startsWith('p_Modified') || e.startsWith('p_ID') || e.startsWith("PageFirstRow") || e.startsWith('View') }).join('&'));
 }
 
 /**
@@ -309,9 +304,9 @@ function getPathMap(reqPath) {
             console.log("映射路径为:" + m);
             msurl['shareUrl'] = MSUrls[m].shareUrl;
             if (m === '/')
-                msurl['postUrl'] = MSUrls[m].postRawUrl + reqPath;
+                msurl['postUrl'] = MSUrls[m].postRawUrl + encodeURIComponent(reqPath);
             else
-                msurl['postUrl'] = MSUrls[m].postRawUrl + reqPath.slice(m.length);
+                msurl['postUrl'] = MSUrls[m].postRawUrl + encodeURIComponent(reqPath.slice(m.length));
             return msurl;
         }
     }
@@ -334,34 +329,14 @@ function formatSize(size) {
     return size;
 };
 
-/**
- * @deprecated 已弃用
- * @param {*} jsonData 
- */
-function renderFile_old(jsonData) {
-    console.log("rendering-------------------");
-    let rhtml = '<html><head><meta http-equiv=Content-Type content="text/html;charset=utf-8"></head><body>';
-    rhtml += "<h1>onePoint</h1>";
-    rhtml += "<table><tbody>";
-    //console.log(`${jsonData.url}`);
-    let t = jsonData.url;
-    if (jsonData.url === '/') t = '';
-    jsonData.rDatas.forEach(e => {
-        let tmp = `<tr><td class=filetype${e.type}><a href=${G_CONFIG.pathPrefix}${t}/${e.name}>${e.name}</a></td><td>${e.modified}</td><td>${e.size}</td></tr>`;
-        rhtml += tmp;
-    });
-    rhtml += "</table></tbody>";
-    rhtml += "</body></html>";
-    return rhtml;
-}
 
 /**
  * html 渲染
  * @param {*} jsonData 
  * @param {*} reqPath 
  */
-function renden2(jsonData, reqPath) {
-    let html = `<!DOCTYPE html><html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no"><title>index of ${reqPath}</title><link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"><link href="https://cdn.bootcss.com/mdui/0.4.3/css/mdui.min.css" rel="stylesheet"><style>body{background-color:#f2f5fa;padding-bottom:60px;background-position:center bottom;background-repeat:no-repeat;background-attachment:fixed}.nexmoe-item{margin:20px -8px 0!important;padding:15px!important;border-radius:5px;background-color:#fff;-webkit-box-shadow:0 .5em 3em rgba(161,177,204,.4);box-shadow:0 .5em 3em rgba(161,177,204,.4);background-color:#fff}.mdui-img-fluid,.mdui-video-fluid{border-radius:5px;border:1px solid #eee}.mdui-list{padding:0}.mdui-list-item{margin:0!important;border-radius:5px;padding:0 10px 0 5px!important;border:1px solid #eee;margin-bottom:10px!important}.mdui-list-item:last-child{margin-bottom:0!important}.mdui-list-item:first-child{border:0}.mdui-toolbar{width:auto;margin-top:60px!important}.mdui-appbar .mdui-toolbar{height:56px;font-size:16px}.mdui-toolbar>*{padding:0 6px;margin:0 2px;opacity:.5}.mdui-toolbar>.mdui-typo-headline{padding:0 16px 0 0}.mdui-toolbar>i{padding:0}.mdui-toolbar>a:hover,a.mdui-typo-headline,a.active{opacity:1}.mdui-container{max-width:980px}.mdui-list>.th{background-color:initial}.mdui-list-item>a{width:100%;line-height:48px}.mdui-toolbar>a{padding:0 16px;line-height:30px;border-radius:30px;border:1px solid #eee}.mdui-toolbar>a:last-child{opacity:1;background-color:#1e89f2;color:#ffff}@media screen and (max-width:980px){.mdui-list-item .mdui-text-right{display:none}.mdui-container{width:100%!important;margin:0}.mdui-toolbar>*{display:none}.mdui-toolbar>a:last-child,.mdui-toolbar>.mdui-typo-headline,.mdui-toolbar>i:first-child{display:block}}</style></head><body class="mdui-theme-primary-blue-grey mdui-theme-accent-blue"><div class="mdui-container">`;
+function render200(jsonData, reqPath) {
+    let html = `<!DOCTYPE html><html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no"><title>${SITEINFO.title} - index of ${reqPath}</title><link rel="shortcut icon" href="${SITEINFO.icon}"><meta name="keywords" content="${SITEINFO.keywords}"><meta name="description" content="${SITEINFO.description}"><link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"><link href="https://cdn.bootcss.com/mdui/0.4.3/css/mdui.min.css" rel="stylesheet"><style>body{background-color:#f2f5fa;padding-bottom:60px;background-position:center bottom;background-repeat:no-repeat;background-attachment:fixed}.nexmoe-item{margin:20px -8px 0!important;padding:15px!important;border-radius:5px;background-color:#fff;-webkit-box-shadow:0 .5em 3em rgba(161,177,204,.4);box-shadow:0 .5em 3em rgba(161,177,204,.4);background-color:#fff}.mdui-img-fluid,.mdui-video-fluid{border-radius:5px;border:1px solid #eee}.mdui-list{padding:0}.mdui-list-item{margin:0!important;border-radius:5px;padding:0 10px 0 5px!important;border:1px solid #eee;margin-bottom:10px!important}.mdui-list-item:last-child{margin-bottom:0!important}.mdui-list-item:first-child{border:0}.mdui-toolbar{width:auto;margin-top:60px!important}.mdui-appbar .mdui-toolbar{height:56px;font-size:16px}.mdui-toolbar>*{padding:0 6px;margin:0 2px;opacity:.5}.mdui-toolbar>.mdui-typo-headline{padding:0 16px 0 0}.mdui-toolbar>i{padding:0}.mdui-toolbar>a:hover,a.mdui-typo-headline,a.active{opacity:1}.mdui-container{max-width:980px}.mdui-list>.th{background-color:initial}.mdui-list-item>a{width:100%;line-height:48px}.mdui-toolbar>a{padding:0 16px;line-height:30px;border-radius:30px;border:1px solid #eee}.mdui-toolbar>a:last-child{opacity:1;background-color:#1e89f2;color:#ffff}@media screen and (max-width:980px){.mdui-list-item .mdui-text-right{display:none}.mdui-container{width:100%!important;margin:0}.mdui-toolbar>*{display:none}.mdui-toolbar>a:last-child,.mdui-toolbar>.mdui-typo-headline,.mdui-toolbar>i:first-child{display:block}}</style></head><body class="mdui-theme-primary-blue-grey mdui-theme-accent-blue"><div class="mdui-container">`;
     html += `<div class="mdui-container-fluid"><div class="mdui-toolbar nexmoe-item">`;
     let tmpIncPath = '/';
     html += `<a href="${G_CONFIG.pathPrefix}${tmpIncPath}">/</a>`;
@@ -375,7 +350,7 @@ function renden2(jsonData, reqPath) {
     html += `</div></div>`;
     html += `<div class="mdui-container-fluid"><style>.thumb .th{display:none}.thumb .mdui-text-right{display:none}.thumb .mdui-list-item a,.thumb .mdui-list-item{width:217px;height:230px;float:left;margin:10px 10px!important}.thumb .mdui-col-xs-12,.thumb .mdui-col-sm-7{width:100%!important;height:230px}.thumb .mdui-list-item .mdui-icon{font-size:100px;display:block;margin-top:40px;color:#7ab5ef}.thumb .mdui-list-item span{float:left;display:block;text-align:center;width:100%;position:absolute;top:180px}</style><div class="nexmoe-item"><div class="mdui-row"><ul class="mdui-list"><li class="mdui-list-item th"><div class="mdui-col-xs-12 mdui-col-sm-7">文件 <i class="mdui-icon material-icons icon-sort" data-sort="name" data-order="downward">expand_more</i></div><div class="mdui-col-sm-3 mdui-text-right">修改时间 <i class="mdui-icon material-icons icon-sort" data-sort="date" data-order="downward">expand_more</i></div><div class="mdui-col-sm-2 mdui-text-right">大小 <i class="mdui-icon material-icons icon-sort" data-sort="size" data-order="downward">expand_more</i></div></li>`;
     if (jsonData.PrevHref) {
-        html += `<li class="mdui-list-item mdui-ripple"><a href="${G_CONFIG.pathPrefix}${reqPath}?nextPage=${encodeURIComponent(jsonData.PrevHref)}"><div class="mdui-col-xs-12 mdui-col-sm-7"><i class="mdui-icon material-icons">arrow_upward</i>上一页</div><div class="mdui-col-sm-3 mdui-text-right"></div><div class="mdui-col-sm-2 mdui-text-right"></div></a></li>`;
+        html += `<li class="mdui-list-item mdui-ripple"><a href="?nextPage=${jsonData.PrevHref}"><div class="mdui-col-xs-12 mdui-col-sm-7"><i class="mdui-icon material-icons">arrow_upward</i>上一页</div><div class="mdui-col-sm-3 mdui-text-right"></div><div class="mdui-col-sm-2 mdui-text-right"></div></a></li>`;
     } else if (reqPath != '/') {
         html += `<li class="mdui-list-item mdui-ripple"><a href="${G_CONFIG.pathPrefix}${reqPath.slice(0, reqPath.lastIndexOf('/')) || '/'}"><div class="mdui-col-xs-12 mdui-col-sm-7"><i class="mdui-icon material-icons">arrow_upward</i>.. </div><div class="mdui-col-sm-3 mdui-text-right"></div><div class="mdui-col-sm-2 mdui-text-right"></div></a></li>`;
     } else {
@@ -383,14 +358,14 @@ function renden2(jsonData, reqPath) {
     }
     jsonData.rDatas.forEach(e => {
         if (e.type == 1) {
-            html += `<li class="mdui-list-item mdui-ripple realFile"><a href="${G_CONFIG.pathPrefix}${reqPath}/${e.name}"><div class="mdui-col-xs-12 mdui-col-sm-7 mdui-text-truncate"><i class="mdui-icon material-icons">folder_open</i><span>${e.name}</span></div><div class="mdui-col-sm-3 mdui-text-right">${e.modified}</div><div class="mdui-col-sm-2 mdui-text-right">${e.childCount} 个项目</div></a></li>`;
+            html += `<li class="mdui-list-item mdui-ripple realFile"><a href="${G_CONFIG.pathPrefix}${reqPath}/${encodeURIComponent(e.name)}"><div class="mdui-col-xs-12 mdui-col-sm-7 mdui-text-truncate"><i class="mdui-icon material-icons">folder_open</i><span>${e.name}</span></div><div class="mdui-col-sm-3 mdui-text-right">${e.modified}</div><div class="mdui-col-sm-2 mdui-text-right">${e.childCount} 个项目</div></a></li>`;
         } else {
-            html += `<li class="mdui-list-item file mdui-ripple realFile"><a href="${G_CONFIG.pathPrefix}${reqPath}/${e.name}" target="_blank"><div class="mdui-col-xs-12 mdui-col-sm-7 mdui-text-truncate"><i class="mdui-icon material-icons">insert_drive_file</i><span>${e.name}</span></div><div class="mdui-col-sm-3 mdui-text-right">${e.modified}</div><div class="mdui-col-sm-2 mdui-text-right">${e.size}</div></a></li>`;
+            html += `<li class="mdui-list-item file mdui-ripple realFile"><a href="${G_CONFIG.pathPrefix}${reqPath}/${encodeURIComponent(e.name)}" target="_blank"><div class="mdui-col-xs-12 mdui-col-sm-7 mdui-text-truncate"><i class="mdui-icon material-icons">insert_drive_file</i><span>${e.name}</span></div><div class="mdui-col-sm-3 mdui-text-right">${e.modified}</div><div class="mdui-col-sm-2 mdui-text-right">${e.size}</div></a></li>`;
         }
         //console.log(`"${G_CONFIG.pathPrefix}${reqPath}/${e.name}"`);
     });
 
-    if (jsonData.NextHref) html += `<li class="mdui-list-item mdui-ripple"><a href="${G_CONFIG.pathPrefix}${reqPath}?nextPage=${encodeURIComponent(jsonData.NextHref)}"><div class="mdui-col-xs-12 mdui-col-sm-7"><i class="mdui-icon material-icons">arrow_downward</i>下一页</div><div class="mdui-col-sm-3 mdui-text-right"></div><div class="mdui-col-sm-2 mdui-text-right"></div></a></li>`;
+    if (jsonData.NextHref) html += `<li class="mdui-list-item mdui-ripple"><a href="?nextPage=${jsonData.NextHref}"><div class="mdui-col-xs-12 mdui-col-sm-7"><i class="mdui-icon material-icons">arrow_downward</i>下一页</div><div class="mdui-col-sm-3 mdui-text-right"></div><div class="mdui-col-sm-2 mdui-text-right"></div></a></li>`;
     html += `</ul></div></div></div>`;
     if (G_CONFIG.rootReadme && reqPath === '') {
         html += `<div class="mdui-typo mdui-shadow-3" style="padding: 20px;margin: 30px 0px 0px 0px; border-radius: 5px;"><div class="mdui-chip"><span class="mdui-chip-icon"><i class="mdui-icon material-icons">face</i></span><span class="mdui-chip-title">README.md</span></div>`;
@@ -435,11 +410,20 @@ function endMsg(statusCode, headers, body, isBase64Encoded) {
     }
 }
 exports.main_handler = async (event, context, callback) => {
-    event = decodeEvent(event);//处理中文字符
+    event['path'] = decodeURIComponent(event['path']);//处理中文字符
     console.log(event);
     let reqPath = event['path'];
-    if (G_CONFIG.pathPrefix.length > 0) reqPath = reqPath.slice(G_CONFIG.pathPrefix.length - G_CONFIG.pathPrefix.lastIndexOf('/')) || '/';// 由scf 网关api决定 
     if (reqPath.endsWith('/') && reqPath.length > 1) reqPath = reqPath.slice(0, -1);//规范化请求路径
+    //生成G_CONFIG.pathPrefix,支持多域名 191013
+    let requestContext_path = event['requestContext']['path'];
+    if (requestContext_path === '/') requestContext_path = '';
+    if (event['headers']['host'].startsWith(event['requestContext']['serviceId'])) {
+        G_CONFIG.pathPrefix = `/${event['requestContext']['stage']}${requestContext_path}`;
+        reqPath = reqPath.slice(requestContext_path.length);// 由scf 网关api决定
+    } else {
+        G_CONFIG.pathPrefix = domainMap['host'] || requestContext_path;
+        reqPath = reqPath.slice(G_CONFIG.pathPrefix.length);
+    }
     console.log(new Date().toLocaleString(), 'utf-8');
     console.info('reqPath:' + reqPath);
     let msurl = getPathMap(reqPath);
@@ -471,14 +455,14 @@ exports.main_handler = async (event, context, callback) => {
             console.log("empty directory");
         }
     }
+    reqPath = reqPath.replace('#', '%23').replace('?', '%3f');
     if (event['queryString']['isJson']) {
-        return endMsg(200, { 'content-type': 'application/json' }, JSON.stringify({ rDatas: jsonData.rDatas }));
+        return endMsg(200, { 'content-type': 'application/json' }, JSON.stringify({ reqPath: reqPath, rDatas: jsonData.rDatas, NextHref: jsonData.NextHref, PrevHref: jsonData.PrevHref }));
     }
     //console.log(jsonData);
-    let html = renden2(jsonData, reqPath);
+    let html = render200(jsonData, reqPath);
     //console.log(html);
-
     return endMsg(200, { 'Content-Type': 'text/html' }, html);
 };
 
-//exports.main_handler({ path: '/onepoint/whuhu/50Files', queryString: { refresh: true, nextPage: 'p_SortBehavior=1&p_Modified=20190928 15:12:55&PageFirstRow=1&View=ba5fe8bd-11f5-4a70-a678-2779f6bdd6de' } });//nextPage: undefined, isJson: true 
+//exports.main_handler({ path: '/onepoint', queryString: {} });//nextPage: undefined, isJson: true 
