@@ -1,4 +1,6 @@
-let { MS_OD } = require("./lib/ms_od");
+const MS_OD = require("./lib/ms_od_sharepoint").func;
+const GOO_GD = require("./lib/goo_gd_goindex").func;
+const OTH_SCF = require("./lib/oth_linux_scf").func;
 let render = require("./views/render").render;
 exports.RENDER = render;
 exports.G_CONFIG = {
@@ -23,6 +25,17 @@ exports.DRIVE_MAP = {
         spConfig: {
             shareUrl: 'https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/EkEBAXfrK01JiBdQUQKm7O0BlHt50NS45RP9WKSCvEY9Sg?e=bkFrDs'
         }
+    },
+    '/linux/': {
+        func: OTH_SCF
+    },
+    '/GDrive/': {
+        func: GOO_GD,
+        spConfig: {
+            password: "index",
+            cfurl: 'goindex.onesrc.workers.dev'
+        }
     }
+
 };
-exports.DOMAIN_MAP={};
+exports.DOMAIN_MAP = {};

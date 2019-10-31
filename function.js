@@ -102,6 +102,9 @@ function urlSpCharEncode(s) {
             case '#':
                 res += '%23';
                 break;
+            case ' ':
+                res += '%20';
+                break;
             default:
                 res += ch;
         }

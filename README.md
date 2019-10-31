@@ -18,13 +18,22 @@
 
 ## 目前实现
 
-目前仅开发了onedrive 的调用函数。
+目前仅开发了onedrive, 
+
+google drive 的调用函数。
 
 和一个 scf 服务器 文件列出函数。
 
-如果想要使用其他网盘，参考文档：
+如果想要使用其他网盘，参考 [这里]( https://www.onesrc.cn/p/onepoint-api-documentation.html)。
 
- https://www.onesrc.cn/p/onepoint-api-documentation.html
+## 更新日志
+
+
+- 191031: 修复了文件名含有空格的无法访问的 bug。增加了 linux_scf 和 google drive 两个模块。
+- 191029: 调整架构, 分离数据和界面, 支持多种 api
+- ...
+- 191005: 首次发布, 支持文件列表, 直链下载
+
 
 ## Demo
 
@@ -40,7 +49,9 @@ https://service-8pduizwk-1255607810.ap-hongkong.apigateway.myqcloud.com/release/
 
 修改 config.js 文件里面的 DRIVE_MAP 即可。
 
-部署参考: [OnePoint 的配置](https://www.onesrc.cn/p/onepoint-configuration-process.html)
+[onedrive 之 sharepoint 版本配置](https://www.onesrc.cn/p/onepoint-configuration-process.html)
+
+[google drive 之  goindex 版本配置](https://www.onesrc.cn/p/google-drive-for-one-point-configuration.html)
 
 ## Thanks
 
