@@ -1,0 +1,38 @@
+{
+    "G_CONFIG": {
+        "enablePreview": true,
+        "admin_password": "admin",
+        "render_name": "render",
+        "site_title": "onePoint Demo",
+        "site_icon": "",
+        "site_keywords": "onePoint",
+        "site_description": "onePoint description",
+        "site_script": ""
+    },
+    "DRIVE_MAP": {
+        "/mmx/": {
+            "funcName": "ms_od_sharepoint",
+            "spConfig": {
+                "shareUrl": "https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/Es6CMetI4fJCr4GqWZ3uvA0BEnzJxxb4CU-iQr04VYomLQ?e=C9K35U",
+                "postRawDir": "/image"
+            }
+        },
+        "/": {
+            "funcName": "ms_od_sharepoint",
+            "spConfig": {
+                "shareUrl":"https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/EkEBAXfrK01JiBdQUQKm7O0BlHt50NS45RP9WKSCvEY9Sg?e=bkFrDs"
+            }
+        },
+        "/linux/": {
+            "funcName": "oth_linux_scf"
+        },
+        "/GDrive/": {
+            "funcName": "goo_gd_goindex",
+            "spConfig": {
+                "password": "index",
+                "cfurl": "goindex.onesrc.workers.dev"
+            }
+        }
+    },
+    "DOMAIN_MAP": {}
+}

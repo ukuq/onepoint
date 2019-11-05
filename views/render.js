@@ -1,13 +1,25 @@
-exports.render = { r200_list, r200_file, rxxx_info };
+exports.render = { r200_list, r200_file, rxxx_info, r401_auth };
 
 /**
  * onepoint ukuq
  * time:191029
  */
-
+function r401_auth(info, readMe, script, splitPath, G_CONFIG) {
+    let p_h0, p_12;
+    p_h0 = splitPath.ph + splitPath.p0;
+    p_12 = splitPath.p1 + splitPath.p2;
+    let html = get_html_head(p_h0, p_12, G_CONFIG);
+    html += `<div class="mdui-container-fluid"><div class="mdui-col-md-6 mdui-col-offset-md-3">
+    <center><h1 class="mdui-typo-display-2-opacity">${info}</h1></center>
+	<form action="" method="post"><div class="mdui-textfield mdui-textfield-floating-label"><i class="mdui-icon material-icons">https</i><input name="password" class="mdui-textfield-input" type="password" placeholder="请输入密码">
+	</div><br><button type="submit" class="mdui-center mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme"><i class="mdui-icon material-icons">fingerprint</i>查看</button></form></div></div>`;
+    html += `${script}${G_CONFIG.site_script}`;
+    html += `</div></body></html>`;
+    return html;
+}
 function r200_list(data, readMe, script, splitPath, G_CONFIG) {
     let p_h0, p_h01, p_12, preview;
-    p_h0 = splitPath.host + splitPath.p0;
+    p_h0 = splitPath.ph + splitPath.p0;
     p_h01 = p_h0 + splitPath.p1;
     p_12 = splitPath.p1 + splitPath.p2;
     if (G_CONFIG.enablePreview) preview = "?&preview";
@@ -39,7 +51,7 @@ function r200_list(data, readMe, script, splitPath, G_CONFIG) {
 
 function r200_file(fileInfo, readMe, script, splitPath, G_CONFIG) {
     let p_h0, p_h01, p_12;
-    p_h0 = splitPath.host + splitPath.p0;
+    p_h0 = splitPath.ph + splitPath.p0;
     p_h01 = p_h0 + splitPath.p1;
     p_12 = splitPath.p1 + splitPath.p2;
     let html = get_html_head(p_h0, p_12, G_CONFIG);
@@ -63,9 +75,9 @@ function r200_file(fileInfo, readMe, script, splitPath, G_CONFIG) {
 }
 
 
-function rxxx_info(statusCode, info, readMe, script, splitPath, G_CONFIG) {
+function rxxx_info(info, readMe, script, splitPath, G_CONFIG) {
     let p_h0, p_12;
-    p_h0 = splitPath.host + splitPath.p0;
+    p_h0 = splitPath.ph + splitPath.p0;
     p_12 = splitPath.p1 + splitPath.p2;
     let html = get_html_head(p_h0, p_12, G_CONFIG);
     html += `<div class="mdui-container-fluid"><div class="nexmoe-item"><div class="" style="font-size: 40px;font-family: sans-serif;margin: 30px;text-align: center;">${info}</div></div></div>`;
@@ -86,7 +98,7 @@ function get_html_head(p_h0, reqPath, G_CONFIG) {
     reqPath.split('/').forEach(e => {
         if (e) {
             tmpIncPath += e;
-            tmpIncPath += '/';
+            tmpIncPath += '/';//@bug
             html += `<i class="mdui-icon material-icons mdui-icon-dark" style="margin:0;">chevron_right</i><a href="${tmpIncPath}">${e}</a>`;
         }
     });

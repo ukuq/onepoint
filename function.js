@@ -1,4 +1,4 @@
-exports.funcs = { Msg_file, Msg_info, Msg_list, formatSize, formatDate, getExtByName, urlSpCharEncode };
+exports.tool_funcs = { Msg_file, Msg_info, Msg_list, formatSize, formatDate, getExtByName, urlSpCharEncode };
 
 /**
  * onepoint ukuq
@@ -26,8 +26,8 @@ function Msg_list(content, prevHref, nextHref, readMe_type, readMe_txt, script) 
         'type': 1,
         'data': {
             'content': content,
-            'prevHref': prevHref || "",
-            'nextHref': nextHref || ""
+            'prevHref': prevHref,
+            'nextHref': nextHref
         },
         'readMe': {
             type: readMe_type || 2,
@@ -37,10 +37,12 @@ function Msg_list(content, prevHref, nextHref, readMe_type, readMe_txt, script) 
     }
 }
 
-function Msg_info(statusCode, info, readMe_type, readMe_txt, script) {
+function Msg_info(statusCode, info, headers, readMe_type, readMe_txt, script) {
     return {
         'statusCode': statusCode,
+        'type': statusCode === 200 ? 2 : undefined,
         'info': info || "开发者没有填写, 我也不知道是啥",
+        'headers': headers || {},
         'readMe': {
             type: readMe_type || 0,
             txt: readMe_txt || ""
@@ -83,12 +85,14 @@ function formatSize(size) {
 
 
 function getExtByName(name) {
+    if (!name) return "";
     let pos = name.lastIndexOf('.');
     if (pos === -1) return "";
     else return name.slice(pos + 1);
 }
 
 function urlSpCharEncode(s) {
+    if (!s) return s;
     let res = '';
     for (let len = s.length, i = 0; i < len; i++) {
         let ch = s[i];
