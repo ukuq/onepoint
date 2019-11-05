@@ -146,19 +146,19 @@ exports.main_handler = async (event, context, callback) => {
     console.info('p_12:' + p_12);
 
     refreshCache();
-    if (p_12.startsWith('/admin/')) {
-        let li = '<html><body><ul>';
-        li += `<li>${G_CONFIG.admin_password}</li>`;
-        li += `<li>${G_CONFIG.admin_password_date_hash}</li>`;
-        for (let i = DRIVE_MAP_KEY.length - 1; i >= 0; i--) {
-            let dm = DRIVE_MAP_KEY[i];
-            li += `<li>${dm}</li>`;
-            li += `<li>${DRIVE_MAP[dm].password}</li>`;
-            li += `<li>${DRIVE_MAP[dm].password_date_hash}</li>`;
-        }
-        li += '</ul></body></html>';
-        return endMsg(200, res_headers, li);
-    }
+    // if (p_12.startsWith('/admin/')) {
+    //     let li = '<html><body><ul>';
+    //     li += `<li>${G_CONFIG.admin_password}</li>`;
+    //     li += `<li>${G_CONFIG.admin_password_date_hash}</li>`;
+    //     for (let i = DRIVE_MAP_KEY.length - 1; i >= 0; i--) {
+    //         let dm = DRIVE_MAP_KEY[i];
+    //         li += `<li>${dm}</li>`;
+    //         li += `<li>${DRIVE_MAP[dm].password}</li>`;
+    //         li += `<li>${DRIVE_MAP[dm].password_date_hash}</li>`;
+    //     }
+    //     li += '</ul></body></html>';
+    //     return endMsg(200, res_headers, li);
+    // }
 
     //域名映射
     for (let i = 0; i < DRIVE_MAP_KEY.length; i++) {
