@@ -28,6 +28,7 @@ google drive 的调用函数。
 
 ## 更新日志
 
+- 191110: 新增onedrive graph api 和 图床功能, 新增 Msg_html 功能
 - 191105: 新增密码功能, 调整了配置文件
 - 191031: 修复了文件名含有空格的无法访问的 bug。增加了 linux_scf 和 google drive 两个模块。
 - 191029: 调整架构, 分离数据和界面, 支持多种 api
@@ -47,7 +48,9 @@ https://service-8pduizwk-1255607810.ap-hongkong.apigateway.myqcloud.com/release/
 
 ## 使用方法
 
-修改 config.js 文件里面的 DRIVE_MAP 即可。
+修改 config.json 文件里面的 DRIVE_MAP 即可。
+
+[onedrive 之 graph 版本配置]() 暂无,可参考内置demo示例
 
 [onedrive 之 sharepoint 版本配置](https://www.onesrc.cn/p/onepoint-configuration-process.html)
 
