@@ -1,8 +1,9 @@
-exports.tool_funcs = { Msg_file, Msg_info, Msg_list, formatSize, formatDate, getExtByName, urlSpCharEncode };
+exports.tool_funcs = { Msg_file, Msg_info, Msg_list, Msg_301, Msg_html, formatSize, formatDate, getExtByName, urlSpCharEncode, getmd5 };
 
+const crypto = require('crypto');
 /**
  * onepoint ukuq
- * time:191029
+ * time:191110
  */
 
 function Msg_file(fileInfo, readMe_type, readMe_txt, script) {
@@ -51,6 +52,30 @@ function Msg_info(statusCode, info, headers, readMe_type, readMe_txt, script) {
     };
 }
 
+function Msg_301(location, info, readMe_type, readMe_txt, script) {
+    return {
+        'statusCode': 301,
+        'headers': {
+            'location': location,
+        },
+        'info': info || "redirecting to :" + location,
+        'readMe': {
+            type: readMe_type || 2,
+            txt: readMe_txt || "## Powered by [OnePoint](https://github.com/ukuq/onepoint)\\n\\n"
+        },
+        'script': script || ""
+    }
+}
+
+
+function Msg_html(statusCode, html, headers) {
+    return {
+        'noRender': true,
+        'statusCode': statusCode,
+        'headers': headers || { 'Content-Type': 'text/html' },
+        'html': html || "nothing"
+    }
+}
 
 function formatDate(str) {
     let oDate = new Date(str);
@@ -114,4 +139,12 @@ function urlSpCharEncode(s) {
         }
     }
     return res;
+}
+
+
+function getmd5(data) {
+    if (!data) return data;
+    const hash = crypto.createHash('md5');
+    hash.update(data);
+    return hash.digest('hex');
 }

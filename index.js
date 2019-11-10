@@ -5,10 +5,11 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
-const { Msg_info, urlSpCharEncode } = require('./function').tool_funcs;
+const { Msg_info, urlSpCharEncode, getmd5 } = require('./function').tool_funcs;
 
 const drive_funcs = {};
 drive_funcs['ms_od_sharepoint'] = require("./lib/ms_od_sharepoint");
+drive_funcs['ms_od_graph'] = require("./lib/ms_od_graph");
 drive_funcs['goo_gd_goindex'] = require("./lib/goo_gd_goindex");
 drive_funcs['oth_linux_scf'] = require("./lib/oth_linux_scf");
 
@@ -77,22 +78,19 @@ function refreshCache() {
     //设置管理员密码 hash 值
     let time = new Date();
     G_CONFIG.UTCDate = time.getUTCDate();
-    const hash = crypto.createHash('md5');
-    hash.update(G_CONFIG.admin_password + time.getUTCMonth() + time.getUTCDate());
-    G_CONFIG.admin_password_date_hash = hash.digest('hex');
+    G_CONFIG.admin_password_date_hash = getmd5(G_CONFIG.admin_password + time.getUTCMonth() + time.getUTCDate());
     //初始化 drive 的 cache,密码hash值
     //清除 cache
     for (let k in DRIVE_MAP) {
         DRIVE_MAP[k].cache = {};
         if (DRIVE_MAP[k].password) {
-            const hash = crypto.createHash('md5');
-            hash.update(DRIVE_MAP[k].password + time.getUTCMonth() + time.getUTCDate());
-            DRIVE_MAP[k].password_date_hash = hash.digest('hex');
+            DRIVE_MAP[k].password_date_hash = getmd5(DRIVE_MAP[k].password + time.getUTCMonth() + time.getUTCDate());
         } else {
             DRIVE_MAP[k].password = '';
             DRIVE_MAP[k].password_date_hash = 'no_password';
         }
     }
+    console.log('cache is cleared');
 }
 
 /**
@@ -147,17 +145,21 @@ exports.main_handler = async (event, context, callback) => {
 
     refreshCache();
     // if (p_12.startsWith('/admin/')) {
-    //     let li = '<html><body><ul>';
-    //     li += `<li>${G_CONFIG.admin_password}</li>`;
-    //     li += `<li>${G_CONFIG.admin_password_date_hash}</li>`;
-    //     for (let i = DRIVE_MAP_KEY.length - 1; i >= 0; i--) {
-    //         let dm = DRIVE_MAP_KEY[i];
-    //         li += `<li>${dm}</li>`;
-    //         li += `<li>${DRIVE_MAP[dm].password}</li>`;
-    //         li += `<li>${DRIVE_MAP[dm].password_date_hash}</li>`;
+    //     function r200_admin(p_h0) {
+    //         let html = `<html><head><meta charset="utf-8"><meta name="viewport"content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no"><title>onePoint系统管理</title>`;
+    //         html += `<link href="https://cdn.bootcss.com/mdui/0.4.3/css/mdui.min.css" rel="stylesheet"><script src="https://cdn.bootcss.com/mdui/0.4.3/js/mdui.min.js"></script></head><body class="mdui-drawer-body-left mdui-appbar-with-toolbar mdui-theme-primary-indigo mdui-theme-accent-blue mdui-loaded"><header class="mdui-appbar mdui-appbar-fixed"><div class="mdui-toolbar mdui-color-theme"><span class="mdui-btn mdui-btn-icon mdui-ripple mdui-ripple-white"mdui-drawer="{target: '#main-drawer', swipe: true}"><i class="mdui-icon material-icons">menu</i></span>`;
+    //         html += `<a href="${p_h0}"target="_blank"class="mdui-typo-headline mdui-hidden-xs">onePoint</a><div class="mdui-toolbar-spacer"></div></div></header><div class="mdui-drawer"id="main-drawer"><div class="mdui-list"><br><br><a href="#g_config"class="mdui-list-item"><i class="mdui-list-item-icon mdui-icon material-icons">settings</i><div class="mdui-list-item-content">基本设置</div></a><a href="#drive_info"class="mdui-list-item"><i class="mdui-list-item-icon mdui-icon material-icons">cloud</i><div class="mdui-list-item-content">网盘信息</div></a><a href="https://console.cloud.tencent.com/scf/index/1"class="mdui-list-item"><i class="mdui-list-item-icon mdui-icon material-icons">computer</i><div class="mdui-list-item-content">SCF</div></a><a href="https://github.com/ukuq/onepoint"class="mdui-list-item"><i class="mdui-list-item-icon mdui-icon material-icons">code</i><div class="mdui-list-item-content">Github</div></a><a href="https://www.onesrc.cn/p/onepoint-api-documentation.html"class="mdui-list-item"><i class="mdui-list-item-icon mdui-icon material-icons">archive</i><div class="mdui-list-item-content">参考文档</div></a><a href="#feed_back"class="mdui-list-item"><i class="mdui-list-item-icon mdui-icon material-icons">feedback</i><div class="mdui-list-item-content">建议反馈</div></a></div></div>`;
+    //         html += `<div class="mdui-container"><div class="mdui-container-fluid"><form action=""method="post"><div id="g_config"><br><br></div><div class="mdui-typo"><h1>基本设置</h1></div><div class="mdui-textfield"><h4>网站名称</h4><input class="mdui-textfield-input"type="text"placeholder="title"name="site_title"value="${G_CONFIG.site_title}"></div><div class="mdui-textfield"><h4>网站关键字</h4><input class="mdui-textfield-input"type="text"placeholder="keywords"name="site_keywords"value="${G_CONFIG.site_keywords}"></div><div class="mdui-textfield"><h4>网站描述</h4><textarea class="mdui-textfield-input"placeholder="Description"name="site_description"value="${G_CONFIG.site_description}"></textarea></div><div class="mdui-textfield"><h4>网站图标</h4><input class="mdui-textfield-input"type="text"placeholder="https://"name="site_icon"value="${G_CONFIG.site_icon}"></div><div class="mdui-textfield"><h4>网站脚本</h4><textarea class="mdui-textfield-input"placeholder="&lt;script&gt;&lt;/script&gt;"name="site_script"value="${G_CONFIG.site_script}"></textarea></div>`;
+    //         html += `<div class=""><h4>网站主题</h4><select name="style"class="mdui-select"mdui-select><option value="render">JUST</option><option value="render">ONLY</option><option value="render"selected="">ONE</option></select></div><div class=""><h4>开启预览</h4><label class="mdui-switch"><input type="checkbox"name="enablePreview"value="${G_CONFIG.enablePreview}"><i class="mdui-switch-icon"></i></label></div><div class="mdui-divider"></div>`;
+    //         html += `<div id="drive_info"><br><br></div><div class="mdui-typo"><h1>网盘信息</h1></div><table class="mdui-table mdui-table-hoverable"><thead><tr><th>路径</th><th>类型</th><th>密码</th><th>hash码</th></tr></thead><tbody>`;
+    //         for (let i = DRIVE_MAP_KEY.length - 1; i >= 0; i--) {
+    //             let key = DRIVE_MAP_KEY[i];
+    //             html += `<tr><td>${key}</td><td>${DRIVE_MAP[key].funcName}</td><td>${DRIVE_MAP[key].password}</td><td><div mdui-tooltip="{content: '点击分享链接, 今天 23:59 失效'}"><a href="${p_h0}${key}?password=${DRIVE_MAP[key].password_date_hash}">${DRIVE_MAP[key].password_date_hash}</a></div></td></tr>`;
+    //         }
+    //         html += `</tbody></table><div id="feed_back"><br><br></div><div class="mdui-typo"><h1>建议反馈</h1></div><div class="mdui-textfield"><a href="https://github.com/ukuq/onepoint/issues"><h3>issues</h3></a></div><div class="mdui-textfield"><a href="mailto:ukuq@qq.com"><h3>email</h3></a></div><div id="nothing"><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></div></form></div></div></body></html>`;
+    //         return html;
     //     }
-    //     li += '</ul></body></html>';
-    //     return endMsg(200, res_headers, li);
+    //     return endMsg(200, res_headers, r200_admin("//" + host + p0));
     // }
 
     //域名映射
@@ -170,7 +172,15 @@ exports.main_handler = async (event, context, callback) => {
             p2 = p_12.slice(dm.length - 1);
 
             if (driveMap.password) {//有密码
-                if (event['httpMethod'] === 'POST' && req_body_json['password']) {//使用密码 或者 cookie 登录
+                //允许 query 云盘hash登录
+                if (event['httpMethod'] === 'GET' && event['queryString']['password']) {
+                    if (event['queryString']['password'] === driveMap.password_date_hash) {
+                        res_headers['set-cookie'] = cookie.serialize('password', driveMap.password_date_hash, { path: p0 + p1, maxAge: 3600 });
+                    } else {
+                        responseMsg = Msg_info(401, 'token错误');
+                    }
+                    //允许 post 云盘hash ,密码登录 ,管理员密码登录
+                } else if (event['httpMethod'] === 'POST' && req_body_json['password']) {//使用密码 或者 cookie 登录
                     if (req_body_json['password'] === driveMap.password || req_body_json['password'] === driveMap.password_date_hash) {//单个云盘登录
                         res_headers['set-cookie'] = cookie.serialize('password', driveMap.password_date_hash, { path: p0 + p1, maxAge: 3600 });
                     } else if (req_body_json['password'] === G_CONFIG.admin_password) {//管理员登录 ,只允许密码
@@ -198,9 +208,16 @@ exports.main_handler = async (event, context, callback) => {
         queryString: event['queryString'], //scf event 提供
         headers: event['headers'],//scf event 提供
         body: event['body'],//scf event 提供
-        sourceIp: event['requestContext']['sourceIp']//访问源ip
+        sourceIp: event['requestContext']['sourceIp'],//访问源ip
+        req_cookie_json: req_cookie_json,
+        req_body_json: req_body_json
     }
     if (!responseMsg) responseMsg = await drive_funcs[driveMap.funcName].func(driveMap.spConfig, driveMap.cache, request);
+
+    //直接返回html
+    if (responseMsg.noRender) return endMsg(responseMsg.statusCode, responseMsg.headers, responseMsg.html);
+
+    //list file info
     res_statusCode = responseMsg.statusCode;
     switch (res_statusCode) {//200  301 302 401 403 404 500,
         case 200:
@@ -222,24 +239,15 @@ exports.main_handler = async (event, context, callback) => {
                     res_headers['location'] = responseMsg.data.fileInfo.downloadUrl;
                     res_html = "redirecting to :" + res_headers['location'];
                 }
-            } else if (responseMsg.type === 3) {
+            } else if (responseMsg.type === 3) {//info
                 res_html = RENDER.rxxx_info(responseMsg.info, responseMsg.readMe, responseMsg.script, splitPath, G_CONFIG);
             }
-            break;
-        case 301:
-        case 302:
-            res_headers['location'] = responseMsg.headers.location;
-            res_html = responseMsg.info || "redirecting to :" + res_headers['location'];
             break;
         case 401:
             res_html = RENDER.r401_auth(responseMsg.info, responseMsg.readMe, responseMsg.script, splitPath, G_CONFIG);
             break;
-        case 403:
-        case 404:
-        case 500:
-            res_html = RENDER.rxxx_info(responseMsg.info, responseMsg.readMe, responseMsg.script, splitPath, G_CONFIG);
-            break;
         default:
+            res_html = RENDER.rxxx_info(responseMsg.info, responseMsg.readMe, responseMsg.script, splitPath, G_CONFIG);
             break;
     }
     if (Object.prototype.toString.call(responseMsg.headers) === '[object Object]') {

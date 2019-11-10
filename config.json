@@ -10,28 +10,36 @@
         "site_script": ""
     },
     "DRIVE_MAP": {
-        "/mmx/": {
+        "/ms_od_sharepoint/": {
             "funcName": "ms_od_sharepoint",
             "spConfig": {
                 "shareUrl": "https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/Es6CMetI4fJCr4GqWZ3uvA0BEnzJxxb4CU-iQr04VYomLQ?e=C9K35U",
                 "postRawDir": "/image"
             },
-            "password":"mmx"
+            "password": "mmx"
         },
         "/": {
             "funcName": "ms_od_sharepoint",
             "spConfig": {
-                "shareUrl":"https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/EkEBAXfrK01JiBdQUQKm7O0BlHt50NS45RP9WKSCvEY9Sg?e=bkFrDs"
+                "shareUrl": "https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/EkEBAXfrK01JiBdQUQKm7O0BlHt50NS45RP9WKSCvEY9Sg?e=bkFrDs"
             }
         },
         "/linux/": {
             "funcName": "oth_linux_scf"
         },
-        "/GDrive/": {
+        "/goo_gd_goindex/": {
             "funcName": "goo_gd_goindex",
             "spConfig": {
                 "password": "index",
                 "cfurl": "goindex.onesrc.workers.dev"
+            }
+        },
+        "/ms_od_graph/": {
+            "funcName": "ms_od_graph",
+            "spConfig": {
+                "refresh_token": "OAQABAAAAAACQN9QBRU3jT6bcBQLZNUj79oJI_wwdFixgvUHs1-SBzILatY03n_t2SWtbLp_JTVmiqPD5PYIfiIcQF4CwnG8sVgefZAMaRJuscXM80bGkhKEMND_GRzQqRXl7AxQMifcGNpJAlIBsh6GsMxXa90C9X_aTfmS2Lf8mFdXBRqnVO6xThcqivqlGflMPxO0zRe0gP1pjR55lcO5nFUc_IlOdfbJvyg0MRjoXNyqjOxiM1oQ9gzQC9bOoGtwZoPuVxtNpPI6_HbxffftO6rQL7RekyLylwz1neZXUTKsj76QiS-k0TQu_52FSNoVRAmlA3U7Py-6MENdFAfvfKXp9UmrTQiZvEH210qFGEx0NO_bdo_Du7mC8JWWxkCcRj5NpOgC0Q-n8cy3xMRcUIBMCtQbHrhKCXJa0t9UuhT1_J_Uctd3kL0akfNGsEA-L_POs18DraIEeEpncFEwEsMqQ3lliyJ2DWq3_LiFjAImUdsE6hv-3rOk0fGLCzx-2vyNYt6RIP-_4kOt3T1DR3MFL1vwe_FkwGMnWQLRiwP4M6ad5Eiuss97EaB-GKhQWu88TOq5cKoGWd-pFRMM2ZCzaiRNrr5cqXhkTls3nnSibSMKizgyDEZigakvmPwqTO51TGl-hk-Khj6JVOyX6Fd2LjFyYLbyl_RWqJWML_AW9ALfgN5qgGfiVNOuJuFllH_LdkbNsrk69UW6suE0xYREY2yue1-lyZQ_9CBBVBEjOtfhpZaSXfypIGD6Xoyojx9Rr2K6u35RULT1ghHRYoVNh4-caIAA",
+                "oauth": 0,
+                "img_path": "/images/"
             }
         }
     },
