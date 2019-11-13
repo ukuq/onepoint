@@ -14,7 +14,7 @@ drive_funcs['oth_linux_scf'] = require("./lib/oth_linux_scf");
 
 const render_funcs = {};
 render_funcs['oneindex_like'] = require("./views/oneindex_like").render;
-
+render_funcs['xysk_like'] = require("./views/xysk_like").render;
 let G_CONFIG, DRIVE_MAP, DOMAIN_MAP, RENDER;
 const DRIVE_MAP_KEY = [];
 const DRIVES_IN_DIR = {};
