@@ -1,0 +1,27 @@
+<html>
+
+<body>
+    <div>
+        <a href='https://login.microsoftonline.com/common/oauth2/v2.0/authorize?scope=https%3A%2F%2Fgraph.microsoft.com%2FFiles.ReadWrite.All+offline_access&response_type=code&client_id=72f58ae2-35b3-49a0-bfdf-93c293711a3f&redirect_uri=https://ukuq.github.io/onepoint/onedrive'>click
+            here to get your refresh code</a>
+    </div>
+    <form action="https://login.microsoftonline.com/common/oauth2/v2.0/token" method="POST" style="display:none;">
+        <input type="text" name="client_id" placeholder="client_id" value="72f58ae2-35b3-49a0-bfdf-93c293711a3f" />
+        <input type="text" name="client_secret" placeholder="client_secret" value="QxTp=iw[=zHA[F0ZT97M1I.JUXD2RWhq" />
+        <input type="text" name="grant_type" placeholder="authorization_code" value="authorization_code" />
+        <input type="text" name="requested_token_use" placeholder="on_behalf_of" value="on_behalf_of" />
+        <input type="text" name="redirect_uri" placeholder="redirect_uri"
+            value="https://ukuq.github.io/onepoint/onedrive" />
+        <input type="text" name="code" placeholder="code" id="code" />
+        <input type="submit" id='submit' />
+    </form>
+    <script>
+        let t = /code=([^&]+)/.exec(window.location.search);
+        if (t && t[1]) {
+            document.getElementById('code').value = t[1];
+            document.getElementById('submit').click();
+        }
+    </script>
+</body>
+
+</html>

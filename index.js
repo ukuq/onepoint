@@ -1,7 +1,6 @@
 'use strict';
 const cookie = require('cookie');
 const querystring = require('querystring');
-const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
@@ -14,7 +13,7 @@ drive_funcs['goo_gd_goindex'] = require("./lib/goo_gd_goindex");
 drive_funcs['oth_linux_scf'] = require("./lib/oth_linux_scf");
 
 const render_funcs = {};
-render_funcs['render'] = require("./views/render").render;
+render_funcs['oneindex_like'] = require("./views/oneindex_like").render;
 
 let G_CONFIG, DRIVE_MAP, DOMAIN_MAP, RENDER;
 const DRIVE_MAP_KEY = [];
@@ -74,7 +73,7 @@ function initialize() {
  */
 function refreshCache() {
     //设置过了 UTCDate ,并且时间和今天一致, 无需更新
-    if (new Date().getUTCDate === G_CONFIG.UTCDate) return;
+    if (new Date().getUTCDate() === G_CONFIG.UTCDate) return;
     //设置管理员密码 hash 值
     let time = new Date();
     G_CONFIG.UTCDate = time.getUTCDate();
@@ -201,6 +200,7 @@ exports.main_handler = async (event, context, callback) => {
     }
     if (!p2) throw 'no such cast found';
     let splitPath = { ph: "//" + host, p0: urlSpCharEncode(p0), p1: urlSpCharEncode(p1), p2: urlSpCharEncode(p2) };
+    console.log(splitPath);
     let request = {
         httpMethod: event['httpMethod'],
         url_ph01: "//" + host + p0 + p1,// //ph/p0/p1, 例如 //release/mmx
@@ -212,6 +212,7 @@ exports.main_handler = async (event, context, callback) => {
         req_cookie_json: req_cookie_json,
         req_body_json: req_body_json
     }
+    console.log(request);
     if (!responseMsg) responseMsg = await drive_funcs[driveMap.funcName].func(driveMap.spConfig, driveMap.cache, request);
 
     //直接返回html
@@ -257,4 +258,4 @@ exports.main_handler = async (event, context, callback) => {
 };
 
 //exports.main_handler({ path: '/onepoint', queryString: {} });//spPage: undefined, isJson: true 
-exports.main_handler({ path: '/', headers: { host: "idid000.com" }, requestContext: { path: "/", serviceId: "idid", stage: 'release' }, queryString: {} });//nextPage: undefined, isJson: true 
+//exports.main_handler({ path: '/', headers: { host: "idid000.com" }, requestContext: { path: "/", serviceId: "idid", stage: 'release' }, queryString: {} });//nextPage: undefined, isJson: true 

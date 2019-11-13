@@ -2,7 +2,7 @@
     "G_CONFIG": {
         "enablePreview": true,
         "admin_password": "admin",
-        "render_name": "render",
+        "render_name": "oneindex_like",
         "site_title": "onePoint Demo",
         "site_icon": "",
         "site_keywords": "onePoint",

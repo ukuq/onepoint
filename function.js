@@ -15,7 +15,7 @@ function Msg_file(fileInfo, readMe_type, readMe_txt, script) {
         },
         'readMe': {
             type: readMe_type || 2,
-            txt: readMe_txt || "## Powered by [OnePoint](https://github.com/ukuq/onepoint)\\n\\n"
+            txt: readMe_txt || "## Powered by [OnePoint](https://github.com/ukuq/onepoint)\n\n"
         },
         'script': script || ""
     }
@@ -32,7 +32,7 @@ function Msg_list(content, prevHref, nextHref, readMe_type, readMe_txt, script) 
         },
         'readMe': {
             type: readMe_type || 2,
-            txt: readMe_txt || "## Powered by [OnePoint](https://github.com/ukuq/onepoint)\\n\\n"
+            txt: readMe_txt || "## Powered by [OnePoint](https://github.com/ukuq/onepoint)\n\n"
         },
         'script': script || ""
     }
@@ -61,7 +61,7 @@ function Msg_301(location, info, readMe_type, readMe_txt, script) {
         'info': info || "redirecting to :" + location,
         'readMe': {
             type: readMe_type || 2,
-            txt: readMe_txt || "## Powered by [OnePoint](https://github.com/ukuq/onepoint)\\n\\n"
+            txt: readMe_txt || "## Powered by [OnePoint](https://github.com/ukuq/onepoint)\n\n"
         },
         'script': script || ""
     }
