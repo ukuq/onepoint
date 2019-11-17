@@ -4,7 +4,7 @@
         "admin_password": "admin",
         "render_name": "xysk_like",
         "site_title": "onePoint Demo",
-        "site_icon": "",
+        "site_icon": "https://ukuq.github.io/favicon.png",
         "site_keywords": "onePoint",
         "site_description": "onePoint description",
         "site_script": ""

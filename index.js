@@ -235,12 +235,12 @@ exports.main_handler = async (event, context, callback) => {
                 let pass = e.name.slice(10);//'.password='
                 if (req_body_json['password']) {// post
                     if (req_body_json['password'] === pass) {
-                        res_headers['set-cookie'] = cookie.serialize('.password', getmd5(pass), { path: p0 + p1+ p2 +'/', maxAge: 3600 });
+                        res_headers['set-cookie'] = cookie.serialize('.password', getmd5(pass), { path: p0 + p1 + p2, maxAge: 3600 });
                     } else {
                         responseMsg = Msg_info(401, '密码错误');
                     }
                 } else if (req_cookie_json['.password']) {// cookie
-                    if (req_cookie_json['password'] !== getmd5(pass)) responseMsg = Msg_info(401, 'cookie失效');
+                    if (req_cookie_json['.password'] !== getmd5(pass)) responseMsg = Msg_info(401, 'cookie失效');
                 } else responseMsg = Msg_info(401, '当前目录被加密');
                 break;
             }
