@@ -10,11 +10,9 @@
 
 打开速度快：数据缓存，打开速度快。
 
-强调通用性：只要遵循规定的接口，几乎适用于一切网盘
-
-界面独特：可自定义前端，自己写界面
-
 多账户映射：可通过路径映射支持多个网盘
+
+惰性加载: 访问时请求
 
 ## 目前实现
 
@@ -28,6 +26,7 @@ google drive 的调用函数。
 
 ## 更新日志
 
+- 191117: 增加文件夹密码功能
 - 191113: 修复缓存被清空问题, 修改render, 为多主题做准备
 - 191110: 新增onedrive graph api 和 图床功能, 新增 Msg_html 功能
 - 191105: 新增密码功能, 调整了配置文件
@@ -56,6 +55,14 @@ https://service-8pduizwk-1255607810.ap-hongkong.apigateway.myqcloud.com/release/
 [onedrive](https://www.onesrc.cn/p/onedrive-for-onepoint-configuration.html)
 
 [google drive](https://www.onesrc.cn/p/google-drive-for-onepoint-configuration.html)
+
+## 密码功能
+
+密码分为全局管理员密码, 云盘密码, 目录密码 三种
+
+- 全局管理员密码控制整个系统, 在 config.json/G_CONFIG.admin_password 中设置
+- 云盘密码控制单个云盘的访问权限, 在 config.json/DRIVE_MAP.'/*/'.password 中设置
+- 目录密码控制当前目录的访问权限, 但是不能阻止该目录下的文件被访问. 在文件夹中添加名称为 .password=123 的文件即可设置.
 
 ## Thanks
 
