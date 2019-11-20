@@ -16,6 +16,11 @@
 
 ## 目前实现
 
+- onedrive 教育版/企业版/个人版
+- onedrive 无全局管理员版
+- onedrive google drive
+
+
 目前仅开发了onedrive, 
 
 google drive 的调用函数。
@@ -26,6 +31,7 @@ google drive 的调用函数。
 
 ## 更新日志
 
+- 191120: 增加pdf office txt 预览, 优化 ms_od_graph 模块
 - 191117: 增加文件夹密码功能
 - 191113: 修复缓存被清空问题, 修改render, 为多主题做准备
 - 191110: 新增onedrive graph api 和 图床功能, 新增 Msg_html 功能

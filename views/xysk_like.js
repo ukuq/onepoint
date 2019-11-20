@@ -4,7 +4,7 @@ exports.render = { r200_list, r200_file, rxxx_info, r401_auth };
 
 /**
  * onepoint ukuq
- * time:191112
+ * time:191120
  */
 function r401_auth(info, readMe, script, splitPath, G_CONFIG) {
     let html = get_html_head(splitPath.ph + splitPath.p0, splitPath.p1 + splitPath.p2, G_CONFIG);
@@ -48,17 +48,30 @@ function r200_file(fileInfo, readMe, script, splitPath, G_CONFIG) {
     let url = splitPath.ph + splitPath.p0 + splitPath.p1 + fileInfo['url_p2'];
     let downloadUrl = fileInfo['downloadUrl'];
     let type = fileInfo['fileType'];
-    if (['bmp', 'jpg', 'jpeg', 'png', 'gif'].indexOf(type) != -1) {
-        html += preview_image(downloadUrl, url);
-    } else if (['mp4', 'mkv', 'webm', 'avi', 'mpg', 'mpeg', 'rm', 'rmvb', 'mov', 'wmv', 'mkv', 'asf'].indexOf(type) != -1) {
-        html += preview_video_dplayer(downloadUrl, url);
-    } else if (['ogg', 'mp3', 'wav'].indexOf(type) != -1) {
-        html += preview_audio(downloadUrl, url);
+    if (['bmp', 'jpg', 'jpeg', 'png', 'gif'].includes(type)) {
+        html += `<div class="mdui-container-fluid"><div class="nexmoe-item"><img class="mdui-img-fluid mdui-center" src="${downloadUrl}"/></div></div>`;
+    } else if (['mp4', 'mkv', 'webm', 'avi', 'mpg', 'mpeg', 'rm', 'rmvb', 'mov', 'wmv', 'mkv', 'asf'].includes(type)) {
+        html += `<link class="dplayer-css" rel="stylesheet" href="//cdn.bootcss.com/dplayer/1.25.0/DPlayer.min.css">
+        <script src="//cdn.bootcss.com/dplayer/1.25.0/DPlayer.min.js"></script>
+        <div class="mdui-container-fluid"><div class="nexmoe-item"><div class="mdui-center" id="dplayer"></div></div></div>
+        <script>const dp = new DPlayer({container: document.getElementById('dplayer'),lang:'zh-cn',video: {url: '${downloadUrl}',pic: '',type: 'auto'}});</script>`;
+    } else if (['ogg', 'mp3', 'wav'].includes(type)) {
+        html += `<div class="mdui-container-fluid"><div class="nexmoe-item"><audio class="mdui-center" src="${downloadUrl}" controls autoplay style="width: 100%;"></audio></div></div>`;
+    } else if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'mpp', 'rtf', 'vsd', 'vsdx'].includes(type)) {
+        html += `<iframe src="https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(downloadUrl)}" width="100%" height="100%" style="border:0;border-radius: 5px;margin-top: 15px;">This browser does not support iframe</iframe>`;
+    } else if (['txt', 'js', 'json', 'css', 'html', 'java', 'c', 'cpp', 'php', 'cmd', 'ps1', 'bat', 'sh', 'py', 'go', 'asp', 'md'].includes(type)) {
+        html += `<div class="mdui-container-fluid"><div class="nexmoe-item" id="code-preview"><div class="" style="font-size: 40px;font-family: sans-serif;margin: 30px;text-align: center;">loading...</div></div></div>`;
+        html += `<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script><script>let xhr=new XMLHttpRequest();let pre = document.getElementById('code-preview');xhr.open("GET",'${downloadUrl}');xhr.send();xhr.onload=function(){if(xhr.status==200){let prehtml = '<pre><code>';prehtml+= xhr.responseText;prehtml+='</code></pre>';pre.innerHTML=prehtml;hljs.highlightBlock(pre);}else{alert("something unexpected wrong");}}</script>`;
+    } else if ('pdf' === type) {
+        html += `<div id="pdf-preview"></div><script src="https://cdn.bootcss.com/pdfobject/2.1.1/pdfobject.min.js"></script><script>PDFObject.embed("${downloadUrl}", "#pdf-preview");</script>`;
+    } else if (fileInfo['size'].endsWith(' B')) {
+        html += `<div class="mdui-container-fluid"><div class="nexmoe-item" id="code-preview"><div class="" style="font-size: 40px;font-family: sans-serif;margin: 30px;text-align: center;">loading... trying to open as txt</div></div></div>`;
+        html += `<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script><script>let xhr=new XMLHttpRequest();let pre = document.getElementById('code-preview');xhr.open("GET",'${downloadUrl}');xhr.send();xhr.onload=function(){if(xhr.status==200){let prehtml = '<pre><code>';prehtml+= xhr.responseText;prehtml+='</code></pre>';pre.innerHTML=prehtml;hljs.highlightBlock(pre);}else{alert("something unexpected wrong");}}</script>`;
     } else {
-        html += preview_unsupposed(downloadUrl, url);
+        html += `<div class="mdui-container-fluid"><div class="nexmoe-item"><div class="" style="font-size: 40px;font-family: sans-serif;margin: 30px;text-align: center;">此格式不支持预览 :-(</div></div></div>`;
     }
-    html += get_html_readMe(readMe);
-    html += `<a href="${url}" class="mdui-fab mdui-fab-fixed mdui-ripple mdui-color-theme-accent"><i class="mdui-icon material-icons">file_download</i></a>`;
+    html += `<div class="mdui-container-fluid"><div class="nexmoe-item">MENU<br><br><a class="mdui-btn mdui-btn-raised mdui-color-theme-accent mdui-ripple" href="${downloadUrl}" id="download-btn"  style="margin: 5px;">下载</a><button class="mdui-btn mdui-btn-raised mdui-color-theme-accent mdui-ripple" id="share-btn" style="margin: 5px;">分享</button><button class="mdui-btn mdui-btn-raised mdui-color-theme-accent mdui-ripple" id="quote-btn" style="margin: 5px;">md引用</button></div></div>`;
+    html += `<script>document.querySelector('#share-btn').addEventListener('click',(event)=>{copyTextContent(null,window.location.href.slice(0,window.location.href.indexOf('?')));let target=event.target;let tt=target.textContent;target.innerHTML='已复制';setTimeout(()=>target.innerHTML=tt,250)});document.querySelector('#quote-btn').addEventListener('click',(event)=>{copyTextContent(null,'![]('+window.location.href.slice(0,window.location.href.indexOf('?'))+')');let target=event.target;let tt=target.textContent;target.innerHTML='已复制';setTimeout(()=>target.innerHTML=tt,250)});function copyTextContent(source,text){let result=false;let target=document.createElement('pre');target.style.opacity='0';target.textContent=text||source.textContent;document.body.appendChild(target);try{let range=document.createRange();range.selectNode(target);window.getSelection().removeAllRanges();window.getSelection().addRange(range);document.execCommand('copy');window.getSelection().removeAllRanges();result=true}catch(e){}document.body.removeChild(target);return result}</script>`;
     html += `${script}${G_CONFIG.site_script}`;
     html += `</div></body></html>`;
     return html;
@@ -107,49 +120,3 @@ function get_html_readMe(readMe) {
     html += `<script src="https://cdn.bootcss.com/marked/0.7.0/marked.js"></script><script>document.getElementById('readMe').innerHTML =marked(document.getElementById('readme-raw-text').innerText);</script>`;
     return html;
 }
-
-function preview_audio(downloadUrl, url) {
-    return `<div class="mdui-container-fluid"><div class="nexmoe-item"><audio class="mdui-center" src="${downloadUrl}" controls autoplay style="width: 100%;"></audio><br>
-	<!-- 固定标签 --><div class="mdui-textfield"><label class="mdui-textfield-label">下载地址</label><input class="mdui-textfield-input" type="text" value="${url}"/></div>
-    <div class="mdui-textfield"><label class="mdui-textfield-label">引用地址</label><textarea class="mdui-textfield-input"><audio src="${url}"></audio></textarea></div></div></div>`;
-}
-function preview_image(downloadUrl, url) {
-    return `<div class="mdui-container-fluid"><div class="nexmoe-item"><img class="mdui-img-fluid mdui-center" src="${downloadUrl}"/>
-	<div class="mdui-textfield"><label class="mdui-textfield-label">下载地址</label><input class="mdui-textfield-input" type="text" value="${url}"/></div>
-	<div class="mdui-textfield"><label class="mdui-textfield-label">HTML 引用地址</label><input class="mdui-textfield-input" type="text" value="<img src='${url}' />"/>
-    </div><div class="mdui-textfield"><label class="mdui-textfield-label">Markdown 引用地址</label><input class="mdui-textfield-input" type="text" value="![](${url})"/></div></div></div>`;
-}
-function preview_video_dplayer(downloadUrl, url) {
-    return `<link class="dplayer-css" rel="stylesheet" href="//cdn.bootcss.com/dplayer/1.25.0/DPlayer.min.css">
-    <script src="//cdn.bootcss.com/dplayer/1.25.0/DPlayer.min.js"></script>
-    <div class="mdui-container-fluid"><div class="nexmoe-item"><div class="mdui-center" id="dplayer"></div><!-- 固定标签 -->
-    <div class="mdui-textfield"><label class="mdui-textfield-label">下载地址</label>
-    <input class="mdui-textfield-input" type="text" value="${url}"/></div><div class="mdui-textfield">
-    <label class="mdui-textfield-label">引用地址</label><textarea class="mdui-textfield-input"><video><source src="${url}" type="video/mp4"></video></textarea></div></div></div>
-    <script>const dp = new DPlayer({container: document.getElementById('dplayer'),lang:'zh-cn',video: {url: '${downloadUrl}',pic: '',type: 'auto'}});</script>`;
-}
-
-function preview_video_dash(downloadUrl, url) {
-    return `<link class="dplayer-css" rel="stylesheet" href="//cdn.bootcss.com/dplayer/1.25.0/DPlayer.min.css"><script src="//cdn.bootcss.com/dashjs/3.0.0/dash.all.min.js"></script><script src="//cdn.bootcss.com/dplayer/1.25.0/DPlayer.min.js"></script>
-    <div class="mdui-container-fluid"><div class="nexmoe-item"><div class="mdui-center" id="dplayer"></div><!-- 固定标签 --><div class="mdui-textfield"><label class="mdui-textfield-label">下载地址</label>
-    <input class="mdui-textfield-input" type="text" value="${url}"/></div><div class="mdui-textfield"><label class="mdui-textfield-label">引用地址</label>
-    <textarea class="mdui-textfield-input"><video><source src="${url}" type="video/mp4"></video></textarea></div></div></div>
-    <script>const dp = new DPlayer({container: document.getElementById('dplayer'),lang:'zh-cn',video: {url: '${downloadUrl}',pic: '',type: 'dash'}});</script>`;
-}
-
-function preview_video_html5(downloadUrl, url) {
-    return `<div class="mdui-container-fluid"><div class="nexmoe-item"><video class="mdui-video-fluid mdui-center" preload controls ">
-    <source src="${downloadUrl}" type="video/mp4"></video>
-	<!-- 固定标签 --><div class="mdui-textfield"><label class="mdui-textfield-label">下载地址</label><input class="mdui-textfield-input" type="text" value="${url}"/></div>
-	<div class="mdui-textfield"><label class="mdui-textfield-label">引用地址</label><textarea class="mdui-textfield-input"><video><source src="${url}" type="video/mp4"></video></textarea></div></div></div>`;
-}
-
-
-function preview_unsupposed(downloadUrl, url) {
-    return `<div class="mdui-container-fluid"><div class="nexmoe-item"><div class="" style="font-size: 40px;font-family: sans-serif;margin: 30px;text-align: center;">此格式不支持预览 :-(</div>
-    <div class="mdui-textfield"><label class="mdui-textfield-label">下载地址</label><input class="mdui-textfield-input" type="text" value="${url}"></div>
-    <div class="mdui-textfield mdui-textfield-not-empty"><label class="mdui-textfield-label">直链地址</label><input class="mdui-textfield-input" type="text" value="${downloadUrl}"></div></div></div>`;
-}
-
-
-

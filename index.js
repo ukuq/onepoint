@@ -20,7 +20,7 @@ const DRIVE_MAP_KEY = [];
 const DRIVES_IN_DIR = {};
 /**
  * onepoint ukuq
- * time:191105
+ * time:191120
  */
 
 initialize();
@@ -148,6 +148,8 @@ exports.main_handler = async (event, context, callback) => {
     if (req_cookie_json['password'] === G_CONFIG.admin_password_date_hash) isadmin = true;
 
     if (p_12.startsWith('/admin/')) {
+        p1 = '/admin';
+        p2 = p_12.slice(6);//  /admin
         function r200_admin(p_h0) {
             let html = `<html><head><meta charset="utf-8"><meta name="viewport"content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no"><title>onePoint系统管理</title>`;
             html += `<link href="https://cdn.bootcss.com/mdui/0.4.3/css/mdui.min.css" rel="stylesheet"><script src="https://cdn.bootcss.com/mdui/0.4.3/js/mdui.min.js"></script></head><body class="mdui-drawer-body-left mdui-appbar-with-toolbar mdui-theme-primary-indigo mdui-theme-accent-blue mdui-loaded"><header class="mdui-appbar mdui-appbar-fixed"><div class="mdui-toolbar mdui-color-theme"><span class="mdui-btn mdui-btn-icon mdui-ripple mdui-ripple-white"mdui-drawer="{target: '#main-drawer', swipe: true}"><i class="mdui-icon material-icons">menu</i></span>`;
@@ -169,6 +171,10 @@ exports.main_handler = async (event, context, callback) => {
             return endMsg(401, res_headers, RENDER.r401_auth('管理员密码错误', { type: 0 }, "", { ph: '//' + host, p0: urlSpCharEncode(p0), p1: '/admin', p2: '/' }, G_CONFIG));
         } else {
             return endMsg(401, res_headers, RENDER.r401_auth('请输入管理员密码', { type: 0 }, "", { ph: '//' + host, p0: urlSpCharEncode(p0), p1: '/admin', p2: '/' }, G_CONFIG));
+        }
+
+        if (p2 === '/cache') {
+            return endMsg(200, res_headers, JSON.stringify(DRIVE_MAP, null, 2));
         }
         return endMsg(200, res_headers, r200_admin("//" + host + p0));
     }
@@ -247,6 +253,8 @@ exports.main_handler = async (event, context, callback) => {
         }
     }
 
+    let tmp_site_script = G_CONFIG.site_script;
+    G_CONFIG.site_script += `<script>console.log("path:${p_12}, time:${new Date().valueOf() - start_time.valueOf()}ms")</script>`;//time test
     //list file info
     res_statusCode = responseMsg.statusCode;
     switch (res_statusCode) {//200  301 302 401 403 404 500,
@@ -280,6 +288,7 @@ exports.main_handler = async (event, context, callback) => {
             res_html = RENDER.rxxx_info(responseMsg.info, responseMsg.readMe, responseMsg.script, splitPath, G_CONFIG);
             break;
     }
+    G_CONFIG.site_script = tmp_site_script;
     if (Object.prototype.toString.call(responseMsg.headers) === '[object Object]') {
         for (let h in responseMsg.headers) res_headers[h] = responseMsg.headers[h];
     }
