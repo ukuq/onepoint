@@ -174,7 +174,9 @@ exports.main_handler = async (event, context, callback) => {
         }
 
         if (p2 === '/cache') {
-            return endMsg(200, res_headers, JSON.stringify(DRIVE_MAP, null, 2));
+            return endMsg(200, res_headers, `<head><script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+            <link href="//cdn.bootcss.com/highlight.js/9.10.0/styles/xcode.min.css" rel="stylesheet"></head>
+            <body style="font-size: 15px;"><pre><code>${JSON.stringify(DRIVE_MAP, null, 2)}</code></pre><script>hljs.highlightBlock(document.body);</script></body>`);
         }
         return endMsg(200, res_headers, r200_admin("//" + host + p0));
     }

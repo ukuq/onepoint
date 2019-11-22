@@ -20,17 +20,9 @@
 - onedrive 无全局管理员版
 - onedrive google drive
 
-
-目前仅开发了onedrive, 
-
-google drive 的调用函数。
-
-和一个 scf 服务器 文件列出函数。
-
-如果想要使用其他网盘，参考 [这里]( https://www.onesrc.cn/p/onepoint-api-documentation.html)。
-
 ## 更新日志
 
+- 191122: 新增 吐个槽
 - 191120: 增加pdf office txt 预览, 优化 ms_od_graph 模块
 - 191117: 增加文件夹密码功能
 - 191113: 修复缓存被清空问题, 修改render, 为多主题做准备
@@ -56,11 +48,10 @@ https://service-8pduizwk-1255607810.ap-hongkong.apigateway.myqcloud.com/release/
 
 修改 config.json 文件里面的 DRIVE_MAP 即可。
 
-[全局配置](https://www.onesrc.cn/p/onepoint-configuration-process.html)
+## 反馈交流
 
-[onedrive](https://www.onesrc.cn/p/onedrive-for-onepoint-configuration.html)
-
-[google drive](https://www.onesrc.cn/p/google-drive-for-onepoint-configuration.html)
+- [Github](https://github.com/ukuq/onepoint/issues)
+- [腾讯吐个槽](https://support.qq.com/products/102471)
 
 ## 密码功能
 
