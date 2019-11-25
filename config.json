@@ -19,10 +19,7 @@
             "password": "mmx"
         },
         "/": {
-            "funcName": "ms_od_sharepoint",
-            "spConfig": {
-                "shareUrl": "https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/EkEBAXfrK01JiBdQUQKm7O0BlHt50NS45RP9WKSCvEY9Sg?e=bkFrDs"
-            }
+            "funcName": "oth_sys_none"
         },
         "/linux/": {
             "funcName": "oth_linux_scf"
@@ -43,5 +40,10 @@
             }
         }
     },
-    "DOMAIN_MAP": {}
+    "DOMAIN_MAP": {
+        "110.11.110.11": {
+            "domain": "www.example.com",
+            "path": "/point"
+        }
+    }
 }

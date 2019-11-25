@@ -22,6 +22,11 @@ function Msg_file(fileInfo, readMe_type, readMe_txt, script) {
 }
 
 function Msg_list(content, prevHref, nextHref, readMe_type, readMe_txt, script) {
+    let readme = content.find((e) => { return e.name === 'README.md' });
+    if (readMe_type === undefined && readme && readme.downloadUrl) {
+        readMe_type = 1;
+        readMe_txt = readme.downloadUrl;
+    }
     return {
         'statusCode': 200,
         'type': 1,

@@ -1,6 +1,7 @@
 #experiment
 scf-test.js
 onepoint*
+tmp.js
 # Logs
 logs
 *.log

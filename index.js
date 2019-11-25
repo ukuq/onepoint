@@ -11,10 +11,10 @@ drive_funcs['ms_od_sharepoint'] = require("./lib/ms_od_sharepoint");
 drive_funcs['ms_od_graph'] = require("./lib/ms_od_graph");
 drive_funcs['goo_gd_goindex'] = require("./lib/goo_gd_goindex");
 drive_funcs['oth_linux_scf'] = require("./lib/oth_linux_scf");
-
+drive_funcs['oth_sys_none'] = require("./lib/oth_sys_none");
 const render_funcs = {};
-render_funcs['oneindex_like'] = require("./views/oneindex_like").render;
-render_funcs['xysk_like'] = require("./views/xysk_like").render;
+render_funcs['oneindex_like'] = require("./views/oneindex_like");
+render_funcs['xysk_like'] = require("./views/xysk_like");
 let G_CONFIG, DRIVE_MAP, DOMAIN_MAP, RENDER;
 const DRIVE_MAP_KEY = [];
 const DRIVES_IN_DIR = {};
@@ -32,7 +32,7 @@ function initialize() {
     G_CONFIG = config_json['G_CONFIG'];
     DRIVE_MAP = config_json['DRIVE_MAP'];
     DOMAIN_MAP = config_json['DOMAIN_MAP'];
-    RENDER = render_funcs[G_CONFIG.render_name];
+    RENDER = render_funcs[G_CONFIG.render_name].render;
     console.log(DRIVE_MAP);
     refreshCache();
     //初始化key的集合, 倒序排列方便匹配
@@ -66,6 +66,7 @@ function initialize() {
             }
         }
     );
+    console.log("initialize success");
 }
 
 /**
@@ -123,8 +124,7 @@ exports.main_handler = async (event, context, callback) => {
     if (event['headers']['cookie']) req_cookie_json = cookie.parse(event['headers']['cookie']);// 此处不捕捉 parse error
     console.log(event);
 
-
-    let host = event['headers']['host'];
+    let ph = '//' + event['headers']['host'];
     let p_12, p0, p1, p2, driveMap;
     let res_html = "something wrong!", res_headers = { 'Content-Type': 'text/html' }, res_statusCode = 200;
     let responseMsg;
@@ -136,8 +136,15 @@ exports.main_handler = async (event, context, callback) => {
         p0 = `/${event['requestContext']['stage']}${requestContext_path}`;
         p_12 = event['path'].slice(requestContext_path.length) || '/';//  只有scf网关不规范 ,例如 /abc 前者才为假
     } else {
-        p0 = DOMAIN_MAP[host] || "";
+        p0 = DOMAIN_MAP[event['headers']['host']] || "";
         p_12 = event['path'].slice(p0.length) || '/';
+    }
+
+    let sourceIp = event['requestContext']['sourceIp'];
+    let domain_path = DOMAIN_MAP[sourceIp];
+    if (domain_path) {//eg: www.example.com/point
+        ph = '//' + domain_path.domain;
+        p0 = domain_path.path;
     }
 
     console.info('p_12:' + p_12);
@@ -168,9 +175,9 @@ exports.main_handler = async (event, context, callback) => {
             res_headers['set-cookie'] = cookie.serialize('password', G_CONFIG.admin_password_date_hash, { path: p0, maxAge: 3600 });
             isadmin = true;
         } else if (req_body_json['password']) {
-            return endMsg(401, res_headers, RENDER.r401_auth('管理员密码错误', { type: 0 }, "", { ph: '//' + host, p0: urlSpCharEncode(p0), p1: '/admin', p2: '/' }, G_CONFIG));
+            return endMsg(401, res_headers, RENDER.r401_auth('管理员密码错误', { type: 0 }, "", { ph: ph, p0: urlSpCharEncode(p0), p1: '/admin', p2: '/' }, G_CONFIG));
         } else {
-            return endMsg(401, res_headers, RENDER.r401_auth('请输入管理员密码', { type: 0 }, "", { ph: '//' + host, p0: urlSpCharEncode(p0), p1: '/admin', p2: '/' }, G_CONFIG));
+            return endMsg(401, res_headers, RENDER.r401_auth('请输入管理员密码', { type: 0 }, "", { ph: ph, p0: urlSpCharEncode(p0), p1: '/admin', p2: '/' }, G_CONFIG));
         }
 
         if (p2 === '/cache') {
@@ -178,7 +185,7 @@ exports.main_handler = async (event, context, callback) => {
             <link href="//cdn.bootcss.com/highlight.js/9.10.0/styles/xcode.min.css" rel="stylesheet"></head>
             <body style="font-size: 15px;"><pre><code>${JSON.stringify(DRIVE_MAP, null, 2)}</code></pre><script>hljs.highlightBlock(document.body);</script></body>`);
         }
-        return endMsg(200, res_headers, r200_admin("//" + host + p0));
+        return endMsg(200, res_headers, r200_admin(ph + p0));
     }
 
     //域名映射
@@ -216,11 +223,11 @@ exports.main_handler = async (event, context, callback) => {
         }
     }
     if (!p2) throw 'no such cast found';
-    let splitPath = { ph: "//" + host, p0: urlSpCharEncode(p0), p1: urlSpCharEncode(p1), p2: urlSpCharEncode(p2) };
+    let splitPath = { ph: ph, p0: urlSpCharEncode(p0), p1: urlSpCharEncode(p1), p2: urlSpCharEncode(p2) };
     console.log(splitPath);
     let request = {
         httpMethod: event['httpMethod'],
-        url_ph01: "//" + host + p0 + p1,// //ph/p0/p1, 例如 //release/mmx
+        url_ph01: ph + p0 + p1,// //ph/p0/p1, 例如 //release/mmx
         url_p2: p2,// p2, 路径信息，查询该路径下的文件列表或文件。例如 /a/b/c
         queryString: event['queryString'], //scf event 提供
         headers: event['headers'],//scf event 提供
@@ -229,7 +236,6 @@ exports.main_handler = async (event, context, callback) => {
         req_cookie_json: req_cookie_json,
         req_body_json: req_body_json
     }
-    console.log(request);
     if (!responseMsg) responseMsg = await drive_funcs[driveMap.funcName].func(driveMap.spConfig, driveMap.cache, request);
 
     //直接返回html
@@ -254,11 +260,9 @@ exports.main_handler = async (event, context, callback) => {
             }
         }
     }
-
-    let tmp_site_script = G_CONFIG.site_script;
-    G_CONFIG.site_script += `<script>console.log("path:${p_12}, time:${new Date().valueOf() - start_time.valueOf()}ms")</script>`;//time test
     //list file info
     res_statusCode = responseMsg.statusCode;
+    responseMsg.script += `<script>console.log("path:${p_12}, time:${new Date().valueOf() - start_time.valueOf()}ms")</script>`;
     switch (res_statusCode) {//200  301 302 401 403 404 500,
         case 200:
             if (responseMsg.type === 1) {//文件夹 
@@ -290,7 +294,6 @@ exports.main_handler = async (event, context, callback) => {
             res_html = RENDER.rxxx_info(responseMsg.info, responseMsg.readMe, responseMsg.script, splitPath, G_CONFIG);
             break;
     }
-    G_CONFIG.site_script = tmp_site_script;
     if (Object.prototype.toString.call(responseMsg.headers) === '[object Object]') {
         for (let h in responseMsg.headers) res_headers[h] = responseMsg.headers[h];
     }
