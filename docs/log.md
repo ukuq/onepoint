@@ -6,6 +6,12 @@
 - D: delete, 删除
 - C: change, 优化
 
+## 191201
+
+- A:
+增加 now.sh 部署支持
+增加 linux node 部署支持
+
 ## 191125
 
 - A: 
