@@ -22,6 +22,12 @@
 - onedrive 无全局管理员版
 - onedrive google drive
 
+## 部署方式
+
+- scf 腾讯云无服务器云函数
+- now.sh now 托管平台
+- linux 服务器部署
+
 ## 更新日志
 
 https://github.com/ukuq/onepoint/tree/master/docs/log.md

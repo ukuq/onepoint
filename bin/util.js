@@ -3,7 +3,7 @@ exports.tool_funcs = { Msg_file, Msg_info, Msg_list, Msg_301, Msg_html, formatSi
 const crypto = require('crypto');
 /**
  * onepoint ukuq
- * time:191110
+ * time:191201
  */
 
 function Msg_file(fileInfo, readMe_type, readMe_txt, script) {
