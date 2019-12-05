@@ -11,6 +11,7 @@ drive_funcs['ms_od_graph'] = require("../lib/ms_od_graph");
 drive_funcs['goo_gd_goindex'] = require("../lib/goo_gd_goindex");
 drive_funcs['oth_linux_scf'] = require("../lib/oth_linux_scf");
 drive_funcs['oth_sys_none'] = require("../lib/oth_sys_none");
+drive_funcs['oth_sys_admin'] = require("../lib/oth_sys_admin");
 const render_funcs = {};
 render_funcs['oneindex_like'] = require("../views/oneindex_like");
 render_funcs['xysk_like'] = require("../views/xysk_like");
@@ -125,6 +126,7 @@ function endMsg(statusCode, headers, body, isBase64Encoded) {
 exports.main_func = async (event, context, callback) => {
     const start_time = new Date();
     console.log('start_time:' + start_time.toLocaleString(), 'utf-8');
+    console.log(event);
     let { ph, p0, p_12 } = event['splitPath'];
     let p1, p2, driveMap;
     let res_html = "something wrong!", res_headers = { 'Content-Type': 'text/html' }, res_statusCode = 200;
@@ -141,41 +143,7 @@ exports.main_func = async (event, context, callback) => {
     refreshCache();
 
     let isadmin;
-    if (event['cookie']['password'] === G_CONFIG.admin_password_date_hash) isadmin = true;
-
-    if (p_12.startsWith('/admin/')) {
-        p1 = '/admin';
-        p2 = p_12.slice(6);//  /admin
-        function r200_admin(p_h0) {
-            let html = `<html><head><meta charset="utf-8"><meta name="viewport"content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no"><title>onePoint系统管理</title>`;
-            html += `<link href="https://cdn.bootcss.com/mdui/0.4.3/css/mdui.min.css" rel="stylesheet"><script src="https://cdn.bootcss.com/mdui/0.4.3/js/mdui.min.js"></script></head><body class="mdui-drawer-body-left mdui-appbar-with-toolbar mdui-theme-primary-indigo mdui-theme-accent-blue mdui-loaded"><header class="mdui-appbar mdui-appbar-fixed"><div class="mdui-toolbar mdui-color-theme"><span class="mdui-btn mdui-btn-icon mdui-ripple mdui-ripple-white"mdui-drawer="{target: '#main-drawer', swipe: true}"><i class="mdui-icon material-icons">menu</i></span>`;
-            html += `<a href="${p_h0}"target="_blank"class="mdui-typo-headline mdui-hidden-xs">onePoint</a><div class="mdui-toolbar-spacer"></div></div></header><div class="mdui-drawer"id="main-drawer"><div class="mdui-list"><br><br><a href="#g_config"class="mdui-list-item"><i class="mdui-list-item-icon mdui-icon material-icons">settings</i><div class="mdui-list-item-content">基本设置</div></a><a href="#drive_info"class="mdui-list-item"><i class="mdui-list-item-icon mdui-icon material-icons">cloud</i><div class="mdui-list-item-content">网盘信息</div></a><a href="https://console.cloud.tencent.com/scf/index/1"class="mdui-list-item"><i class="mdui-list-item-icon mdui-icon material-icons">computer</i><div class="mdui-list-item-content">SCF</div></a><a href="https://github.com/ukuq/onepoint"class="mdui-list-item"><i class="mdui-list-item-icon mdui-icon material-icons">code</i><div class="mdui-list-item-content">Github</div></a><a href="https://www.onesrc.cn/p/onepoint-api-documentation.html"class="mdui-list-item"><i class="mdui-list-item-icon mdui-icon material-icons">archive</i><div class="mdui-list-item-content">参考文档</div></a><a href="#feed_back"class="mdui-list-item"><i class="mdui-list-item-icon mdui-icon material-icons">feedback</i><div class="mdui-list-item-content">建议反馈</div></a></div></div>`;
-            html += `<div class="mdui-container"><div class="mdui-container-fluid"><form action=""method="post"><div id="g_config"><br><br></div><div class="mdui-typo"><h1>基本设置</h1></div><div class="mdui-textfield"><h4>网站名称</h4><input class="mdui-textfield-input"type="text"placeholder="title"name="site_title"value="${G_CONFIG.site_title}"></div><div class="mdui-textfield"><h4>网站关键字</h4><input class="mdui-textfield-input"type="text"placeholder="keywords"name="site_keywords"value="${G_CONFIG.site_keywords}"></div><div class="mdui-textfield"><h4>网站描述</h4><textarea class="mdui-textfield-input"placeholder="Description"name="site_description"value="${G_CONFIG.site_description}"></textarea></div><div class="mdui-textfield"><h4>网站图标</h4><input class="mdui-textfield-input"type="text"placeholder="https://"name="site_icon"value="${G_CONFIG.site_icon}"></div><div class="mdui-textfield"><h4>网站脚本</h4><textarea class="mdui-textfield-input"placeholder="&lt;script&gt;&lt;/script&gt;"name="site_script"value="${G_CONFIG.site_script}"></textarea></div>`;
-            html += `<div class=""><h4>网站主题</h4><select name="style"class="mdui-select"mdui-select><option value="render">JUST</option><option value="render">ONLY</option><option value="render"selected="">ONE</option></select></div><div class=""><h4>开启预览</h4><label class="mdui-switch"><input type="checkbox"name="enablePreview"value="${G_CONFIG.enablePreview}"><i class="mdui-switch-icon"></i></label></div><div class="mdui-divider"></div>`;
-            html += `<div id="drive_info"><br><br></div><div class="mdui-typo"><h1>网盘信息</h1></div><table class="mdui-table mdui-table-hoverable"><thead><tr><th>路径</th><th>类型</th><th>密码</th><th>hash码</th></tr></thead><tbody>`;
-            for (let i = DRIVE_MAP_KEY.length - 1; i >= 0; i--) {
-                let key = DRIVE_MAP_KEY[i];
-                html += `<tr><td>${key}</td><td>${DRIVE_MAP[key].funcName}</td><td>${DRIVE_MAP[key].password}</td><td><div mdui-tooltip="{content: '点击分享链接, 今天 23:59 失效'}"><a href="${p_h0}${key}?password=${DRIVE_MAP[key].password_date_hash}">${DRIVE_MAP[key].password_date_hash}</a></div></td></tr>`;
-            }
-            html += `</tbody></table><div id="feed_back"><br><br></div><div class="mdui-typo"><h1>建议反馈</h1></div><div class="mdui-textfield"><a href="https://github.com/ukuq/onepoint/issues"><h3>issues</h3></a></div><div class="mdui-textfield"><a href="mailto:ukuq@qq.com"><h3>email</h3></a></div><div id="nothing"><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></div></form></div></div></body></html>`;
-            return html;
-        }
-        if (isadmin || event['body']['password'] === G_CONFIG.admin_password) {//管理员登录 ,只允许密码
-            res_headers['set-cookie'] = cookie.serialize('password', G_CONFIG.admin_password_date_hash, { path: p0, maxAge: 3600 });
-            isadmin = true;
-        } else if (event['body']['password']) {
-            return endMsg(401, res_headers, RENDER.r401_auth('管理员密码错误', { type: 0 }, "", { ph: ph, p0: urlSpCharEncode(p0), p1: '/admin', p2: '/' }, G_CONFIG));
-        } else {
-            return endMsg(401, res_headers, RENDER.r401_auth('请输入管理员密码', { type: 0 }, "", { ph: ph, p0: urlSpCharEncode(p0), p1: '/admin', p2: '/' }, G_CONFIG));
-        }
-
-        if (p2 === '/cache') {
-            return endMsg(200, res_headers, `<head><script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
-            <link href="//cdn.bootcss.com/highlight.js/9.10.0/styles/xcode.min.css" rel="stylesheet"></head>
-            <body style="font-size: 15px;"><pre><code>${JSON.stringify(DRIVE_MAP, null, 2)}</code></pre><script>hljs.highlightBlock(document.body);</script></body>`);
-        }
-        return endMsg(200, res_headers, r200_admin(ph + p0));
-    }
+    if (event['cookie']['ADMINTOKEN'] === G_CONFIG.admin_password_date_hash) isadmin = true;
 
     //域名映射
     for (let i = 0; i < DRIVE_MAP_KEY.length; i++) {
@@ -185,36 +153,45 @@ exports.main_func = async (event, context, callback) => {
             driveMap = DRIVE_MAP[dm];
             p1 = dm.slice(0, -1);
             p2 = p_12.slice(dm.length - 1);
-
-            if (driveMap.password && !isadmin) {//有密码 非管理员
-                //允许 query 云盘hash登录
-                if (event['method'] === 'GET' && event['query']['password']) {
-                    if (event['query']['password'] === driveMap.password_date_hash) {//利用分享的 password_date_hash 登录
-                        res_headers['set-cookie'] = cookie.serialize('password', driveMap.password_date_hash, { path: p0 + p1, maxAge: 3600 });
-                    } else {
-                        responseMsg = Msg_info(401, 'token错误');
-                    }
-                } else if (event['method'] === 'POST' && event['body']['password']) {//使用密码 登录
-                    if (event['body']['password'] === driveMap.password) {//单个云盘登录
-                        res_headers['set-cookie'] = cookie.serialize('password', driveMap.password_date_hash, { path: p0 + p1, maxAge: 3600 });
-                    } else {//密码错误
-                        responseMsg = Msg_info(401, '密码错误');
-                    }
-                    console.log('使用密码登录:' + event['body']['password']);
-                } else if (event['cookie']['password']) {//使用cookie
-                    if (event['cookie']['password'] !== driveMap.password_date_hash) {
-                        responseMsg = Msg_info(401, 'cookie失效,请重新登录');
-                    }
-                    console.log('使用cookie登录:' + event['cookie']['password']);
-                } else responseMsg = Msg_info(401, '请输入密码');
-            }
             break;
         }
     }
     if (!p2) throw 'no such cast found';
-
+    if (p_12.startsWith('/admin/')) {
+        driveMap = {};
+        driveMap.funcName = 'oth_sys_admin';
+        driveMap.spConfig = {
+            G_CONFIG, DRIVE_MAP, DRIVE_MAP_KEY
+        }
+        driveMap.cache = {};
+        p1 = '/admin';
+        p2 = p_12.slice(p1.length);
+    }
     event['splitPath']['p_h01'] = ph + p0 + p1;
     event['splitPath']['p2'] = p2;
+
+    if (driveMap.password && !isadmin) {//有密码 非管理员
+        //允许 query 云盘hash登录
+        if (event['method'] === 'GET' && event['query']['password']) {
+            if (event['query']['password'] === driveMap.password_date_hash) {//利用分享的 password_date_hash 登录
+                res_headers['set-cookie'] = cookie.serialize('DRIVETOKEN', driveMap.password_date_hash, { path: p0 + p1, maxAge: 3600 });
+            } else {
+                responseMsg = Msg_info(401, 'token错误');
+            }
+        } else if (event['method'] === 'POST' && event['body']['password']) {//使用密码 登录
+            if (event['body']['password'] === driveMap.password) {//单个云盘登录
+                res_headers['set-cookie'] = cookie.serialize('DRIVETOKEN', driveMap.password_date_hash, { path: p0 + p1, maxAge: 3600 });
+            } else {//密码错误
+                responseMsg = Msg_info(401, '密码错误');
+            }
+            console.log('使用密码登录:' + event['body']['password']);
+        } else if (event['cookie']['DRIVETOKEN']) {//使用cookie
+            if (event['cookie']['DRIVETOKEN'] !== driveMap.password_date_hash) {
+                responseMsg = Msg_info(401, 'cookie失效,请重新登录');
+            }
+            console.log('使用cookie登录:' + event['cookie']['DRIVETOKEN']);
+        } else responseMsg = Msg_info(401, '请输入密码');
+    }
 
     if (!responseMsg) responseMsg = await drive_funcs[driveMap.funcName].func(driveMap.spConfig, driveMap.cache, event);
 
@@ -227,14 +204,14 @@ exports.main_func = async (event, context, callback) => {
             let e = responseMsg.data.content[i];
             if (e.name.startsWith('.password=')) {
                 let pass = e.name.slice(10);//'.password='
-                if (event['cookie']['password']) {// post
-                    if (event['cookie']['password'] === pass) {
-                        res_headers['set-cookie'] = cookie.serialize('.password', getmd5(pass), { path: p0 + p1 + p2, maxAge: 3600 });
+                if (event['method'] === 'POST' && event['body']['password']) {// post
+                    if (event['body']['password'] === pass) {
+                        res_headers['set-cookie'] = cookie.serialize('DIRTOKEN', getmd5(pass), { path: p0 + p1 + p2, maxAge: 3600 });
                     } else {
                         responseMsg = Msg_info(401, '密码错误');
                     }
-                } else if (event['cookie']['.password']) {// cookie
-                    if (event['cookie']['.password'] !== getmd5(pass)) responseMsg = Msg_info(401, 'cookie失效');
+                } else if (event['cookie']['DIRTOKEN']) {// cookie
+                    if (event['cookie']['DIRTOKEN'] !== getmd5(pass)) responseMsg = Msg_info(401, 'cookie失效');
                 } else responseMsg = Msg_info(401, '当前目录被加密');
                 break;
             }
@@ -261,7 +238,7 @@ exports.main_func = async (event, context, callback) => {
                 }
                 res_html = RENDER.r200_list(responseMsg.data, responseMsg.readMe, responseMsg.script, splitPathEncoded, G_CONFIG);
             } else if (responseMsg.type === 0) {//文件
-                if (event['query']['preview'])
+                if (event['query']['preview'] !== undefined)
                     res_html = RENDER.r200_file(responseMsg.data.fileInfo, responseMsg.readMe, responseMsg.script, splitPathEncoded, G_CONFIG);//预览模式
                 else {
                     res_statusCode = 301;

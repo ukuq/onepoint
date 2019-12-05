@@ -1,5 +1,5 @@
-const { main_func } = require('./bin/main');
-const cookie = require('./local_modules/cookie');
+const { main_func } = require('./main');
+const cookie = require('../local_modules/cookie');
 const querystring = require('querystring');
 
 exports.main_handler = async (event, context, callback) => {
@@ -32,8 +32,6 @@ exports.main_handler = async (event, context, callback) => {
     event['splitPath'] = splitPath;
 
     event['sourceIp'] = event['requestContext']['sourceIp'];
-
-    console.log(event);
     
     return await main_func(event, context, callback);
 }

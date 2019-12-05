@@ -1,14 +1,15 @@
 const url = require('url');
-const { main_func } = require('./bin/main');
+const cookie = require('../local_modules/cookie');
+const { main_func } = require('./main');
 
 module.exports = async (req, res) => {
     let event = {
         method: req.method,
         headers: req.headers,
         body: req.body || {},
-        cookie: req.cookie || {},
+        cookie: req.cookies,
         query: req.query || {},
-        sourceIp: "0.0.0.0",
+        sourceIp: req.headers['x-real-ip'],
         splitPath: {
             ph: '//' + req.headers.host,
             p0: '',

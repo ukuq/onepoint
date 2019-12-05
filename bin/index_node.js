@@ -1,10 +1,13 @@
 const http = require('http');
 const url = require('url');
-const cookie = require('./local_modules/cookie');
+const cookie = require('../local_modules/cookie');
 const querystring = require('querystring');
-const { main_func } = require('./bin/main');
+const { main_func } = require('./main');
+let server;
 module.exports = () => {
-    http.createServer((req, res) => {
+
+    if (server) server.close();
+    server = http.createServer((req, res) => {
 
         let query = querystring.parse(url.parse(req.url).query);
         for (let q in query) if (query[q] === '') query[q] = true;
@@ -18,6 +21,11 @@ module.exports = () => {
             body += chunk;
         });
         req.on('end', async () => {
+            if (headers['content-type'] === 'application/x-www-form-urlencoded') {
+                body = querystring.parse(body);
+            } else if (headers['content-type'] === 'application/json') {
+                body = JSON.parse(body);// 此处不捕捉 parse error
+            }
             let event = {
                 method: req.method,
                 headers: headers,
@@ -45,4 +53,3 @@ module.exports = () => {
         });
     }).listen(80);
 }
-module.exports();
