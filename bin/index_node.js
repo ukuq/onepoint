@@ -1,11 +1,10 @@
 const http = require('http');
 const url = require('url');
-const cookie = require('../local_modules/cookie');
+const cookie = require('cookie');
 const querystring = require('querystring');
 const { main_func } = require('./main');
 let server;
 module.exports = () => {
-
     if (server) server.close();
     server = http.createServer((req, res) => {
 
@@ -36,7 +35,7 @@ module.exports = () => {
                 splitPath: {
                     ph: '//' + headers.host,
                     p0: '',
-                    p_12: url.parse(req.url).pathname
+                    p_12: decodeURIComponent(url.parse(req.url).pathname)
                 }
             };
             try {
@@ -53,3 +52,4 @@ module.exports = () => {
         });
     }).listen(80);
 }
+module.exports();

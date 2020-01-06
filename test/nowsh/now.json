@@ -1,0 +1,20 @@
+{
+    "name": "onepoint",
+    "version": 2,
+    "functions": {
+        "api/bin/index_now.js": {
+            "maxDuration": 10
+        }
+    },
+    "regions": [
+        "sin1",
+        "icn1",
+        "hnd1"
+    ],
+    "routes": [
+        {
+            "src": "/.*",
+            "dest": "api/bin/index_now.js"
+        }
+    ]
+}

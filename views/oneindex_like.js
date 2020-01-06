@@ -1,5 +1,6 @@
 exports.render = { r200_list, r200_file, rxxx_info, r401_auth };
 
+ @Deprecated
 /**
  * onepoint ukuq
  * time:191112

@@ -1,5 +1,5 @@
 const { main_func } = require('./main');
-const cookie = require('../local_modules/cookie');
+const cookie = require('cookie');
 const querystring = require('querystring');
 
 exports.main_handler = async (event, context, callback) => {
