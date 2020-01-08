@@ -56,7 +56,7 @@
             "funcName": "system_phony",
             "spConfig": {
                 "list": {
-                    "/": ["https://ukuq.github.io/onepoint/log.md"]
+                    "/": ["https://ukuq.github.io/onepoint/log.md","https://ukuq.github.io/hello-word/README.md"]
                 }
             }
         }

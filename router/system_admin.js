@@ -1,11 +1,12 @@
 const { Msg } = require('../utils/msgutils');
 const { cookie } = require('../utils/nodeutils');
-let G_CONFIG, DRIVE_MAP, DRIVE_MAP_KEY;
+let G_CONFIG, DRIVE_MAP, DRIVE_MAP_KEY,oneCache;
 
 exports.func = async (spConfig, cache, event) => {
     let { p0, p1, p2, ph } = event.splitPath;
     G_CONFIG = spConfig['G_CONFIG'];
     DRIVE_MAP = spConfig['DRIVE_MAP'];
+    oneCache = spConfig['oneCache'];
     DRIVE_MAP_KEY = Object.keys(DRIVE_MAP).sort((e1, e2) => { return e1 - e2 });
     let res_headers = { 'Content-Type': 'text/html' };
     let isadmin = event['cookie']['ADMINTOKEN'] === G_CONFIG.admin_password_date_hash;
@@ -17,13 +18,13 @@ exports.func = async (spConfig, cache, event) => {
         return Msg.info(401, '请输入管理员密码');
     }
     if (p2 === '/cache') {
-        return Msg.html(200, `<head><script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
-        <link href="//cdn.bootcss.com/highlight.js/9.10.0/styles/xcode.min.css" rel="stylesheet"></head>
-        <body style="font-size: 15px;"><pre><code>${JSON.stringify(DRIVE_MAP, null, 2)}</code></pre><script>hljs.highlightBlock(document.body);</script></body>`, res_headers);
+        return Msg.html(200, JSON.stringify(oneCache), {'Content-Type':'application/json'});
     } else if (p2 === '/event') {
         return Msg.html(200, `<head><script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
             <link href="//cdn.bootcss.com/highlight.js/9.10.0/styles/xcode.min.css" rel="stylesheet"></head>
             <body style="font-size: 15px;"><pre><code>${JSON.stringify(event, null, 2)}</code></pre><script>hljs.highlightBlock(document.body);</script></body>`, res_headers);
+    }else if(p2==='/file'){
+        return Msg.html(200, '', res_headers);
     }
     return Msg.html(200, r200_admin(ph + p0), res_headers);
 }

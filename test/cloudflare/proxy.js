@@ -1,5 +1,5 @@
 addEventListener('fetch', event => {
-    event.respondWith(handleRequest(event.request))
+    event.respondWith(handleRequest(event.request).catch((err) => { return new Response(err.message) }))
 })
 
 const html = `
@@ -41,29 +41,38 @@ async function handleRequest(request) {
             headers: new Headers({
                 'access-control-allow-origin': '*',
                 'access-control-allow-methods': 'GET,POST,PUT,PATCH,TRACE,DELETE,HEAD,OPTIONS',
-                'access-control-max-age': '1728000',
+                'access-control-allow-headers': '*',
+                'access-control-max-age': '1728000'
             }),
         })
     }
-
-    let url = (new URL(request.url)).searchParams.get('url');
-
-    if (!url) {
-        return new Response(html, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
-    }
-    let res;
-    if (request.headers.get('Range')) {
-        res = await fetch(url, { headers: { 'Range': request.headers.get('Range') }, });
+    let req_url = new URL(request.url);
+    if (req_url.pathname.startsWith('/ajax/')) {//ajax
+        let url = req_url.pathname.slice(6).replace(/^(https?):\/+/, '$1://');
+        if (!url) return new Response("Only For Ajax");
+        let res = await fetch(url, { headers: request.headers, body: request.body });
+        let h = new Headers(res.headers);
+        h.set('access-control-allow-origin', '*');
+        h.set('access-control-expose-headers', '*');
+        return new Response(res.body, { status: res.status, headers: h });
+    } else if (req_url.pathname === '/') {//download
+        let url = req_url.searchParams.get('url');
+        if (!url) return new Response(html, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+        let res;
+        if (request.headers.get('Range')) {
+            res = await fetch(url, { headers: { 'Range': request.headers.get('Range') } });
+        } else {
+            res = await fetch(url);
+        }
+        let h = new Headers(res.headers);
+        h.set('set-cookie', '');
+        h.set('access-control-allow-origin', '*');
+        h.set('access-control-expose-headers', '*');
+        return new Response(res.body, {
+            status: res.status,
+            headers: h,
+        })
     } else {
-        res = await fetch(url);
+        return new Response("400 --", { status: 400, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
     }
-
-    let h = new Headers(res.headers);
-    h.set('set-cookie', '');
-    h.set('access-control-allow-origin', '*');
-    h.set('access-control-expose-headers', 'Content-Length');
-    return new Response(res.body, {
-        status: res.status,
-        headers: h,
-    })
 }

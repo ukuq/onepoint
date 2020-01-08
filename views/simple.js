@@ -1,7 +1,8 @@
-const { formatSize } = require('../utils/msgutils');
+const { formatSize ,urlSpCharEncode } = require('../utils/msgutils');
 const { mime } = require('../utils/nodeutils');
 exports.render = render;
 
+//暂时不处理特殊字符
 function render(responseMsg, event, G_CONFIG) {
     let splitPath = event.splitPath;
     let p_h0 = splitPath.p_h0;
@@ -25,7 +26,7 @@ function render(responseMsg, event, G_CONFIG) {
     G_CONFIG.proxy.forEach((e) => {
         html += `<option value="${e}">${e}</option>`;
     });
-    html += `</select><button id="proxy-submit">启用代理</button></div><hr style=" width: 500; margin-left: 0;">`;
+    html += `</select><button id="proxy-submit">启用代理</button><span >time: ${new Date()-event.start_time} ms</span></div><hr style=" width: 500; margin-left: 0;">`;
     switch (responseMsg.type) {
         case 0://file
             let fileInfo = data.fileInfo;
@@ -84,9 +85,9 @@ function render(responseMsg, event, G_CONFIG) {
             throw new Error("no such response type");
     }
     html += `<div id="readMe" class="markdown-body"></div>`;
-    html += `${G_CONFIG.site_script}${event.script}<script>if(Cookies.get('proxy')){let s = document.getElementById('proxy-opt').options;let c = Cookies.get('proxy');for(let i=0;i< s.length;i++){if(s[i].value===c)s[i].selected = "selected";}};document.getElementById('proxy-submit').onclick = function(){Cookies.set('proxy',document.getElementById('proxy-opt').value,{ expires: 7 });window.location.reload();}`
+    html += `${G_CONFIG.site_script}${event.script}<script>if(Cookies.get('proxy')){let s = document.getElementById('proxy-opt').options;let c = Cookies.get('proxy');for(let i=0;i< s.length;i++){if(s[i].value===c)s[i].selected = "selected";}};document.getElementById('proxy-submit').onclick = function(){Cookies.set('proxy',document.getElementById('proxy-opt').value,{ expires: 7 });window.location.reload();};`
     if (readmeFlag) html += `fetch('./README.md').then(response => response.text()).then(data => document.getElementById('readMe').innerHTML =marked(data)).catch(err => document.getElementById('readMe').innerHTML="Oh, error:" + err)`;
-    html += `</script></body></html>`;
+    html += `</script><div>Powered by <a href="https://github.com/ukuq/onepoint">OnePoint</a></div></body></html>`;
     return html;
 }
 

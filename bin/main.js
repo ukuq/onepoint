@@ -172,8 +172,10 @@ exports.main_func = async (event, context, callback) => {
 
     if (responseMsg.statusCode === 0 || event.isadmin) {//管理员不使用cache
         responseMsg = await drive_funcs[driveInfo.funcName].func(driveInfo.spConfig, driveInfo.cache, event);
-        oneCache.addMsg(p_12, responseMsg);
+        if (event.cmd === 'ls') oneCache.addMsg(p_12, responseMsg);
     }
+
+    if (event.query['m']) return endMsg(responseMsg.statusCode, { 'Content-Type': 'application/json' }, JSON.stringify(responseMsg));
 
     //处理api部分
     if (event.useApi) return endMsg(responseMsg.statusCode, { 'Content-Type': 'application/json' }, JSON.stringify(responseMsg));
@@ -207,7 +209,7 @@ exports.main_func = async (event, context, callback) => {
     }
 
     console.log(responseMsg);
-    event.script = `<script>console.log(${new Date().valueOf()}-${event.start_time.valueOf()})</script>`;
+    event.script = "";
     res_html = render_funcs[G_CONFIG.render_name].render(responseMsg, event, G_CONFIG);
     if (responseMsg.headers) for (let h in responseMsg.headers) res_headers[h] = responseMsg.headers[h];
     return endMsg(responseMsg.statusCode, res_headers, res_html);
