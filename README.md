@@ -32,13 +32,11 @@ https://github.com/ukuq/onepoint/tree/master/docs/log.md
 
 ## Demo
 
-主账户
+github action 自动部署
 
-https://service-8pduizwk-1255607810.ap-hongkong.apigateway.myqcloud.com/release/onePoint
+https://service-0nvsu1bi-1255607810.ap-hongkong.apigateway.myqcloud.com/release/onepoint
 
-挂载点1：
-
-https://service-8pduizwk-1255607810.ap-hongkong.apigateway.myqcloud.com/release/onePoint/mmx
+https://onepoint.now.sh
 
 ## 使用方法
 
