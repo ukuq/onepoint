@@ -9,6 +9,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+      with:
+        repository: ukuq/onepoint
+        path: onepoint
     - uses: actions/setup-node@v1 # 安装nodejs，版本指定10
       with:
         node-version: '10.x'
