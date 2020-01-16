@@ -1,8 +1,9 @@
 'use strict';
 const { Msg } = require('../utils/msgutils');
-const { fs, path, cookie, getmd5 } = require('../utils/nodeutils');
+const { cookie, getmd5 } = require('../utils/nodeutils');
 const { OneCache } = require('../utils/cacheutil');
-
+const fs = require('fs');
+const path = require('path');
 const drive_funcs = {};//云盘模块
 drive_funcs['linux_scf'] = require("../router/linux_scf");
 drive_funcs['onedrive_graph'] = require("../router/onedrive_graph");
