@@ -26,6 +26,7 @@ jobs:
         scf configure set --appid $APPID --region $REGION --secret-id $SECRET_ID --secret-key $SECRET_KEY
         cp ./onepoint/test/tencent/template.yaml ./onepoint/
         cd ./onepoint
+        npm install
         scf deploy -f
         cd ..
     - name: install nowsh CLI and deploy
@@ -34,7 +35,7 @@ jobs:
       run: |
         sudo npm i -g now
         mkdir ./now
-        cp ./onepoint ./now/api/
+        cp ./onepoint ./now/api/ -r
         cp ./onepoint/test/nowsh/now.json ./now
         cd now
         now --token $TOKEN
