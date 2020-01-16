@@ -13,6 +13,7 @@ drive_funcs['system_phony'] = require("../router/system_phony");
 
 const render_funcs = {};//渲染模块
 render_funcs['simple'] = require("../views/simple");
+render_funcs['to_w.w'] = require("../views/to_w.w");
 
 let G_CONFIG, DRIVE_MAP, DOMAIN_MAP;
 
@@ -205,7 +206,16 @@ exports.main_func = async (event, context, callback) => {
                 if (event['cookie']['DIRTOKEN'] !== getmd5(pass)) responseMsg = Msg.info(401, 'cookie失效');
             } else responseMsg = Msg.info(401, '当前目录被加密');
         }
-
+        
+        let content_len = responseMsg.data.content.length;
+        let pageSize = 50;
+        if (!responseMsg.data.nextHref && !responseMsg.data.prevHref && content_len > pageSize) {//分页功能,兼容旧接口,只有云盘模块未提供href时启用
+            let page = 1;
+            if (!isNaN(Number(event.query['page']))) page = Number(event.query['page']);
+            responseMsg.data.content = responseMsg.data.content.slice((page - 1) * pageSize, page * pageSize);
+            if (page > 1) responseMsg.data.prevHref = '?page=' + (page - 1);
+            if (content_len > page * pageSize) responseMsg.data.nextHref = '?page=' + (page + 1);
+        }
     }
 
     console.log(responseMsg);

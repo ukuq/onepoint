@@ -1,12 +1,12 @@
 {
     "G_CONFIG": {
         "admin_password": "admin",
-        "render_name": "simple",
-        "site_name": "onePoint Demo",
-        "site_title": "onePoint Demo",
+        "render_name": "to_w.w",
+        "site_name": "OnePoint Demo",
+        "site_title": "OnePoint Demo",
         "site_icon": "https://ukuq.github.io/onepoint/favicon.png",
-        "site_keywords": "onePoint",
-        "site_description": "onePoint description",
+        "site_keywords": "OnePoint",
+        "site_description": "OnePoint description",
         "site_script": "",
         "proxy": [
             "https://proxy.onesrc.workers.dev/"
@@ -56,7 +56,7 @@
             "funcName": "system_phony",
             "spConfig": {
                 "list": {
-                    "/": ["https://ukuq.github.io/onepoint/log.md","https://ukuq.github.io/hello-word/README.md"]
+                    "/": ["https://ukuq.github.io/onepoint/log.md","https://ukuq.github.io/hello-word/README.md","https://ukuq.github.io/onepoint/favicon.png","http://www.w3school.com.cn/i/horse.ogg","http://www.w3school.com.cn/i/movie.mp4","http://www.w3school.com.cn/i/movie.ogg"]
                 }
             }
         }

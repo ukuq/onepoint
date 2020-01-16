@@ -5,6 +5,7 @@
         <a href='https://login.microsoftonline.com/common/oauth2/v2.0/authorize?scope=https%3A%2F%2Fgraph.microsoft.com%2FFiles.ReadWrite.All+offline_access&response_type=code&client_id=72f58ae2-35b3-49a0-bfdf-93c293711a3f&redirect_uri=https://ukuq.github.io/onepoint/onedrive'>click
             here to get your refresh code</a>
     </div>
+	<div id='info'></div>
     <form action="https://login.microsoftonline.com/common/oauth2/v2.0/token" method="POST" style="display:none;">
         <input type="text" name="client_id" placeholder="client_id" value="72f58ae2-35b3-49a0-bfdf-93c293711a3f" />
         <input type="text" name="client_secret" placeholder="client_secret" value="QxTp=iw[=zHA[F0ZT97M1I.JUXD2RWhq" />
@@ -15,12 +16,15 @@
         <input type="text" name="code" placeholder="code" id="code" />
         <input type="submit" id='submit' />
     </form>
-    <script>
-        let t = /code=([^&]+)/.exec(window.location.search);
-        if (t && t[1]) {
-            document.getElementById('code').value = t[1];
+    <script>//https://api.moeclub.org/onedrive-login?error=access_denied&error_description=AADSTS650051%3a+Using+application+%27OneDrive+for+API%27+is+currently+not+supported+for+your+organization+whu.edu.cn+because+it+is+in+an+unmanaged+state.+An+administrator+needs+to+claim+ownership+of+the+company+by+DNS+validation+of+whu.edu.cn+before+the+application+OneDrive+for+API+can+be+provisioned.%0d%0aTrace+ID%3a+03c26bfa-d4e7-4c28-bf15-fd39e4921900%0d%0aCorrelation+ID%3a+3233c0aa-7100-44bd-99f4-309c8e6288e5Timestamp%3a+2020-01-08+07%3a31%3a26Z
+
+		let url = new URL(window.location.href);
+		if(url.searchParams.get('code')){
+			document.getElementById('code').value = url.searchParams.get('code');
             document.getElementById('submit').click();
-        }
+		}else if(url.searchParams.get('error')){
+			document.getElementById('info').innerText=url.searchParams.get('error')+":\n"+url.searchParams.get('error_description');
+		}
     </script>
 </body>
 

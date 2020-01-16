@@ -59,7 +59,7 @@ function render(responseMsg, event, G_CONFIG) {
         case 1://list
             html += `<table style="border-spacing:15px 0px;"><tbody><tr><th colspan="4"><hr></th></tr><tr><th>Name</th><th>Last modified</th><th>Size</th><th>Operate</th></tr><tr><th colspan="4"><hr></th></tr>`
             if (data.prevHref) {
-                html += `<tr><td><a href="${p_h01}${data.prevHref}">上一页</a></td><td></td><td></td><td></td>`
+                html += `<tr><td><a href="${data.prevHref}">上一页</a></td><td></td><td></td><td></td>`
             } else if (splitPath.p_12 !== '/') {
                 html += `<tr><td><a href="../">..</a></td><td></td><td></td><td></td>`
             }
@@ -71,7 +71,7 @@ function render(responseMsg, event, G_CONFIG) {
                     html += `<tr><td><a href="${splitPath.p_h012}${e.name}?preview">${e.name}</a></td><td>${e.time}</td><td>${formatSize(e.size)}</td><td><a href="${splitPath.p_h012}${e.name}">下载</a></td>`
                 }
             });
-            if (data.nextHref) html += `<tr><td><a href="${p_h01}${data.prevHref}">下一页</a></td><td></td><td></td><td></td>`;
+            if (data.nextHref) html += `<tr><td><a href="${data.nextHref}">下一页</a></td><td></td><td></td><td></td>`;
             html += `<tr><th colspan="4"><hr></th></tr></tbody></table>`;
             break;
         case 2://info

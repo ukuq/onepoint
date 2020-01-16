@@ -1,14 +1,14 @@
 # OnePoint
 
-一个基于 SCF 和自定义API 的映射网盘
+一个基于 onedrive google-drive and liunx-vfs 的映射网盘
 
 项目地址: https://github.com/ukuq/onepoint
 
-## 特色功能
+## 项目特点
 
-轻量: 无服务器、无数据库
+轻量: serverless nosql
 
-免费：支持 scf、nowsh
+免费：支持 scf、nowsh 部署
 
 极速：统一的树形缓存管理
 
