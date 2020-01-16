@@ -1,0 +1,22 @@
+Resources:
+  default:
+    Type: TencentCloud::Serverless::Namespace
+    onepoint:
+      Type: TencentCloud::Serverless::Function
+      Properties:
+        CodeUri: ./
+        Type: Event
+        Description: This is a template function
+        Role: QCS_SCFExcuteRole
+        Environment:
+          Variables:
+            ENV_FIRST: env1
+            ENV_SECOND: env2
+        Handler: index.main_handler
+        MemorySize: 128
+        Runtime: Nodejs8.9
+        Timeout: 30
+
+Globals:
+  Function:
+    Timeout: 10
