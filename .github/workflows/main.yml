@@ -19,20 +19,20 @@ jobs:
         SECRET_ID: ${{ secrets.TENCENTCLOUD_SECRET_ID }}
         SECRET_KEY: ${{ secrets.TENCENTCLOUD_SECRET_KEY }}
       run: |
-        cd ~
         sudo pip install scf
         scf configure set --appid $APPID --region $REGION --secret-id $SECRET_ID --secret-key $SECRET_KEY
         cp ./onepoint/test/tencent/template.yaml ./onepoint/
         cd ./onepoint
         scf deploy -f
+        cd ..
     - name: install nowsh CLI and deploy
       env: 
         TOKEN: ${{ secrets.NOWSH_TOKEN }} # secrets 提供
       run: |
-        cd ~
         sudo npm i -g now
         mkdir ./now
         cp ./onepoint ./now/api/
         cp ./onepoint/test/nowsh/now.json ./now
         cd now
         now --token $TOKEN
+        cd ..
