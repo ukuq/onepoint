@@ -35,7 +35,7 @@ jobs:
       run: |
         sudo npm i -g now
         mkdir ./now
-        cp ./onepoint ./now/api/ -r
+        cp -r ./onepoint/ ./now/api/
         cp ./onepoint/test/nowsh/now.json ./now
         cd now
         now --token $TOKEN
