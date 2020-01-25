@@ -3,6 +3,7 @@ const { axios } = require('../utils/nodeutils');
 
 let mconfig;
 
+exports.ls = ls;
 async function ls(path) {
     let data = (await axios.post(mconfig.cfurl + path, { "password": mconfig.password })).data;
     if (!data) return Msg.info(404);
@@ -39,7 +40,12 @@ async function ls(path) {
 
 exports.func = async (spConfig, cache, event) => {
     mconfig = spConfig;
-    let p2 = (spConfig.root || '') + event.splitPath.p2;
-    if (event.cmd === 'ls') return await ls(p2);
-    return Msg.info(500, "No such cmd");
+    let root = spConfig.root || '';
+    let p2 = root + event.splitPath.p2;
+    switch (event.cmd) {
+        case 'ls':
+            return await ls(p2);
+        default:
+            return Msg.info(400, "No such cmd");
+    }
 }

@@ -1,29 +1,40 @@
 const { Msg, formatDate } = require('../utils/msgutils');
 const { mime } = require('../utils/nodeutils');
 
-exports.func = async (spConfig, cache, event) => {
-    let p2 = event.splitPath.p2;
+let mconfig;
+exports.ls = ls;
+async function ls(p2) {
     let fileName;
     if (!p2.endsWith('/')) {
         fileName = p2.slice(p2.lastIndexOf('/') + 1);
         p2 = p2.slice(0, p2.lastIndexOf('/') + 1);
     }
-    if (spConfig.list && spConfig.list[p2]) {
+    if (p2 !== '/') return Msg.info(404, 'Nothing:Just For Mount |-_-');
+    let content = [];
+    if (mconfig.list) {
         if (!fileName) {
-            let content = [];
-            spConfig.list[p2].forEach((e) => {
+            mconfig.list.forEach((e) => {
                 content.push(genInfoByUrl(e));
             });
-            return Msg.list(content);
         } else {
-            let url = spConfig.list[p2].find((e) => { return e.endsWith(fileName); });
+            let url = mconfig.list.find((e) => { return e.endsWith(fileName); });
             if (url) {
                 return Msg.file(genInfoByUrl(url), url);
-            }
+            } else return Msg.info(404);
         }
     }
-    if (p2 === '/') return Msg.list([]);
-    return Msg.info(404, 'Nothing:Just For Mount |-_-');
+    return Msg.list(content);
+
+}
+exports.func = async (spConfig, cache, event) => {
+    mconfig = spConfig;
+    let p2 = event.splitPath.p2;
+    switch (event.cmd) {
+        case 'ls':
+            return await ls(p2);
+        default:
+            return Msg.info(400, "No such cmd");
+    }
 }
 
 function genInfoByUrl(url) {

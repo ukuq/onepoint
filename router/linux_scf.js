@@ -1,8 +1,8 @@
 const { fs, mime, path } = require("../utils/nodeutils");
 const { Msg, formatDate } = require('../utils/msgutils');
 
-exports.func = async (spConfig, cache, event) => {
-    let p2 = (spConfig.root || '') + event.splitPath.p2;
+exports.ls = ls;
+function ls(p2) {
     return new Promise((resolve) => {
         fs.stat(p2, (err, stats) => {
             if (err) return resolve(Msg.info(403, err.message));
@@ -49,5 +49,30 @@ exports.func = async (spConfig, cache, event) => {
             }
         });
     });
+}
+
+exports.mkdir = mkdir;
+function mkdir(path, name) {
+    return new Promise((resolve, reject) => {
+        fs.mkdir(path + name, (err) => {
+            if (err) reject(err);
+            else resolve(Msg.info(201));
+        });
+    });
+}
+
+exports.func = async (spConfig, cache, event) => {
+    if (!['node', 'scf', 'now'].includes(event.adapter))
+        return Msg.info(500, "No such adapter: " + event.adapter);
+    let root = spConfig.root || '';
+    let p2 = root + event.splitPath.p2;
+    switch (event.cmd) {
+        case 'ls':
+            return await ls(p2);
+        case 'mkdir':
+            return await mkdir(root + event.body.path, event.body.name);
+        default:
+            return Msg.info(400, "No such cmd");
+    }
 }
 

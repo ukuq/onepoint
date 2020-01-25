@@ -3,7 +3,8 @@ let Msg = {
     list: Msg_list,
     info: Msg_info,
     html: Msg_html,
-    m301: Msg_m301
+    m301: Msg_m301,
+    error: Msg_error
 }
 
 function Msg_file(fileInfo, downloadUrl, headers) {
@@ -39,6 +40,19 @@ function Msg_info(statusCode, info, headers) {
         data: {
             info: info || statusCode
         }
+    };
+    return m;
+}
+
+function Msg_error(statusCode, error, headers) {
+    let m = {
+        type: 2, //2_info 固定值
+        statusCode: statusCode,//enum: 200 301 401 403 404 500
+        headers: headers,
+        data: {
+            info: error.message
+        },
+        error: error
     };
     return m;
 }

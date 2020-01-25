@@ -1,6 +1,8 @@
 const { Msg } = require('../utils/msgutils');
 const { cookie } = require('../utils/nodeutils');
-let G_CONFIG, DRIVE_MAP, DRIVE_MAP_KEY,oneCache;
+const fs = require('fs');
+const path = require('path');
+let G_CONFIG, DRIVE_MAP, DRIVE_MAP_KEY, oneCache;
 
 exports.func = async (spConfig, cache, event) => {
     let { p0, p1, p2, ph } = event.splitPath;
@@ -18,13 +20,13 @@ exports.func = async (spConfig, cache, event) => {
         return Msg.info(401, '请输入管理员密码');
     }
     if (p2 === '/cache') {
-        return Msg.html(200, JSON.stringify(oneCache), {'Content-Type':'application/json'});
+        return Msg.html(200, JSON.stringify(oneCache), { 'Content-Type': 'application/json' });
     } else if (p2 === '/event') {
         return Msg.html(200, `<head><script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
             <link href="//cdn.bootcss.com/highlight.js/9.10.0/styles/xcode.min.css" rel="stylesheet"></head>
             <body style="font-size: 15px;"><pre><code>${JSON.stringify(event, null, 2)}</code></pre><script>hljs.highlightBlock(document.body);</script></body>`, res_headers);
-    }else if(p2==='/file'){
-        return Msg.html(200, '', res_headers);
+    } else if (p2 === '/file') {
+        return Msg.html(200,fs.readFileSync(path.resolve(__dirname,'../views/admin/file.html'),'utf-8'), res_headers);
     }
     return Msg.html(200, r200_admin(ph + p0), res_headers);
 }

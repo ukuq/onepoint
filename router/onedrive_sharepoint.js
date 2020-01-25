@@ -35,17 +35,18 @@ async function ls(path) {
     } catch (error) {
         //console.log(error);
         if (error.response && error.response.status === 404) return Msg.info(404);
-        else return Msg.info(500, "sharepoint:ls");
+        else throw error;
     }
 }
 exports.func = async (spConfig, cache, event) => {
     sharepoint = new SharePoint(spConfig['shareUrl']);
-    try {
-        await sharepoint.init();
-    } catch (error) {
-        return Msg.info(500, "sharepoint init failed");
+    await sharepoint.init();
+    let root = spConfig.root || '';
+    let p2 = root + event.splitPath.p2;
+    switch (event.cmd) {
+        case 'ls':
+            return await ls(p2);
+        default:
+            return Msg.info(400, "No such cmd");
     }
-    let p2 = (spConfig.root || '') + event.splitPath.p2;
-    if (event.cmd === 'ls') return await ls(p2);
-    return Msg.info(500, "No such cmd");
 }

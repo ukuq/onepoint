@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="shortcut icon" href="https://ukuq.github.io/onepoint/favicon.png">
+  <title>Hello, world!</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <style>
+    .opt-btns {
+      display: none;
+      position: absolute;
+      max-width: 100px;
+    }
+
+    .opt-div:hover .opt-btns {
+      display: block;
+    }
+
+    .fade-enter-active,
+    .fade-leave-active {
+      transition: opacity .3s;
+    }
+
+    .fade-enter,
+    .fade-leave-to {
+      opacity: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="example-1">
+    <div class="container">
+      <h1 class="text-center pt-3">admin of OnePoint Demo</h1>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li v-for="e in navPathArr" class="breadcrumb-item">
+            <a v-on:click.stop.prevent="chwd" href="#" :id="e.href">{{ e.path }}</a>
+          </li>
+        </ol>
+      </nav>
+      <div>
+        <div class="btn-group" role="group" aria-label="function buttons">
+          <button type="button" class="btn btn-outline-primary" opt="mkdir" v-on:click="optBtnClick">New Folder</button>
+          <button type="button" class="btn btn-outline-primary" opt="touch" v-on:click="optBtnClick">New File</button>
+          <button type="button" class="btn btn-outline-primary" opt="upload" v-on:click="optBtnClick"
+            :disabled="fileUploadData.files.length===0">Upload</button>
+        </div>
+        <button v-show="isShowMvBtn" type="button" class="btn btn-primary" opt="mv" v-on:click="optBtnClick"
+          :title="srcPath">Move</button>
+        <button v-show="isShowCpBtn" type="button" class="btn btn-primary" opt="cp" v-on:click="optBtnClick"
+          :title="srcPath">Paste</button>
+        <span v-show="loadingbarData.show">
+          <span class="mx-3"> {{ loadingbarData.info }}</span>
+          <div role="status" class="spinner-border text-primary float-right"><span class="sr-only">Loading...</span>
+          </div>
+        </span>
+      </div>
+
+      <div class="custom-file mt-3">
+        <input type="file" class="custom-file-input" id="customFile" v-on:change="fileSelect"
+          :disabled="!!fileUploadData.tarPath">
+        <label class="custom-file-label"> {{ fileUploadData.fileName }}</label>
+      </div>
+
+      <div v-show="progressbarData.show" class="progress mt-3">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+          :style="progressbarStyle">
+        </div>
+      </div>
+
+      <div v-show="info" class="card mt-3">
+        <div class="card-header">
+          INFO
+        </div>
+        <div class="card-body">
+          {{ info }}
+        </div>
+      </div>
+      <div class="border rounded my-3 table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Time</th>
+              <th scope="col">Size</th>
+              <th scope="col">Option</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in content" :key="item.name">
+              <td><a v-on:click.stop.prevent="chwd" href="#">{{ item.name }}{{ item.type===0?'':'/' }}</a></td>
+              <td>{{ item.time }}</td>
+              <td>{{ formatSize(item.size) }}</td>
+              <td>
+                <div class="opt-div">
+                  <a href="#">操作</a>
+                  <div class="btn-group-vertical btn-group-toggle opt-btns" data-toggle="buttons">
+                    <button type="button" class="btn btn-secondary" :filename="item.name" opt="rm"
+                      v-on:click="optBtnClick">delete</button>
+                    <button type="button" class="btn btn-secondary" :filename="item.name" opt="ren"
+                      v-on:click="optBtnClick">rename</button>
+                    <button type="button" class="btn btn-secondary" :filename="item.name" opt="mv_"
+                      v-on:click="optBtnClick">move</button>
+                    <button type="button" class="btn btn-secondary" :filename="item.name" opt="cp_"
+                      v-on:click="optBtnClick">copy</button>
+                  </div>
+                </div>
+
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <transition name="fade">
+        <div v-show="alertData.show" class="container alert my-3 fixed-bottom" :class="alertData.type" role="alert">
+          {{ alertData.info }}
+        </div>
+      </transition>
+    </div>
+  </div>
+  <script>
+    var gt;
+    //https://service-8pduizwk-1255607810.ap-hongkong.apigateway.myqcloud.com/test/v1_3
+    var api_path = '/api/cmd';
+    var example1 = new Vue({
+      el: '#example-1',
+      data: {
+        nowPath: '/demo_onedrive/',
+        content: [],
+        info: "",
+        srcPath: undefined,
+        cmdType: undefined,
+        alertData: {
+          show: false,
+          info: "default info",
+          timeID: undefined,
+          type: "alert-success"
+        },
+        loadingbarData: {
+          show: false,
+          info: "default info"
+        },
+        fileUploadData: {
+          fileName: "Choose file",
+          files: [],
+          fcount: 0,
+          tarPath: undefined
+        },
+        progressbarData: {
+          show: false,
+          max: 0,
+          now: 0,
+          inc: 0
+        }
+      },
+      created: function () {
+        this.updateContent();
+      },
+      methods: {
+        chwd: function (event) {
+          if (event.target.id) {
+            this.nowPath = event.target.id;
+            this.updateContent();
+          } else {
+            this.updateContent(event.target.textContent);
+          }
+        },
+        formatSize: function (size) {
+          if (!size && size !== 0) return "";
+          size = Number(size)
+          if (isNaN(size)) return "";
+          let count = 0;
+          while (size >= 1024) {
+            size /= 1024;
+            count++;
+          }
+          size = size.toFixed(2);
+          size += [' B', ' KB', ' MB', ' GB'][count];
+          return size;
+        },
+        updateContent(fileName = '') {
+          this.loadingbarData.show = true;
+          this.loadingbarData.info = "ls " + this.nowPath + fileName;
+          axios.post(api_path, {
+            cmdType: 'ls',
+            cmdData: {
+              path: this.nowPath + fileName
+            }
+          }).then((r) => {
+            this.loadingbarData.show = false;
+            if (r.data.type === 1) {
+              this.nowPath += fileName;
+              this.content = r.data.data.content;
+              this.info = "";
+            } else if (r.data.type === 0) this.info = "file: " + JSON.stringify(r.data.data.fileInfo);
+            console.log(r.data);
+          }).catch((e) => {
+            this.loadingbarData.show = false;
+            this.alertNow('error: ' + e.message, 'd');
+            if (e.response !== undefined) {
+              console.log(e.response);
+            }
+          });
+        },
+        sendCmd: function (cmdType, cmdData) {
+          //console.log('axios: ' + cmdType + " " + JSON.stringify(cmdData));
+          this.loadingbarData.show = true;
+          this.loadingbarData.info = cmdType + " " + JSON.stringify(cmdData);
+          axios.post(api_path, {
+            cmdType,
+            cmdData
+          }).then((r) => {
+            this.loadingbarData.show = false;
+            switch (cmdType) {
+              case 'mkdir':
+              case 'mv':
+              case 'cp':
+              case 'rm':
+              case 'ren':
+              case 'touch':
+                this.updateContent();
+                this.alertNow("success: " + cmdType + ' ' + JSON.stringify(cmdData));
+                return;
+              case 'upload':
+                //this.info = "upload: " + r.data.data.info;
+                this.fileUpload(JSON.parse(r.data.data.info));
+                return;
+              default:
+                console.log("unknown: " + cmdType);
+                return;
+            }
+            console.log(r.data);
+          }).catch((e) => {
+            this.loadingbarData.show = false;
+            this.fileUploadData.tarPath = undefined;
+            this.alertNow('error: ' + e.message, 'd');
+            if (e.response !== undefined) {
+              console.log(e.response);
+            }
+          });
+        },
+        optBtnClick: function (event) {
+          let target = event.target;
+          let ans = undefined;
+          let tPath = this.nowPath + target.getAttribute('fileName');;
+          let cmd = target.getAttribute('opt');
+          console.log(event);
+          switch (cmd) {
+            //新建文件夹 上传文本小文件 大文件
+            case 'mkdir':
+              ans = prompt("mkdir in: " + this.nowPath);
+              if (!ans) return;
+              this.sendCmd(cmd, {
+                path: this.nowPath,
+                name: ans
+              });
+              console.log("mkdir " + this.nowPath + ans);
+              return
+            case 'mv_':
+              this.cmdType = 'mv';
+              this.srcPath = tPath;
+              return
+            case 'mv':
+              if (!this.srcPath || (this.srcPath.slice(0, this.srcPath.lastIndexOf('/') + 1) === this.nowPath))
+                return;
+              this.sendCmd(cmd, {
+                srcPath: this.srcPath,
+                desPath: this.nowPath
+              });
+              console.log("mv " + this.srcPath + " " + this.nowPath);
+              this.srcPath = undefined;
+              return
+            case 'cp_':
+              this.cmdType = 'cp';
+              this.srcPath = tPath;
+              return
+            case 'cp':
+              if (!this.srcPath || (this.srcPath.slice(0, this.srcPath.lastIndexOf('/') + 1) === this.nowPath))
+                return;
+              this.sendCmd(cmd, {
+                srcPath: this.srcPath,
+                desPath: this.nowPath
+              });
+              console.log("cp " + this.srcPath + " " + this.nowPath);
+              this.srcPath = undefined;
+              return
+            case 'rm':
+              ans = confirm("remove: " + tPath);
+              if (!ans) return;
+              this.sendCmd(cmd, {
+                path: tPath
+              });
+              console.log("rm " + tPath);
+              return
+            case 'ren':
+              ans = prompt("rename: " + target.getAttribute('fileName'));
+              if (!ans) return;
+              this.sendCmd(cmd, {
+                path: tPath,
+                name: ans
+              });
+              console.log("ren " + tPath + " " + ans);
+              return
+            case 'touch':
+              ans = prompt("touch name in: " + this.nowPath);
+              if (!ans) return;
+              let ans1 = ans;
+              ans = prompt("touch content in: " + this.nowPath + ans1);
+              if (!ans) return;
+              this.sendCmd(cmd, {
+                path: this.nowPath,
+                name: ans1,
+                content: ans
+              });
+              console.log("touch " + this.nowPath + ans1 + "\n" + ans + "\n\n");
+              return
+            case 'upload':
+              if (!this.fileUploadData.files[this.fileUploadData.fcount]) return;
+              ans = this.fileUploadData.files[this.fileUploadData.fcount].name
+              this.fileUploadData.tarPath = this.nowPath;
+              this.sendCmd(cmd, {
+                path: this.fileUploadData.tarPath + ans,
+                fileSystemInfo: {
+                  lastModifiedDateTime: this.fileUploadData.files[this.fileUploadData.fcount].lastModifiedDate
+                    .toISOString()
+                }
+              });
+              console.log("upload " + this.fileUploadData.tarPath + ans);
+              return
+            case 'close':
+            default:
+              console.log("err: " + target);
+              return;
+          }
+        },
+        alertNow: function (info, type) {
+          if (this.alertData.timeID) clearTimeout(this.alertData.timeID);
+          else this.alertData.show = true;
+          this.alertData.info = info;
+          this.alertData.type = (type === 'd') ? "alert-danger" : "alert-success";
+          this.alertData.timeID = setTimeout(() => {
+            this.alertData.timeID = undefined, this.alertData.show = false
+          }, 3000);
+        },
+        fileUpload: function (res, url) {
+          let offset, offset1, uploadUrl, file;
+          let _this = this;
+          console.log(res);
+          if (res.name) {
+            this.progressbarData.show = false;
+            this.fileUploadData.tarPath = undefined;
+            this.alertNow("success: upload" + this.fileUploadData.nowPath + this.fileUploadData.files[this
+                .fileUploadData.fcount]
+              .name);
+            this.fileUploadData.fcount++;
+            console.log('success: ' + JSON.stringify(res));
+            if (this.fileUploadData.fcount < this.fileUploadData.files.length) {
+              this.sendCmd('upload', {
+                //@flag bug
+                path: this.fileUploadData.nowPath + this.fileUploadData.files[this.fileUploadData.fcount]
+                  .name,
+                fileSystemInfo: {
+                  lastModifiedDateTime: this.fileUploadData.files[this.fileUploadData.fcount].lastModifiedDate
+                    .toUTCString()
+                }
+              });
+            }
+            return;
+          } else {
+            file = this.fileUploadData.files[this.fileUploadData.fcount];
+            let s2 = res.nextExpectedRanges[0].split('-');
+            offset = Number(s2[0]);
+            offset1 = s2[1] ? Number(s2[1]) + 1 : file.size;
+            uploadUrl = url || res.uploadUrl;
+            this.progressbarData.max = file.size;
+            this.progressbarData.now = offset;
+            this.progressbarData.inc = 0;
+            this.progressbarData.show = true;
+          }
+          if (offset1 > offset + (10485760)) offset1 = offset + (10485760);
+          let reader = new FileReader();
+          reader.readAsArrayBuffer(file.slice(offset, offset1));
+          reader.onload = function (event) {
+            console.log('send: ' + JSON.stringify(offset + "-" + offset1));
+            axios.put(uploadUrl, event.target.result, {
+              headers: {
+                //'Content-Length': offset1 - offset,
+                'Content-Range': `bytes ${offset}-${offset1-1}/${file.size}`
+              },
+              onUploadProgress: progressEvent => {
+                _this.progressbarData.inc = progressEvent.loaded;
+              }
+            }).then((r) => {
+              console.log('success: ' + JSON.stringify(offset + "-" + offset1));
+              _this.fileUpload(r.data, uploadUrl);
+            }).catch((err) => {
+              _this.alertNow('error: ' + e.message, 'd');
+            })
+          }
+        },
+        fileSelect: function (event) {
+          this.fileUploadData.files = event.target.files;
+          this.fileUploadData.fileName = event.target.files[0] ? event.target.files[0].name : 'Choose file';
+          this.fileUploadData.fcount = 0;
+        },
+      },
+      computed: {
+        navPathArr: function () {
+          let path = this.nowPath;
+          let tmpPath = '/';
+          let arr = [];
+          arr.push({
+            path: 'Home',
+            href: tmpPath
+          });
+          path.split('/').forEach(e => {
+            if (!e) return;
+            tmpPath += e;
+            tmpPath += '/';
+            arr.push({
+              path: e,
+              href: tmpPath
+            });
+          });
+          return arr;
+        },
+        isShowMvBtn: function () {
+          return ('mv' === this.cmdType) && this.srcPath;
+        },
+        isShowCpBtn: function () {
+          return ('cp' === this.cmdType) && this.srcPath;
+        },
+        progressbarStyle: function () {
+          let r = (this.progressbarData.now + this.progressbarData.inc) / this.progressbarData.max;
+          return 'width:' + r * 100 + '%';
+        }
+      }
+    });
+  </script>
+
+</body>
+
+</html>

@@ -68,7 +68,7 @@ class OneCache {
      */
     addMsg(path, msg) {
         if (msg.type === 0) this.addFile(path, msg.data.fileInfo, msg.data.downloadUrl);
-        else if (msg.type === 1 && !msg.data.nextHref) {
+        else if (msg.type === 1 && !msg.data.prevHref && !msg.data.nextHref) {
             msg.data.content = this.addList(path, msg.data.content);
         }
     }

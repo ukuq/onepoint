@@ -2,8 +2,7 @@
 const { Msg } = require('../utils/msgutils');
 const { cookie, getmd5 } = require('../utils/nodeutils');
 const { OneCache } = require('../utils/cacheutil');
-const fs = require('fs');
-const path = require('path');
+
 const drive_funcs = {};//云盘模块
 drive_funcs['linux_scf'] = require("../router/linux_scf");
 drive_funcs['onedrive_graph'] = require("../router/onedrive_graph");
@@ -14,7 +13,7 @@ drive_funcs['system_phony'] = require("../router/system_phony");
 
 const render_funcs = {};//渲染模块
 render_funcs['simple'] = require("../views/simple");
-render_funcs['to_w.w'] = require("../views/to_w.w");
+render_funcs['w.w'] = require("../views/w.w");
 
 let G_CONFIG, DRIVE_MAP, DOMAIN_MAP;
 
@@ -22,16 +21,21 @@ let oneCache = new OneCache();//cache管理模块
 
 /**
  * onepoint ukuq
- * time:191201
+ * time:20200123
  */
 
 
-initialize();
-/**
- * 首次加载初始化, 以后可能会修改 @flag
- */
-function initialize() {
-    let config_json = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../config.json'), 'utf8'));
+class OnePoint {//@info 暂时这样处理,对外接口不变
+    initialize(config) {
+        return initialize(config);
+    }
+    async handleEvent(event) {
+        return await handleEvent(event);
+    }
+}
+exports.OnePoint = OnePoint;
+
+function initialize(config_json) {
     G_CONFIG = config_json['G_CONFIG'];
     DRIVE_MAP = config_json['DRIVE_MAP'];
     DOMAIN_MAP = config_json['DOMAIN_MAP'];
@@ -44,11 +48,9 @@ function initialize() {
  * 清除所有cache, 为密码增加hash值,默认一天更新一次
  */
 function refreshCache() {
-    //设置过了 UTCDate ,并且时间和今天一致, 无需更新
-    if (new Date().getUTCDate() === G_CONFIG.UTCDate) return;
     //设置管理员密码 hash 值
     let time = new Date();
-    G_CONFIG.UTCDate = time.getUTCDate();
+    G_CONFIG.initTime = time;
     G_CONFIG.admin_password_date_hash = getmd5(G_CONFIG.admin_password + time.getUTCMonth() + time.getUTCDate());
     //初始化 drive 的 cache,密码hash值
     //清除 cache
@@ -82,22 +84,6 @@ function endMsg(statusCode, headers, body, isBase64Encoded) {
     }
 }
 
-function handleAPIPath(event) {
-    if (DOMAIN_MAP[event['sourceIp']]) {//eg: www.example.com/point
-        let domain_path = DOMAIN_MAP[event['sourceIp']];
-        event.splitPath.ph = domain_path.domain;
-        event.splitPath.p0 = domain_path.path;
-    }
-    event.useApi = false;
-    event.cmd = 'ls';
-    if (event['cookie']['ADMINTOKEN'] === G_CONFIG.admin_password_date_hash) event.isadmin = true;
-    if (event.splitPath.p_12.startsWith('/api/')) {
-        event.isApi = true;
-        throw "403 now";
-    }
-}
-
-
 /**
  * 这里不管辣么多了, 放权
  * event:{
@@ -112,77 +98,120 @@ function handleAPIPath(event) {
  *  }
  * }
  */
-exports.main_func = async (event, context, callback) => {
+async function handleEvent(event) {
     event['start_time'] = new Date();
     console.log('start_time:' + event.start_time.toLocaleString(), 'utf-8');
-    refreshCache();
-    handleAPIPath(event);
+    if (event.start_time.getUTCDate() !== G_CONFIG.initTime.getUTCDate()) refreshCache();
+
+    if (DOMAIN_MAP[event['sourceIp']]) {//eg: www.example.com/point
+        let domain_path = DOMAIN_MAP[event['sourceIp']];
+        event.splitPath.ph = domain_path.domain;
+        event.splitPath.p0 = domain_path.path;
+    }
+
+    if (event['cookie']['ADMINTOKEN'] === G_CONFIG.admin_password_date_hash) event.isadmin = true;
+
+
     console.log(event);
     let { ph, p0, p_12 } = event['splitPath'];
     let p1, p2, driveInfo;
-    let res_html = "something wrong!", res_headers = { 'Content-Type': 'text/html' };
-    let responseMsg;
+    let res_html = "something wrong!", res_headers = { 'Content-Type': 'text/html' }, res_headers_json = { 'Content-Type': 'application/json' };
+    let responseMsg = Msg.info(0);
     console.info('p_12:' + p_12);
 
+    //初始化 p1 p2 driveInfo
     if (p_12.startsWith('/admin/')) {
-        responseMsg = Msg.info(0);
         responseMsg.dpath = '/admin/';
         driveInfo = {
             funcName: 'system_admin',
             spConfig: {
-                G_CONFIG, DRIVE_MAP, oneCache
+                G_CONFIG, DRIVE_MAP, DOMAIN_MAP, oneCache
             }
-        }
+        };
+        p1 = '/admin';
+        p2 = p_12.slice(p1.length);
     } else if (p_12.startsWith('/tmp/')) {
-        throw '403 now';
+        return endMsg(400, res_headers, "400: '/tmp/' is private");
+    } else if (p_12.startsWith('/api/')) {
+        if (!event.isadmin) return endMsg(401, res_headers, "401: noly admin can use this api ");
+        event.useApi = true;
+        if (p_12 === '/api/cmd') {
+            let cmdData = event.body.cmdData;
+            event.cmd = event.body.cmdType;
+            if (cmdData.path) {
+                responseMsg = oneCache.getMsg(cmdData.path);
+                event.body.path = cmdData.path.slice(responseMsg.dpath.length - 1);//@info 此处若请求不规范可能出现 ""
+                event.body.name = cmdData.name;
+                event.body.content = cmdData.content;
+                p_12 = cmdData.path;
+                p1 = responseMsg.dpath.slice(0, -1);
+                p2 = event.body.path;
+            } else if (cmdData.srcPath && cmdData.desPath) {
+                responseMsg = oneCache.getMsg(cmdData.srcPath);
+                if (oneCache.getMsg(cmdData.desPath).dpath !== responseMsg.dpath) return endMsg(400, res_headers_json, Msg.info(400, cmdData.srcPath + " and " + cmdData.desPath + " is not in the same drive"));
+                event.body.srcPath = cmdData.srcPath.slice(responseMsg.dpath.length - 1);
+                event.body.desPath = cmdData.desPath.slice(responseMsg.dpath.length - 1);
+            } else return endMsg(400, res_headers, "400: cmdData is invalid");
+            driveInfo = DRIVE_MAP[responseMsg.dpath];
+        } else return endMsg(400, res_headers, "400: no such api");
     } else {
+        event.cmd = 'ls';
         responseMsg = oneCache.getMsg(p_12);
         driveInfo = DRIVE_MAP[responseMsg.dpath];
+        p1 = responseMsg.dpath.slice(0, -1);
+        p2 = p_12.slice(p1.length);
     }
-    p1 = responseMsg.dpath.slice(0, -1);
-    p2 = p_12.slice(responseMsg.dpath.length - 1);
     console.log('dpath:' + responseMsg.dpath);
 
-    //处理云盘级密码
-    if (driveInfo.password && !event.isadmin) {//有密码 非管理员
-        //允许 query 云盘hash登录
-        if (event['method'] === 'GET' && event['query']['password']) {
-            if (event['query']['password'] === driveInfo.password_date_hash) {//利用分享的 password_date_hash 登录
-                res_headers['set-cookie'] = cookie.serialize('DRIVETOKEN', driveInfo.password_date_hash, { path: p0 + p1, maxAge: 3600 });
-            } else {
-                responseMsg = Msg.info(401, 'token错误');
-            }
-        } else if (event['method'] === 'POST' && event['body']['password']) {//使用密码 登录
-            if (event['body']['password'] === driveInfo.password) {//单个云盘登录
-                res_headers['set-cookie'] = cookie.serialize('DRIVETOKEN', driveInfo.password_date_hash, { path: p0 + p1, maxAge: 3600 });
-            } else {//密码错误
-                responseMsg = Msg.info(401, '密码错误');
-            }
-            console.log('使用密码登录:' + event['body']['password']);
-        } else if (event['cookie']['DRIVETOKEN']) {//使用cookie
-            if (event['cookie']['DRIVETOKEN'] !== driveInfo.password_date_hash) {
-                responseMsg = Msg.info(401, 'cookie失效,请重新登录');
-            }
-            console.log('使用cookie登录:' + event['cookie']['DRIVETOKEN']);
-        } else responseMsg = Msg.info(401, '请输入密码');
+    event['splitPath']['p2'] = p2;//@info 遗留问题,以后可能改用 event.body.path
+    if (!event.useApi) {
+        //处理云盘级密码
+        if (driveInfo.password && !event.isadmin) {//有密码 且 非管理员
+            //允许 query 云盘hash登录
+            if (event['method'] === 'GET' && event['query']['password']) {
+                if (event['query']['password'] === driveInfo.password_date_hash) {//利用分享的 password_date_hash 登录
+                    res_headers['set-cookie'] = cookie.serialize('DRIVETOKEN', driveInfo.password_date_hash, { path: p0 + p1, maxAge: 3600 });
+                } else {
+                    responseMsg = Msg.info(401, 'token错误');
+                }
+            } else if (event['method'] === 'POST' && event['body']['password']) {//使用密码 登录
+                if (event['body']['password'] === driveInfo.password) {//单个云盘登录
+                    res_headers['set-cookie'] = cookie.serialize('DRIVETOKEN', driveInfo.password_date_hash, { path: p0 + p1, maxAge: 3600 });
+                } else {//密码错误
+                    responseMsg = Msg.info(401, '密码错误');
+                }
+                console.log('使用密码登录:' + event['body']['password']);
+            } else if (event['cookie']['DRIVETOKEN']) {//使用cookie
+                if (event['cookie']['DRIVETOKEN'] !== driveInfo.password_date_hash) {
+                    responseMsg = Msg.info(401, 'cookie失效,请重新登录');
+                }
+                console.log('使用cookie登录:' + event['cookie']['DRIVETOKEN']);
+            } else responseMsg = Msg.info(401, '请输入密码');
+        }
+        event['splitPath']['p_h0'] = ph + p0;
+        event['splitPath']['p_h01'] = ph + p0 + p1;
+        event['splitPath']['p_h012'] = ph + p0 + p1 + p2;
     }
 
-    event['splitPath']['p2'] = p2;
-    event['splitPath']['p_h0'] = ph + p0;
-    event['splitPath']['p_h01'] = ph + p0 + p1;
-    event['splitPath']['p_h012'] = ph + p0 + p1 + p2;
-
-    if (responseMsg.statusCode === 0 || event.isadmin) {//管理员不使用cache
-        responseMsg = await drive_funcs[driveInfo.funcName].func(driveInfo.spConfig, driveInfo.cache, event);
-        if (event.cmd === 'ls') oneCache.addMsg(p_12, responseMsg);
+    if (responseMsg.statusCode === 0 || event.useApi) {//管理员不使用cache
+        try {
+            responseMsg = await drive_funcs[driveInfo.funcName].func(driveInfo.spConfig, driveInfo.cache, event);
+            if (event.cmd === 'ls') oneCache.addMsg(p_12, responseMsg);
+        } catch (error) {
+            if (error.response) {
+                if (error.response.error) responseMsg = Msg.error(error.response.status, error.response.error);
+                else responseMsg = Msg.error(error.response.status, { message: error.message, headers: error.response.headers, data: error.response.data });
+            }
+            else responseMsg = Msg.info(500, error);
+            console.log(error.message);
+            console.log(error.stack);
+        }
     }
-
-    if (event.query['m']) return endMsg(responseMsg.statusCode, { 'Content-Type': 'application/json' }, JSON.stringify(responseMsg));
 
     //处理api部分
-    if (event.useApi) return endMsg(responseMsg.statusCode, { 'Content-Type': 'application/json' }, JSON.stringify(responseMsg));
+    if (event.useApi) return endMsg(responseMsg.statusCode, res_headers_json, JSON.stringify(responseMsg));
     //处理文件下载
-    if (responseMsg.type === 0 && event.query['preview'] === undefined) return endMsg(301, { 'Location': responseMsg.data.downloadUrl }, "301:responseMsg.data.downloadUrl");
+    if (responseMsg.type === 0 && event.query['preview'] === undefined) return endMsg(301, { 'Location': responseMsg.data.downloadUrl }, "301:" + responseMsg.data.downloadUrl);
     //处理直接 html返回
     if (responseMsg.type === 3) return endMsg(responseMsg.statusCode, responseMsg.headers, responseMsg.data.html);
 
@@ -207,10 +236,10 @@ exports.main_func = async (event, context, callback) => {
                 if (event['cookie']['DIRTOKEN'] !== getmd5(pass)) responseMsg = Msg.info(401, 'cookie失效');
             } else responseMsg = Msg.info(401, '当前目录被加密');
         }
-        
+
         let content_len = responseMsg.data.content.length;
         let pageSize = 50;
-        if (!responseMsg.data.nextHref && !responseMsg.data.prevHref && content_len > pageSize) {//分页功能,兼容旧接口,只有云盘模块未提供href时启用
+        if (!responseMsg.data.nextHref && !responseMsg.data.prevHref && content_len > pageSize) {//@info 分页功能,兼容旧接口,只有云盘模块未提供href时启用
             let page = 1;
             if (!isNaN(Number(event.query['page']))) page = Number(event.query['page']);
             responseMsg.data.content = responseMsg.data.content.slice((page - 1) * pageSize, page * pageSize);
