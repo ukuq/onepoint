@@ -9,8 +9,7 @@ function render(responseMsg, event, G_CONFIG) {
     let p_12 = splitPath.p_12;
     let data = responseMsg.data;
     let readmeFlag = false;
-    let html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://ukuq.github.io/onepoint/favicon.png"><title>${G_CONFIG.site_title}</title></head><body style="background-color: #f7f7f7"><div class="container"><h1 class="text-center pt-3">${G_CONFIG.site_name}</h1>`;
+    let html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"><link rel="shortcut icon" href="${G_CONFIG.site_icon}"><title>${G_CONFIG.site_title}</title></head><body><nav class="navbar sticky-top navbar-dark bg-dark navbar-expand-lg"><div class="container"><a target="_self" href="https://github.com/ukuq/onepoint" class="navbar-brand"><img src="${G_CONFIG.site_icon}" alt="logo" crossorigin="anonymous" class="d-inline-block align-top" style="width: 30px;">${G_CONFIG.site_name}</a></div></nav><div class="container mt-3">`;
 
     //导航栏
     html += `<nav class="" aria-label="breadcrumb"><ol class="breadcrumb">`;
@@ -26,20 +25,19 @@ function render(responseMsg, event, G_CONFIG) {
     });
     html += `</ol></nav>`;
 
-    //代理
-    html += `<div class="input-group"><select class="custom-select" id="proxy-opt" aria-label="Example select with button addon"><option value="">No Proxy (default)</option>`;
-    G_CONFIG.proxy.forEach((e) => {
-        html += `<option value="${e}">${e}</option>`;
-    });
-    html += `</select><div class="input-group-append"><button class="btn btn-outline-secondary" id="proxy-submit" type="button">Start Proxy</button></div></div>`;
-
     switch (responseMsg.type) {
         case 0://file
+            //代理
+            html += `<div class="input-group"><select class="custom-select" id="proxy-opt"><option value="">No Proxy (default)</option>`;
+            G_CONFIG.proxy.forEach((e) => {
+                html += `<option value="${e}">${e}</option>`;
+            });
+            
             let fileInfo = data.fileInfo;
             let downloadUrl = data.downloadUrl;
             if (event.cookie.proxy) downloadUrl = event.cookie.proxy + '?url=' + encodeURIComponent(downloadUrl);
             let type = fileInfo['mime'].slice(0, fileInfo['mime'].indexOf('/'));
-            //html += `<div><a href="${downloadUrl}" id="download-btn"  style="margin: 5px;">下载</a><a href="javascript:void" id="share-btn" style="margin: 5px;">分享</a><a href="javascript:void" id="quote-btn" style="margin: 5px;">md引用</a></div><hr style="width: 500; margin-left: 0;">`;
+            html += `</select><div class="input-group-append"><button class="btn btn-outline-secondary" id="proxy-submit" type="button">Proxy</button><a type="button" class="btn btn-outline-secondary" href="${downloadUrl}">Download</a><button type="button" class="btn btn-outline-secondary" id="share-btn">Share</button></div></div>`;
             html += `<div class="border rounded my-3 p-3">`;
             if (type === 'image') {
                 html += `<img src="${downloadUrl}" class="rounded mx-auto d-block">`;
@@ -60,24 +58,24 @@ function render(responseMsg, event, G_CONFIG) {
             } else {
                 html += `<div>此格式不支持预览 :-(</div>`;
             }
-            html += `</div>`//<script>document.querySelector('#share-btn').addEventListener('click',(event)=>{copyTextContent(null,window.location.href.slice(0,window.location.href.indexOf('?')));let target=event.target;let tt=target.textContent;target.innerHTML='已复制';setTimeout(()=>target.innerHTML=tt,250)});document.querySelector('#quote-btn').addEventListener('click',(event)=>{copyTextContent(null,'![]('+window.location.href.slice(0,window.location.href.indexOf('?'))+')');let target=event.target;let tt=target.textContent;target.innerHTML='已复制';setTimeout(()=>target.innerHTML=tt,250)});function copyTextContent(source,text){let result=false;let target=document.createElement('pre');target.style.opacity='0';target.textContent=text||source.textContent;document.body.appendChild(target);try{let range=document.createRange();range.selectNode(target);window.getSelection().removeAllRanges();window.getSelection().addRange(range);document.execCommand('copy');window.getSelection().removeAllRanges();result=true}catch(e){}document.body.removeChild(target);return result}</script>`;
+            html += `</div><script src="https://cdn.jsdelivr.net/npm/js-cookie@beta/dist/js.cookie.min.js"></script><script>if(Cookies.get('proxy')){let s = document.getElementById('proxy-opt').options;let c = Cookies.get('proxy');for(let i=0;i< s.length;i++){if(s[i].value===c)s[i].selected = "selected";}};document.getElementById('proxy-submit').onclick = function(){Cookies.set('proxy',document.getElementById('proxy-opt').value,{ expires: 7 });window.location.reload();};document.querySelector('#share-btn').addEventListener('click',(event)=>{copyTextContent(null,window.location.href.slice(0,window.location.href.indexOf('?')));let target=event.target;let tt=target.textContent;target.innerHTML='已复制';setTimeout(()=>target.innerHTML=tt,500)});function copyTextContent(source,text){let result=false;let target=document.createElement('pre');target.style.opacity='0';target.textContent=text||source.textContent;document.body.appendChild(target);try{let range=document.createRange();range.selectNode(target);window.getSelection().removeAllRanges();window.getSelection().addRange(range);document.execCommand('copy');window.getSelection().removeAllRanges();result=true}catch(e){}document.body.removeChild(target);return result}</script>`;
             break;
         case 1://list
-            html += `<div class="border rounded my-3 table-responsive"><table class="table table-hover mb-0"><thead><tr><th scope="col">Name</th><th scope="col">Time</th><th scope="col">Size</th><th scope="col">Option</th></tr></thead><tbody>`;
+            html += `<div class="border rounded mt-3 table-responsive"><table class="table table-hover mb-0"><thead class="thead-light"><tr><th scope="col" style="width: 60%;">Name</th><th scope="col">Time</th><th scope="col" class="text-right">Size</th></tr></thead><tbody>`;
             if (data.prevHref) {
-                html += `<tr><td><a href="${data.prevHref}">Previous...</a></td><td></td><td></td><td>-</td></tr>`;
+                html += `<tr><td><a href="${data.prevHref}">Previous...</a></td><td></td><td></td></tr>`;
             } else if (splitPath.p_12 !== '/') {
-                html += `<tr><td><a href="../">..</a></td><td></td><td></td><td>-</td></tr>`;
+                html += `<tr><td><a href="../">..</a></td><td></td><td></td></tr>`;
             }
             data.content.forEach(e => {
                 if (e.type === 1 || e.type === 3) {//文件夹 
-                    html += `<tr><td><a href="${splitPath.p_h012}${e.name}/">${e.name}/</a></td><td>${e.time}</td><td>${formatSize(e.size)}</td><td>-</td></tr>`;
+                    html += `<tr><td><a href="${splitPath.p_h012}${e.name}/">${e.name}/</a></td><td>${e.time}</td><td class="text-right">${formatSize(e.size)}</td></tr>`;
                 } else if (e.type === 0) {//文件
                     if (e.name === 'README.md') { readmeFlag = true };
-                    html += `<tr><td><a href="${splitPath.p_h012}${e.name}?preview">${e.name}</a></td><td>${e.time}</td><td>${formatSize(e.size)}</td><td><a href="${splitPath.p_h012}${e.name}">下载</a></td></tr>`;
+                    html += `<tr><td><a href="${splitPath.p_h012}${e.name}?preview">${e.name}</a></td><td>${e.time}</td><td class="text-right">${formatSize(e.size)}</td></tr>`;
                 }
             });
-            if (data.nextHref) html += `<tr><td><a href="${data.nextHref}">Next...</a></td><td></td><td></td><td>-</td></tr>`;
+            if (data.nextHref) html += `<tr><td><a href="${data.nextHref}">Next...</a></td><td></td><td></td></tr>`;
             html += `</tbody></table></div>`;
             break;
         case 2://info
@@ -91,14 +89,12 @@ function render(responseMsg, event, G_CONFIG) {
             throw new Error("no such response type");
     }
     //readme
-    html += `<div class="card"><div class="card-header">README.md</div><div class="card-body markdown-body" id="readMe">Nothing here!</div></div>`;
+    html += `<div class="card mt-3"><div class="card-header">README.md</div><div class="card-body markdown-body" id="readMe">${G_CONFIG.site_readme}</div></div>`;
 
     //footer
-    html += `<div class="text-right"><p class="text-muted mb-0">Powered by <a href="https://github.com/ukuq/onepoint">OnePoint</a></p><p class="text-muted mb-0">Processing time: <a href="javascript:void">${new Date() - event.start_time}ms</a></p></div>`;
-
-    html += `</div><script src="https://cdn.jsdelivr.net/npm/js-cookie@beta/dist/js.cookie.min.js"></script><script src="https://cdn.bootcss.com/marked/0.7.0/marked.js"></script>
-    ${G_CONFIG.site_script}${event.script}<script>if(Cookies.get('proxy')){let s = document.getElementById('proxy-opt').options;let c = Cookies.get('proxy');for(let i=0;i< s.length;i++){if(s[i].value===c)s[i].selected = "selected";}};document.getElementById('proxy-submit').onclick = function(){Cookies.set('proxy',document.getElementById('proxy-opt').value,{ expires: 7 });window.location.reload();};`
-    if (readmeFlag) html += `fetch('./README.md').then(response => response.text()).then(data => document.getElementById('readMe').innerHTML =marked(data)).catch(err => document.getElementById('readMe').innerHTML="Oh, error:" + err)`;
-    html += `</script></body></html>`;
+    html += `<div class="text-right"><span class="text-muted">Powered by <a href="https://github.com/ukuq/onepoint">OnePoint</a></span><span class="text-muted ml-2">Processing time: <a href="javascript:void">${new Date() - event.start_time}ms</a></span></div>`;
+    html += `</div><script src="https://cdn.bootcss.com/marked/0.7.0/marked.js"></script>${G_CONFIG.site_script}`;
+    if (readmeFlag) html += `<script src="https://unpkg.com/axios/dist/axios.min.js"></script><script>fetch('./README.md').then(response => response.text()).then(data => document.getElementById('readMe').innerHTML =marked(data)).catch(err => document.getElementById('readMe').innerHTML="Oh, error:" + err);</script>`;
+    html += `</body></html>`;
     return html;
 }

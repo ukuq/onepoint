@@ -8,8 +8,6 @@
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <link rel="shortcut icon" href="https://ukuq.github.io/onepoint/favicon.png">
   <title>Hello, world!</title>
-  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <style>
     .opt-btns {
       display: none;
@@ -34,102 +32,109 @@
 </head>
 
 <body>
-  <div id="example-1">
-    <div class="container">
-      <h1 class="text-center pt-3">admin of OnePoint Demo</h1>
-      <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-          <li v-for="e in navPathArr" class="breadcrumb-item">
-            <a v-on:click.stop.prevent="chwd" href="#" :id="e.href">{{ e.path }}</a>
-          </li>
-        </ol>
-      </nav>
-      <div>
-        <div class="btn-group" role="group" aria-label="function buttons">
-          <button type="button" class="btn btn-outline-primary" opt="mkdir" v-on:click="optBtnClick">New Folder</button>
-          <button type="button" class="btn btn-outline-primary" opt="touch" v-on:click="optBtnClick">New File</button>
-          <button type="button" class="btn btn-outline-primary" opt="upload" v-on:click="optBtnClick"
-            :disabled="fileUploadData.files.length===0">Upload</button>
-        </div>
-        <button v-show="isShowMvBtn" type="button" class="btn btn-primary" opt="mv" v-on:click="optBtnClick"
-          :title="srcPath">Move</button>
-        <button v-show="isShowCpBtn" type="button" class="btn btn-primary" opt="cp" v-on:click="optBtnClick"
-          :title="srcPath">Paste</button>
-        <span v-show="loadingbarData.show">
-          <span class="mx-3"> {{ loadingbarData.info }}</span>
-          <div role="status" class="spinner-border text-primary float-right"><span class="sr-only">Loading...</span>
+  <div id="app" class="container">
+    <h1 class="text-center pt-3">admin of OnePoint Demo</h1>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li v-for="e in navPathArr" class="breadcrumb-item">
+          <a v-on:click.stop.prevent="chwd" href="#" :id="e.href">{{ e.path }}</a>
+        </li>
+      </ol>
+    </nav>
+    <div>
+      <div class="btn-group" role="group" aria-label="function buttons">
+        <div class="opt-div">
+          <button type="button" class="btn btn-outline-primary">New Folder</button>
+          <div class="btn-group-vertical btn-group-toggle opt-btns" data-toggle="buttons">
+            <button type="button" class="btn btn-secondary">delete</button>
           </div>
-        </span>
-      </div>
-
-      <div class="custom-file mt-3">
-        <input type="file" class="custom-file-input" id="customFile" v-on:change="fileSelect"
-          :disabled="!!fileUploadData.tarPath">
-        <label class="custom-file-label"> {{ fileUploadData.fileName }}</label>
-      </div>
-
-      <div v-show="progressbarData.show" class="progress mt-3">
-        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-          :style="progressbarStyle">
         </div>
+        <button type="button" class="btn btn-outline-primary" opt="mkdir" v-on:click="optBtnClick">New Folder</button>
+        <button type="button" class="btn btn-outline-primary" opt="touch" v-on:click="optBtnClick">New File</button>
+        <button type="button" class="btn btn-outline-primary" opt="upload" v-on:click="optBtnClick"
+          :disabled="fileUploadData.files.length===0">Upload</button>
       </div>
-
-      <div v-show="info" class="card mt-3">
-        <div class="card-header">
-          INFO
+      <button v-show="isShowMvBtn" type="button" class="btn btn-primary" opt="mv" v-on:click="optBtnClick"
+        :title="srcPath">Move</button>
+      <button v-show="isShowCpBtn" type="button" class="btn btn-primary" opt="cp" v-on:click="optBtnClick"
+        :title="srcPath">Paste</button>
+      <span v-show="loadingbarData.show">
+        <span class="mx-3"> {{ loadingbarData.info }}</span>
+        <div role="status" class="spinner-border text-primary float-right"><span class="sr-only">Loading...</span>
         </div>
-        <div class="card-body">
-          {{ info }}
-        </div>
-      </div>
-      <div class="border rounded my-3 table-responsive">
-        <table class="table table-hover mb-0">
-          <thead>
-            <tr>
-              <th scope="col">Name</th>
-              <th scope="col">Time</th>
-              <th scope="col">Size</th>
-              <th scope="col">Option</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in content" :key="item.name">
-              <td><a v-on:click.stop.prevent="chwd" href="#">{{ item.name }}{{ item.type===0?'':'/' }}</a></td>
-              <td>{{ item.time }}</td>
-              <td>{{ formatSize(item.size) }}</td>
-              <td>
-                <div class="opt-div">
-                  <a href="#">操作</a>
-                  <div class="btn-group-vertical btn-group-toggle opt-btns" data-toggle="buttons">
-                    <button type="button" class="btn btn-secondary" :filename="item.name" opt="rm"
-                      v-on:click="optBtnClick">delete</button>
-                    <button type="button" class="btn btn-secondary" :filename="item.name" opt="ren"
-                      v-on:click="optBtnClick">rename</button>
-                    <button type="button" class="btn btn-secondary" :filename="item.name" opt="mv_"
-                      v-on:click="optBtnClick">move</button>
-                    <button type="button" class="btn btn-secondary" :filename="item.name" opt="cp_"
-                      v-on:click="optBtnClick">copy</button>
-                  </div>
-                </div>
-
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <transition name="fade">
-        <div v-show="alertData.show" class="container alert my-3 fixed-bottom" :class="alertData.type" role="alert">
-          {{ alertData.info }}
-        </div>
-      </transition>
+      </span>
     </div>
+
+    <div class="custom-file mt-3">
+      <input type="file" class="custom-file-input" id="customFile" v-on:change="fileSelect"
+        :disabled="!!fileUploadData.tarPath">
+      <label class="custom-file-label"> {{ fileUploadData.fileName }}</label>
+    </div>
+
+    <div v-show="progressbarData.show" class="progress mt-3">
+      <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" :style="progressbarStyle">
+      </div>
+    </div>
+    <p>{{ progressbarData.realSpeed }}<p>
+    <p>{{ avgSpeed }}</p>
+
+    <div v-show="info" class="card mt-3">
+      <div class="card-header">
+        INFO
+      </div>
+      <div class="card-body">
+        {{ info }}
+      </div>
+    </div>
+    <div class="border rounded my-3 table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Time</th>
+            <th scope="col">Size</th>
+            <th scope="col">Option</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in content" :key="item.name">
+            <td><a v-on:click.stop.prevent="chwd" href="#">{{ item.name }}{{ item.type===0?'':'/' }}</a></td>
+            <td>{{ item.time }}</td>
+            <td>{{ formatSize(item.size) }}</td>
+            <td>
+              <div class="opt-div">
+                <a href="#">操作</a>
+                <div class="btn-group-vertical btn-group-toggle opt-btns" data-toggle="buttons">
+                  <button type="button" class="btn btn-secondary" :filename="item.name" opt="rm"
+                    v-on:click="optBtnClick">delete</button>
+                  <button type="button" class="btn btn-secondary" :filename="item.name" opt="ren"
+                    v-on:click="optBtnClick">rename</button>
+                  <button type="button" class="btn btn-secondary" :filename="item.name" opt="mv_"
+                    v-on:click="optBtnClick">move</button>
+                  <button type="button" class="btn btn-secondary" :filename="item.name" opt="cp_"
+                    v-on:click="optBtnClick">copy</button>
+                </div>
+              </div>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <transition name="fade">
+      <div v-show="alertData.show" class="container alert my-3 fixed-bottom" :class="alertData.type" role="alert">
+        {{ alertData.info }}
+      </div>
+    </transition>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script>
     var gt;
     //https://service-8pduizwk-1255607810.ap-hongkong.apigateway.myqcloud.com/test/v1_3
-    var api_path = '/api/cmd';
-    var example1 = new Vue({
-      el: '#example-1',
+    const api_path = '../api/cmd';
+    var app = new Vue({
+      el: '#app',
       data: {
         nowPath: '/demo_onedrive/',
         content: [],
@@ -156,7 +161,10 @@
           show: false,
           max: 0,
           now: 0,
-          inc: 0
+          inc: 0,
+          realSpeed: 0,
+          startTime: undefined,
+          lastIncTime: undefined
         }
       },
       created: function () {
@@ -381,6 +389,7 @@
             this.progressbarData.max = file.size;
             this.progressbarData.now = offset;
             this.progressbarData.inc = 0;
+            this.progressbarData.lastIncTime = new Date();
             this.progressbarData.show = true;
           }
           if (offset1 > offset + (10485760)) offset1 = offset + (10485760);
@@ -394,7 +403,12 @@
                 'Content-Range': `bytes ${offset}-${offset1-1}/${file.size}`
               },
               onUploadProgress: progressEvent => {
-                _this.progressbarData.inc = progressEvent.loaded;
+                let date = new Date();
+                let loaded = progressEvent.loaded;
+                _this.progressbarData.realSpeed = (loaded -_this.progressbarData.inc) / (date - _this
+                  .progressbarData.lastIncTime)/1024;
+                _this.progressbarData.lastIncTime = date;
+                _this.progressbarData.inc = loaded;
               }
             }).then((r) => {
               console.log('success: ' + JSON.stringify(offset + "-" + offset1));
@@ -404,6 +418,8 @@
             })
           }
         },
+        
+        
         fileSelect: function (event) {
           this.fileUploadData.files = event.target.files;
           this.fileUploadData.fileName = event.target.files[0] ? event.target.files[0].name : 'Choose file';
@@ -439,6 +455,9 @@
         progressbarStyle: function () {
           let r = (this.progressbarData.now + this.progressbarData.inc) / this.progressbarData.max;
           return 'width:' + r * 100 + '%';
+        },
+        avgSpeed:function(){
+          return (this.progressbarData.now + this.progressbarData.inc)/(this.progressbarData.lastIncTime-this.progressbarData.startTime)/1024;
         }
       }
     });

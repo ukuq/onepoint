@@ -11,6 +11,7 @@ function ls(p2) {
                 fs.readdir(p2, (err, files) => {
                     if (err) return resolve(Msg.info(403, err.message));
                     let len = files.length;
+                    console.log('total: ' + len);
                     if (len === 0) return resolve(Msg.list([]));
                     let content = [];
                     files.forEach((file) => {
@@ -18,6 +19,7 @@ function ls(p2) {
                             if (err) {
                                 console.log(p2 + ":" + err.message);
                                 len--;
+                                if (content.length === len) resolve(Msg.list(content));
                                 return;
                             }
                             let nodeData = {

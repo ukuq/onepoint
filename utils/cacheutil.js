@@ -2,7 +2,13 @@ let { Msg, formatDate } = require("./msgutils");
 
 class OneCache {
 
+    constructor() {
+        this.createTime = new Date();
+    }
+
     initDrives(keyPaths) {
+        this.initTime = new Date();
+        this.eventlog = [[], [], [], []];//normal, api, xx, admin
         this.root = { type: undefined, next_obj: {} };
         let date = formatDate(new Date());
         keyPaths.forEach((path) => {
@@ -93,10 +99,33 @@ class OneCache {
         msg.dpath = dpath;
         return msg;
     }
+
+    exportDataArr() {
+        let r = [];
+        OneCache._exportDataArr(this.root, '', r);
+        return r;
+    }
+
+    addEventLog(event, type) {
+        this.eventlog[type].push({
+            url: event.url,
+            ip: event.sourceIp,
+            time: event.start_time
+        });
+    }
 }
 OneCache._genNextDrive = (Obj) => {
     Obj.next_drive = Object.values(Obj.next_obj);
     if (Obj.next_drive && Obj.next_drive.length > 0) Obj.next_drive.forEach((e) => { OneCache._genNextDrive(e) });
+}
+
+OneCache._exportDataArr = (Obj, path, expObj) => {
+    Object.keys(Obj.next_obj).forEach((e) => {
+        let path1 = path + '/' + e;
+        console.log(path1 + ": " + e);
+        expObj.push({ path: path1, data: Obj.next_obj[e].data });
+        OneCache._exportDataArr(Obj.next_obj[e], path1, expObj);
+    });
 }
 
 exports.OneCache = OneCache;

@@ -3,6 +3,8 @@ const { Msg, formatDate } = require('../utils/msgutils');
 const { OneDrive } = require('../lib/onedriveAPI');
 
 let onedrive;
+let _cache;
+let mconfig;
 
 exports.ls = ls;
 async function ls(path) {
@@ -36,11 +38,25 @@ async function ls(path) {
 }
 
 
-// exports.find = find;
-// async function find(text) {
-// 	await onedrive.msSearch(text);
-//
-// }
+exports.find = find;
+async function find(text) {
+	let data = await onedrive.msSearch(text);
+	if (data.value.length === 0) return Msg.list([]);
+	let reg = new RegExp('.+/Documents' + (mconfig.root || '') + '/(.+)');
+	let content = [];
+	data.value.forEach((e) => {
+		let ma = reg.exec(e.webUrl);
+		if (!ma || !ma[1]) return;
+		content.push({
+			type: e['file'] ? 0 : 1,
+			name: ma[1],
+			size: Number(e['size']),
+			mime: e['file'] ? e['file']['mimeType'] : 'folder/onedrive',
+			time: formatDate(e['lastModifiedDateTime'])
+		});
+	});
+	return Msg.list(content);
+}
 
 
 exports.mkdir = mkdir;
@@ -81,11 +97,16 @@ async function touch(path, filename, content) {
 
 exports.upload = upload;
 async function upload(filePath, fileSystemInfo) {
+	let k = filePath + JSON.stringify(fileSystemInfo);
+	if (_cache[k] && new Date(_cache[k].expirationDateTime) > new Date()) return Msg.info(200, JSON.stringify(_cache[k]));
 	let res = await onedrive.msUploadSession(filePath, fileSystemInfo);
+	_cache[k] = res;
 	return Msg.info(200, JSON.stringify(res));
 }
 
 exports.func = async (spConfig, cache, event) => {
+	_cache = cache;
+	mconfig = spConfig;
 	onedrive = new OneDrive(spConfig['refresh_token'], spConfig['oauth']);
 	await onedrive.init();
 	let root = spConfig.root || '';
@@ -107,6 +128,8 @@ exports.func = async (spConfig, cache, event) => {
 			return await touch(root + event.body.path, event.body.name, event.body.content);
 		case 'upload':
 			return await upload(root + event.body.path, event.body.cmdData.fileSystemInfo);
+		case 'find':
+			return await find(event.body.cmdData.text);
 		default:
 			return Msg.info(400, "No such cmd");
 	}

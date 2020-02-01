@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <link rel="shortcut icon" href="https://i.loli.net/2020/01/31/NmHBFUPcXnrsj5b.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Load required Bootstrap and BootstrapVue CSS -->
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" />
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <!-- Load Vue followed by BootstrapVue -->
+    <script src="https://unpkg.com/vue@latest/dist/vue.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
+
+    <!-- Load the following for BootstrapVueIcons support -->
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
+    <style>
+        .opt-btns {
+            display: none;
+            position: absolute;
+        }
+
+        .opt-div {
+            display: inline-block;
+        }
+
+        .opt-icon {
+            cursor: pointer;
+        }
+
+        .opt-div:hover .opt-btns {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <template>
+            <b-navbar toggleable="lg" type="dark" variant="dark" sticky>
+                <div class="container">
+                    <b-navbar-brand href="#">
+                        <img src="https://i.loli.net/2020/01/31/H4BJUywjxf5GoZO.png" class="d-inline-block align-top" alt="logo" crossorigin="anonymous" >
+                        ONEPOINT
+                    </b-navbar-brand>
+
+                    <b-collapse id="nav-collapse" is-nav>
+                        <b-navbar-nav>
+                            <b-nav-item href="../">Home</b-nav-item>
+                            <b-nav-item href="files" active>Files</b-nav-item>
+                            <b-nav-item href="setting">Setting</b-nav-item>
+                            <b-nav-item href="cache">Cache</b-nav-item>
+                            <b-nav-item href="./">Dashboard</b-nav-item>
+                        </b-navbar-nav>
+
+                        <b-navbar-nav class="ml-auto">
+                            <b-nav-form>
+                                <b-form-input size="sm" class="mr-sm-2" placeholder="Search" v-model="searchData.text">
+                                </b-form-input>
+                                <b-button size="sm" class="my-2 my-sm-0" @click="optBtnClick('find')">
+                                    Search</b-button>
+                            </b-nav-form>
+
+                            <b-nav-item-dropdown right>
+                                <template v-slot:button-content>
+                                    <em>User</em>
+                                </template>
+                                <b-dropdown-item href="#" @click="showAlert('You are the admin!','i')">Profile</b-dropdown-item>
+                                <b-dropdown-item href="logout">Logout</b-dropdown-item>
+                            </b-nav-item-dropdown>
+                        </b-navbar-nav>
+                    </b-collapse>
+                </div>
+            </b-navbar>
+            <div class="container mt-3">
+                <b-breadcrumb>
+                    <b-breadcrumb-item @click="chwd('/')">
+                        <b-icon icon="house-fill" scale="1.25" shift-v="1.25" aria-hidden="true"></b-icon>
+                        Home
+                    </b-breadcrumb-item>
+                    <template v-for="e in navPathArr">
+                        <b-breadcrumb-item @click="chwd(e.href)">{{ e.path }}
+                        </b-breadcrumb-item>
+                    </template>
+                </b-breadcrumb>
+
+                <div class="mt-3">
+                    <b-dropdown text="Options" variant="outline-primary">
+                        <b-dropdown-item v-b-modal.modal-touch>New File</b-dropdown-item>
+                        <b-dropdown-item @click="optBtnClick('mkdir')">New Folder</b-dropdown-item>
+                        <b-dropdown-divider></b-dropdown-divider>
+                        <b-dropdown-item @click="uploadBtnClick('upload-files')">Upload File</b-dropdown-item>
+                        <b-dropdown-item @click="uploadBtnClick('upload-folder')"> Upload Folder</b-dropdown-item>
+                    </b-dropdown>
+
+                    <b-button @click="updateContent()">Sync</b-button>
+
+                    <b-button
+                        v-show="uploadData.uploadQueue.length || uploadData.uploadSucess.length || uploadData.uploadFail.length"
+                        v-b-modal.modal-upload>Upload Status</b-button>
+
+                    <b-button variant="primary" v-show="('mv' === cmdType) && srcPath" @click="optBtnClick('mv')"
+                        :title="srcPath">Move</b-button>
+                    <b-button variant="primary" v-show="('cp' === cmdType) && srcPath" @click="optBtnClick('cp')"
+                        :title="srcPath">Copy</b-button>
+                    <b-button variant="primary" v-show="srcPath" @click="srcPath = ''">Cancel</b-button>
+
+                    <span v-show="loadingbarData.show">
+                        <span class="mx-3">{{ loadingbarData.info }}</span>
+                        <b-spinner variant="primary" label="Spinning" class="float-right"></b-spinner>
+                    </span>
+
+
+                </div>
+                <b-table hover responsive :items="content" :fields="fields" :busy="loadingData.isBusy"
+                    head-variant="light" class="border rounded mt-2">
+                    <template v-slot:cell(nameFormat)="data">
+                        <div class="opt-div">
+                            <b-icon icon="command" scale="1.25" shift-v="1.25" aria-hidden="true" class="opt-icon">
+                            </b-icon>
+                            <div class="opt-btns">
+                                <b-button-group vertical>
+                                    <b-button @click="optBtnClick('rm',data.item.name)">Delete</b-button>
+                                    <b-button @click="optBtnClick('ren',data.item.name)">Rename</b-button>
+                                    <b-button @click="optBtnClick('mv_',data.item.name)">Move</b-button>
+                                    <b-button @click="optBtnClick('cp_',data.item.name)">Copy</b-button>
+                                    <b-button v-show="!data.item.type"
+                                        @click="window.open('..'+nowPath+data.item.name,'_blank')">Download</b-button>
+                                </b-button-group>
+                            </div>
+                        </div>
+                        <a v-if="data.item.type" href="#" @click="chwd(data.item.name + '/')">{{ data.item.name }}/</a>
+                        <span v-else>{{ data.item.name }}</span>
+                    </template>
+
+                    <template v-slot:table-busy>
+                        <div class="text-center text-primary my-2">
+                            <b-spinner class="align-middle"></b-spinner>
+                            <strong>{{ loadingData.info }}</strong>
+                        </div>
+                    </template>
+                </b-table>
+
+                <div class="fixed-bottom">
+                    <b-alert :show="alertData.dismissCountDown" dismissible fade :variant="alertData.type"
+                        @dismiss-count-down="countDownChanged">
+                        {{ alertData.info }}
+                    </b-alert>
+                </div>
+
+                <b-modal id="modal-confirm" :title="confirmData.title" @ok="confirmData.okclick">
+                    <p class="my-4">{{confirmData.info}}</p>
+                </b-modal>
+
+                <b-modal id="modal-prompt" :title="promptData.title" @show="resetPrompt" @ok="handleOkPrompt">
+                    <form ref="form-prompt">
+                        <b-form-group :state="promptData.state" :label="promptData.info"
+                            invalid-feedback="input is invalid">
+                            <b-form-input v-model="promptData.value" :state="promptData.state" required>
+                            </b-form-input>
+                        </b-form-group>
+                    </form>
+                </b-modal>
+
+                <b-modal id="modal-touch" size="lg" title="touch a new file" @ok="optBtnClick('touch')">
+                    <form ref="form-touch">
+                        <b-form-group label="file name:">
+                            <b-form-input v-model="uploadData.uploadTouch.name">
+                            </b-form-input>
+                        </b-form-group>
+                        <b-form-group label="file content:">
+                            <b-form-textarea v-model="uploadData.uploadTouch.content"
+                                placeholder="here is the file content" rows="8" max-rows="16">
+                            </b-form-textarea>
+                        </b-form-group>
+                    </form>
+                </b-modal>
+
+                <b-modal id="modal-upload" size="lg" title="upload status" scrollable hide-footer hide-header>
+                    <div class="container">
+                        <div v-if="uploadData.uploadNow">
+                            <p>now</p>
+                            {{uploadData.uploadNow.file.name }}
+                            <b-progress :value="uploadData.uploadSize" :max="uploadData.uploadNow.file.size"
+                                show-progress animated></b-progress>
+                        </div>
+                        <p>waiting</p>
+                        <p v-for="e in uploadData.uploadQueue">{{e.file.name }} -- {{  formatSize(e.file.size) }} --
+                            {{ e.path }}</p>
+                        <p>fail</p>
+                        <p v-for="e in uploadData.uploadFail">{{e.file.name }} -- {{  formatSize(e.file.size) }} --
+                            {{ e.path }}</p>
+                        <p>success</p>
+                        <p v-for="e in uploadData.uploadSucess">{{e.file.name }} -- {{  formatSize(e.file.size) }} --
+                            {{ e.path }}</p>
+                    </div>
+                </b-modal>
+
+                <input type="file" ref="upload-files" multiple @change="uploadOnChange" class="d-none">
+                <input type="file" ref="upload-folder" webkitdirectory @change="uploadOnChange" class="d-none">
+
+            </div>
+        </template>
+    </div>
+    <script>
+        var api_path = "../api/cmd"
+        var app = new Vue({
+            el: '#app',
+            data: {
+                nowPath: '/',
+                content: [],
+                contentCache: {},
+                srcPath: '',
+                cmdType: '',
+
+                uploadData: {
+                    uploadQueue: [],
+                    uploadSucess: [],
+                    uploadFail: [],
+                    uploadNow: null,
+                    uploadSize: 0,
+                    uploadTouch: {
+                        name: '',
+                        content: ''
+                    }
+                },
+
+                searchData: {
+                    text: '',
+                    dpath: '',
+                    content: []
+                },
+                loadingbarData: {
+                    show: false,
+                    info: "default info"
+                },
+                loadingData: {
+                    isBusy: false,
+                    info: "default info"
+                },
+                alertData: {
+                    dismissCountDown: 0,
+                    type: 'primary',
+                    info: "default info"
+                },
+                confirmData: {
+                    title: 'default title',
+                    info: "default info",
+                    okclick: () => {
+                        console.log("default click");
+                    }
+                },
+                promptData: {
+                    title: 'default title',
+                    info: "default info",
+                    okclick: (value) => {
+                        console.log("default click");
+                    },
+                    value: '',
+                    state: null,
+                },
+                fields: [{
+                    key: 'nameFormat',
+                    label: 'Name'
+                }, 'time', {
+                    key: 'size',
+                    label: 'Size',
+                    class: 'text-right',
+                    formatter: formatSize
+                }],
+            },
+            created: function () {
+                this.updateContent();
+            },
+            methods: {
+                chwd(path) {
+                    if (path.startsWith('/')) this.updateContent(path);
+                    else this.updateContent(this.nowPath + path);
+                },
+                updateContent(path) {
+                    let flag;
+                    let _this = this;
+                    if (!path) {
+                        path = this.nowPath;
+                        flag = true;
+                    }
+                    if (this.contentCache[path] && !flag) {
+                        this.content = this.contentCache[path];
+                        this.nowPath = path;
+                        return;
+                    }
+                    if (this.loadingData.isBusy) return this.showAlert(
+                        "Processing other tasks, try again later", 'w');
+                    this.loadingData.isBusy = true;
+                    this.loadingData.info = "loading... " + path;
+                    console.log('try: ls ' + path);
+                    axios.post(api_path, {
+                        cmdType: 'ls',
+                        cmdData: {
+                            path: path
+                        }
+                    }).then((r) => {
+                        _this.loadingData.isBusy = false;
+                        if (r.data.type === 1) {
+                            _this.nowPath = path;
+                            _this.content = r.data.data.content;
+                            _this.contentCache[path] = r.data.data.content;
+                        } else console.log(r.data);
+                    }).catch((e) => {
+                        _this.loadingData.isBusy = false;
+                        console.log(e);
+                        if (e.response !== undefined) {
+                            _this.showAlert('error: ' + e.response.data.data.info, 'd');
+                        }else _this.showAlert('error: ' + e.message, 'd');
+                    });
+                },
+                sendCmd(cmdType, cmdData) {
+                    let _this = this;
+                    let cmdstr = cmdToStr();
+                    console.log("try: " + cmdstr);
+                    this.loadingbarData.info = cmdstr;
+                    this.loadingbarData.show = true;
+                    axios.post(api_path, {
+                        cmdType,
+                        cmdData
+                    }).then((res) => {
+                        this.loadingbarData.show = false;
+                        let pn, pos, r;
+                        switch (cmdType) {
+                            case 'mkdir':
+                                _this.contentCache[cmdData.path].unshift({
+                                    "type": 1,
+                                    "name": cmdData.name,
+                                    "size": 0,
+                                    "mime": "folder/unknown",
+                                    "time": formatDate(new Date())
+                                });
+                                return;
+                            case 'mv':
+                            case 'cp':
+                                pn = splitPathAName(cmdData.srcPath);
+                                pos = -1;
+                                r = _this.contentCache[pn.path].find((e, i) => {
+                                    pos = i;
+                                    return e.name === pn.name;
+                                })
+                                if (cmdType === 'mv') _this.contentCache[pn.path].splice(pos, 1);
+                                _this.contentCache[cmdData.desPath].unshift(r);
+                                return;
+                            case 'rm':
+                            case 'ren':
+                                pn = splitPathAName(cmdData.path);
+                                pos = -1;
+                                r = _this.contentCache[pn.path].find((e, i) => {
+                                    pos = i;
+                                    return e.name === pn.name;
+                                })
+                                if (cmdType === 'rm') _this.contentCache[pn.path].splice(pos, 1);
+                                else r.name = cmdData.name;
+                                return;
+                            case 'touch':
+                                _this.contentCache[cmdData.path].unshift({
+                                    "type": 0,
+                                    "name": cmdData.name,
+                                    "size": formatSize(cmdData.content.length),
+                                    "mime": "onepoint/unknown",
+                                    "time": formatDate(new Date())
+                                });
+                                return;
+                            case 'upload':
+                                _this.fileUpload(JSON.parse(res.data.data.info));
+                                return;
+                            case 'find':
+                                _this.nowPath = res.data.dpath;
+                                _this.content = res.data.data.content;
+                                return;
+                            default:
+                                console.log("unknown: " + cmdType);
+                                return;
+                        }
+                    }).catch((e) => {
+                        _this.loadingbarData.show = false;
+                        console.log(e);
+                        if (e.response !== undefined) {
+                            _this.showAlert('error: ' + e.response.data.data.info, 'd');
+                        }else _this.showAlert('error: ' + e.message, 'd');
+                        if (cmdType === 'upload' && _this.uploadData.uploadNow) {
+                            _this.uploadData.uploadFail.unshift(_this.uploadData.uploadNow);
+                            _this.uploadData.uploadNow = null;
+                            if (e.response && e.response.status === 409) _this
+                                .optBtnClick('upload');
+                        }
+                    });
+
+                    function cmdToStr() {
+                        switch (cmdType) {
+                            case 'mkdir':
+                                return 'mkdir ' + cmdData.path + cmdData.name;
+                            case 'mv':
+                            case 'cp':
+                                return cmdType + ' ' + cmdData.srcPath + ' ' + cmdData.desPath;
+                            case 'rm':
+                                return 'rm ' + cmdData.path;
+                            case 'ren':
+                                return 'ren ' + cmdData.path + ' ' + cmdData.name;
+                            case 'touch':
+                            case 'upload':
+                                return cmdType + ' ' + cmdData.path + cmdData.name || "";
+                            case 'find':
+                                return cmdType + ' ' + cmdData.path + ' ' + cmdData.text;
+                            default:
+                                return "unknown: " + cmdType;
+                        }
+                    }
+
+                    function splitPathAName(path = "") {
+                        if (path.endsWith('/')) path = path.slice(0, -1);
+                        let pos = path.lastIndexOf('/') + 1;
+                        return {
+                            path: path.slice(0, pos),
+                            name: path.slice(pos)
+                        };
+                    }
+                },
+                optBtnClick(cmd, fileName = '', event) {
+                    let tPath = this.nowPath + fileName;
+                    let _this = this;
+                    switch (cmd) {
+                        //新建文件夹 上传文本小文件 大文件
+                        case 'mkdir':
+                            this.showPrompt('mkdir', 'make dir in: ' + tPath, (value) => {
+                                _this.sendCmd(cmd, {
+                                    path: tPath,
+                                    name: value
+                                });
+                            });
+                            return;
+                        case 'mv_':
+                            this.cmdType = 'mv';
+                            this.srcPath = tPath;
+                            return;
+                        case 'mv':
+                            if (!this.srcPath || (this.srcPath.slice(0, this.srcPath.lastIndexOf('/') +
+                                    1) === this.nowPath))
+                                return;
+                            this.showConfirm('mv', 'move :' + this.srcPath + ' -> ' + this.nowPath, () => {
+                                _this.sendCmd(cmd, {
+                                    srcPath: this.srcPath,
+                                    desPath: this.nowPath
+                                });
+                                _this.srcPath = '';
+                            })
+                            return;
+                        case 'cp_':
+                            this.cmdType = 'cp';
+                            this.srcPath = tPath;
+                            return
+                        case 'cp':
+                            if (!this.srcPath || (this.srcPath.slice(0, this.srcPath.lastIndexOf('/') +
+                                    1) === this.nowPath))
+                                return;
+                            this.showConfirm('cp', 'copy :' + this.srcPath + ' -> ' + this.nowPath, () => {
+                                _this.sendCmd(cmd, {
+                                    srcPath: this.srcPath,
+                                    desPath: this.nowPath
+                                });
+                                _this.srcPath = '';
+                            })
+                            return;
+                        case 'rm':
+                            this.showConfirm('rm', 'remove: ' + tPath, () => {
+                                _this.sendCmd(cmd, {
+                                    path: tPath
+                                });
+                            });
+                            return
+                        case 'ren':
+                            this.showPrompt('ren', 'rename: ' + tPath, (value) => {
+                                _this.sendCmd(cmd, {
+                                    path: tPath,
+                                    name: value
+                                });
+                            });
+                            return;
+                        case 'touch':
+                            if (!this.uploadData.uploadTouch.name || !this.uploadData.uploadTouch.content)
+                                return;
+                            this.sendCmd(cmd, {
+                                path: this.nowPath,
+                                name: this.uploadData.uploadTouch.name,
+                                content: this.uploadData.uploadTouch.content
+                            });
+                            this.uploadData.uploadTouch.name = "";
+                            this.uploadData.uploadTouch.content = "";
+                            return;
+                        case 'upload':
+                            if (this.uploadData.uploadNow || this.uploadData.uploadQueue.length === 0) return;
+                            this.uploadData.uploadNow = this.uploadData.uploadQueue.shift();
+                            let upInfo = this.uploadData.uploadNow;
+                            this.sendCmd(cmd, {
+                                path: upInfo.path + upInfo.file.name,
+                                fileSystemInfo: {
+                                    lastModifiedDateTime: upInfo.file.lastModifiedDate.toISOString()
+                                }
+                            });
+                            return;
+                        case 'find':
+                            this.sendCmd(cmd, {
+                                path: this.nowPath,
+                                text: this.searchData.text
+                            });
+                            return;
+                        default:
+                            console.log("err: " + target);
+                            return;
+                    }
+                },
+
+                showAlert(info, type) {
+                    this.alertData.dismissCountDown = 5;
+                    this.alertData.type = {
+                        i: 'info',
+                        d: 'danger',
+                        s: 'success',
+                        w: 'warning'
+                    } [type] || 'primary';
+                    this.alertData.info = info;
+                },
+                countDownChanged(dismissCountDown) {
+                    this.alertData.dismissCountDown = dismissCountDown;
+                },
+
+                showConfirm(title, info, okclick) {
+                    this.confirmData.title = title;
+                    this.confirmData.info = info;
+                    this.confirmData.okclick = okclick;
+                    this.$bvModal.show('modal-confirm');
+                },
+
+                showPrompt(title, info, okclick) {
+                    this.promptData.title = title;
+                    this.promptData.info = info;
+                    this.promptData.okclick = okclick;
+                    this.$bvModal.show('modal-prompt');
+                },
+                resetPrompt() {
+                    this.promptData.value = '';
+                    this.promptData.state = null;
+                },
+                handleOkPrompt(bvModalEvt) {
+                    bvModalEvt.preventDefault();
+                    const valid = this.$refs['form-prompt'].checkValidity();
+                    this.promptData.state = valid;
+                    if (!valid) {
+                        return;
+                    }
+                    //触发事件
+                    this.promptData.okclick(this.promptData.value);
+                    // Hide the modal manually
+                    this.$nextTick(() => {
+                        this.$bvModal.hide('modal-prompt')
+                    })
+                },
+
+                uploadBtnClick(ref) {
+                    this.$refs[ref].click();
+                },
+                uploadOnChange(event) {
+                    console.log(event.target.files);
+                    let files = event.target.files;
+                    for (let i = 0; i < files.length; i++) {
+                        this.uploadData.uploadQueue.push({
+                            path: this.nowPath,
+                            file: files[i],
+                            time: new Date()
+                        });
+                    }
+                    this.optBtnClick('upload');
+
+                },
+                fileUpload(res, url) {
+                    let offset, offset1, uploadUrl, file;
+                    let _this = this;
+                    file = this.uploadData.uploadNow.file;
+                    let s2 = res.nextExpectedRanges[0].split('-');
+                    offset = Number(s2[0]);
+                    offset1 = s2[1] ? Number(s2[1]) + 1 : file.size;
+                    uploadUrl = url || res.uploadUrl;
+                    if (offset1 > offset + (10485760)) offset1 = offset + (10485760);
+                    let reader = new FileReader();
+                    reader.readAsArrayBuffer(file.slice(offset, offset1));
+                    reader.onload = function (event) {
+                        console.log('send: [' + offset + ',' + offset1 + ')');
+                        axios.put(uploadUrl, event.target.result, {
+                            headers: {
+                                //'Content-Length': offset1 - offset,
+                                'Content-Range': `bytes ${offset}-${offset1-1}/${file.size}`
+                            },
+                            onUploadProgress: progressEvent => {
+                                let loaded = progressEvent.loaded;
+                                _this.uploadData.uploadSize = offset + loaded;
+                            }
+                        }).then((r) => {
+                            console.log(r.data);
+                            console.log('success: [' + offset + ',' + offset1 + ')');
+                            if (r.status === 201) {
+                                _this.contentCache[_this.uploadData.uploadNow.path].unshift({
+                                    "type": 1,
+                                    "name": _this.uploadData.uploadNow.file.name,
+                                    "size": formatSize(_this.uploadData.uploadNow.file
+                                        .size),
+                                    "mime": "onepoint/unknown",
+                                    "time": formatDate(_this.uploadData.uploadNow.file
+                                        .lastModifiedDate)
+                                });
+                                _this.showAlert("success: upload" + _this.uploadData.uploadNow
+                                    .file.name, 'i');
+                                console.log('success: ' + JSON.stringify(res));
+                                _this.uploadData.uploadSucess.push(_this.uploadData.uploadNow);
+                                _this.uploadData.uploadNow = null;
+                                _this.optBtnClick('upload');
+                                return;
+                            } else if (r.status === 202) {
+                                _this.fileUpload(r.data, uploadUrl);
+                            } else throw r;
+                        }).catch((err) => {
+                            console.log(err);
+                            _this.showAlert('error: ' + err.message, 'd');
+                            if (_this.uploadData.uploadNow) {
+                                console.error('fail: upload ' + file.name);
+                                _this.uploadData.uploadFail.unshift(_this.uploadData.uploadNow);
+                                _this.uploadData.uploadNow = null;
+                            }
+                        })
+                    }
+                },
+            },
+            computed: {
+                navPathArr: function () {
+                    let path = this.nowPath;
+                    let tmpPath = '/';
+                    let arr = [];
+                    path.split('/').forEach(e => {
+                        if (!e) return;
+                        tmpPath += e;
+                        tmpPath += '/';
+                        arr.push({
+                            path: e,
+                            href: tmpPath
+                        });
+                    });
+                    return arr;
+                }
+            }
+        });
+
+        function formatDate(str) {
+            let oDate = new Date(str);
+            if ('Invalid Date' == oDate) return oDate;
+            let oYear = oDate.getFullYear(),
+                oMonth = oDate.getMonth() < 9 ? "0" + (oDate.getMonth() + 1) : (oDate.getMonth() + 1),
+                oDay = oDate.getDate() < 10 ? "0" + oDate.getDate() : oDate.getDate(),
+                oHour = oDate.getHours() < 10 ? "0" + oDate.getHours() : oDate.getHours(),
+                oMinute = oDate.getMinutes() < 10 ? "0" + oDate.getMinutes() : oDate.getMinutes(),
+                oSecond = oDate.getSeconds() < 10 ? "0" + oDate.getSeconds() : oDate.getSeconds(),
+                oTime = oYear + '-' + oMonth + '-' + oDay + " " + oHour + ":" + oMinute + ":" + oSecond; //最后拼接时间
+            return oTime;
+        };
+
+        function formatSize(size) {
+            if (!size && size !== 0) return "";
+            size = Number(size)
+            if (isNaN(size)) return "";
+            let count = 0;
+            while (size >= 1024) {
+                size /= 1024;
+                count++;
+            }
+            size = size.toFixed(2);
+            size += [' B', ' KB', ' MB', ' GB'][count];
+            return size;
+        }
+    </script>
+
+
+</body>
+
+</html>

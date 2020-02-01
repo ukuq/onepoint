@@ -121,6 +121,7 @@ async function handleEvent(event) {
 
     //初始化 p1 p2 driveInfo
     if (p_12.startsWith('/admin/')) {
+        oneCache.addEventLog(event, 3);
         responseMsg.dpath = '/admin/';
         driveInfo = {
             funcName: 'system_admin',
@@ -133,6 +134,7 @@ async function handleEvent(event) {
     } else if (p_12.startsWith('/tmp/')) {
         return endMsg(400, res_headers, "400: '/tmp/' is private");
     } else if (p_12.startsWith('/api/')) {
+        oneCache.addEventLog(event, 1);
         if (!event.isadmin) return endMsg(401, res_headers, "401: noly admin can use this api ");
         event.useApi = true;
         if (p_12 === '/api/cmd') {
@@ -155,6 +157,7 @@ async function handleEvent(event) {
             driveInfo = DRIVE_MAP[responseMsg.dpath];
         } else return endMsg(400, res_headers, "400: no such api");
     } else {
+        oneCache.addEventLog(event, 0);
         event.cmd = 'ls';
         responseMsg = oneCache.getMsg(p_12);
         driveInfo = DRIVE_MAP[responseMsg.dpath];
@@ -197,6 +200,7 @@ async function handleEvent(event) {
         try {
             responseMsg = await drive_funcs[driveInfo.funcName].func(driveInfo.spConfig, driveInfo.cache, event);
             if (event.cmd === 'ls') oneCache.addMsg(p_12, responseMsg);
+            else if (event.cmd === 'find') responseMsg.dpath = p1 + '/';
         } catch (error) {
             if (error.response) {
                 if (error.response.error) responseMsg = Msg.error(error.response.status, error.response.error);
@@ -209,7 +213,7 @@ async function handleEvent(event) {
     }
 
     //处理api部分
-    if (event.useApi) return endMsg(responseMsg.statusCode, res_headers_json, JSON.stringify(responseMsg));
+    if (event.useApi) return endMsg(responseMsg.statusCode, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, JSON.stringify(responseMsg));
     //处理文件下载
     if (responseMsg.type === 0 && event.query['preview'] === undefined) return endMsg(301, { 'Location': responseMsg.data.downloadUrl }, "301:" + responseMsg.data.downloadUrl);
     //处理直接 html返回

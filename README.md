@@ -38,6 +38,10 @@ https://service-0nvsu1bi-1255607810.ap-hongkong.apigateway.myqcloud.com/release/
 
 https://onepoint.now.sh
 
+注: 管理员页面为 ./admin, 密码为 admin.
+
+仅 onedrive_graph 模块支持文件管理!
+
 ## 使用方法
 
 修改 config.json 文件里面的 DRIVE_MAP 即可。
