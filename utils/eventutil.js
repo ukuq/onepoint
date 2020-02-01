@@ -18,7 +18,7 @@ function genEvent(method, url, headers, body, adapter, sourceIp = '0.0.0.0', p0 
     let event = {
         method, url, headers, body, adapter, sourceIp,
         query: query || querystring.parse(_url.parse(url).query),
-        cookie: cookie || headers['cookie'] ? _cookie.parse(headers['cookie']) : {},
+        cookie: cookie || (headers['cookie'] ? _cookie.parse(headers['cookie']) : {}),
         splitPath: {
             ph: '//' + headers.host,
             p0: p0,

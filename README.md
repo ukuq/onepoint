@@ -35,12 +35,12 @@ https://github.com/ukuq/onepoint/tree/master/docs/log.md
 github action 自动部署
 
 https://service-0nvsu1bi-1255607810.ap-hongkong.apigateway.myqcloud.com/release/onepoint
+https://service-0nvsu1bi-1255607810.ap-hongkong.apigateway.myqcloud.com/release/onepoint/admin/
 
-https://onepoint.now.sh
+https://onepoint.ukuq.now.sh
+https://onepoint.ukuq.now.sh/admin/
 
-注: 管理员页面为 ./admin, 密码为 admin.
-
-仅 onedrive_graph 模块支持文件管理!
+注: 仅 onedrive_graph 模块支持文件管理!
 
 ## 使用方法
 
