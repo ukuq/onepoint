@@ -2,58 +2,29 @@
 
 <body>
     <div>
-        <a
-            href='https://login.microsoftonline.com/common/oauth2/v2.0/authorize?scope=https%3A%2F%2Fgraph.microsoft.com%2FFiles.ReadWrite.All+offline_access&response_type=code&client_id=72f58ae2-35b3-49a0-bfdf-93c293711a3f&redirect_uri=https://ukuq.github.io/onepoint/onedrive'>click
+        <a href='https://login.microsoftonline.com/common/oauth2/v2.0/authorize?scope=https%3A%2F%2Fgraph.microsoft.com%2FFiles.ReadWrite.All+offline_access&response_type=code&client_id=72f58ae2-35b3-49a0-bfdf-93c293711a3f&redirect_uri=https://ukuq.github.io/onepoint/onedrive'>click
             here to get your refresh code</a>
     </div>
-    <div id='info'></div>
+	<div id='info'></div>
     <form action="https://login.microsoftonline.com/common/oauth2/v2.0/token" method="POST" style="display:none;">
         <input type="text" name="client_id" placeholder="client_id" value="72f58ae2-35b3-49a0-bfdf-93c293711a3f" />
         <input type="text" name="client_secret" placeholder="client_secret" value="QxTp=iw[=zHA[F0ZT97M1I.JUXD2RWhq" />
-        <input type="text" name="" placeholder="authorization_code" value="authorization_code" />
+        <input type="text" name="grant_type" placeholder="authorization_code" value="authorization_code" />
         <input type="text" name="requested_token_use" placeholder="on_behalf_of" value="on_behalf_of" />
         <input type="text" name="redirect_uri" placeholder="redirect_uri"
             value="https://ukuq.github.io/onepoint/onedrive" />
         <input type="text" name="code" placeholder="code" id="code" />
         <input type="submit" id='submit' />
     </form>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script>
-        //https://api.moeclub.org/onedrive-login?error=access_denied&error_description=AADSTS650051%3a+Using+application+%27OneDrive+for+API%27+is+currently+not+supported+for+your+organization+whu.edu.cn+because+it+is+in+an+unmanaged+state.+An+administrator+needs+to+claim+ownership+of+the+company+by+DNS+validation+of+whu.edu.cn+before+the+application+OneDrive+for+API+can+be+provisioned.%0d%0aTrace+ID%3a+03c26bfa-d4e7-4c28-bf15-fd39e4921900%0d%0aCorrelation+ID%3a+3233c0aa-7100-44bd-99f4-309c8e6288e5Timestamp%3a+2020-01-08+07%3a31%3a26Z
-        let url = new URL(window.location.href);
-        if (url.searchParams.get('code')) {
-            document.getElementById('code').value = url.searchParams.get('code');
+    <script>//https://api.moeclub.org/onedrive-login?error=access_denied&error_description=AADSTS650051%3a+Using+application+%27OneDrive+for+API%27+is+currently+not+supported+for+your+organization+whu.edu.cn+because+it+is+in+an+unmanaged+state.+An+administrator+needs+to+claim+ownership+of+the+company+by+DNS+validation+of+whu.edu.cn+before+the+application+OneDrive+for+API+can+be+provisioned.%0d%0aTrace+ID%3a+03c26bfa-d4e7-4c28-bf15-fd39e4921900%0d%0aCorrelation+ID%3a+3233c0aa-7100-44bd-99f4-309c8e6288e5Timestamp%3a+2020-01-08+07%3a31%3a26Z
+
+		let url = new URL(window.location.href);
+		if(url.searchParams.get('code')){
+			document.getElementById('code').value = url.searchParams.get('code');
             document.getElementById('submit').click();
-        } else if (url.searchParams.get('error')) {
-            document.getElementById('info').innerText = url.searchParams.get('error') + ":\n" + url.searchParams.get(
-                'error_description');
-        }
-        function getToken(code) {
-            let data = {
-                client_id: '72f58ae2-35b3-49a0-bfdf-93c293711a3f',
-                client_secret: 'QxTp=iw[=zHA[F0ZT97M1I.JUXD2RWhq',
-                grant_type: 'authorization_code',
-                requested_token_use: 'on_behalf_of',
-                code: code
-            };
-            let config = {
-                transformRequest: [(data) => {
-                    let ret = ''
-                    for (let it in data) {
-                        ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
-                    }
-                    return ret;
-                }],
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            }
-            let url = 'https://proxy.onesrc.workers.dev/ajax/' +
-                'https://login.microsoftonline.com/common/oauth2/v2.0/token';
-            axios.post(url, data, config).then((d) => {
-                console.log(d)
-            }).then(()=>{});
-        }
+		}else if(url.searchParams.get('error')){
+			document.getElementById('info').innerText=url.searchParams.get('error')+":\n"+url.searchParams.get('error_description');
+		}
     </script>
 </body>
 
