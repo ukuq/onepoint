@@ -14,6 +14,12 @@
         ]
     },
     "DRIVE_MAP": {
+        
+        "/": {
+            "funcName": "system_phony",
+            "spConfig": {}
+        },
+        
         "/demo_sharepoint/": {
             "funcName": "onedrive_sharepoint",
             "spConfig": {
@@ -55,10 +61,6 @@
                 "root": "/image"
             },
             "password": "123"
-        },
-        "/": {
-            "funcName": "system_phony",
-            "spConfig": {}
         },
         "/demo_phony/": {
             "funcName": "system_phony",

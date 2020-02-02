@@ -93,6 +93,11 @@
                         placeholder="site_script"></textarea>
                 </div>
                 <div class="mb-3">
+                    <label for="validationTextarea">网站公告</label>
+                    <textarea v-model="config.G_CONFIG.site_readme" class="form-control"
+                        placeholder="site_readme:readme"></textarea>
+                </div>
+                <div class="mb-3">
                     <label for="validationTextarea">代理网站</label>
                     <textarea v-model="config.G_CONFIG.proxy" class="form-control" placeholder="proxy"
                         disabled></textarea>
@@ -125,7 +130,8 @@
                     <div v-show="selected==='onedrive_graph'" class="form-row">
                         <div class="form-group col-md-4">
                             <label>根路径</label>
-                            <input v-model="tmp_config.onedrive_graph.root" placeholder="root:注意结尾不是/" class="form-control">
+                            <input v-model="tmp_config.onedrive_graph.root" placeholder="root:注意结尾不是/"
+                                class="form-control">
                         </div>
                         <div class="form-group col-md-4">
                             <label>认证类型</label>
@@ -258,6 +264,7 @@
                         "site_keywords": "OnePoint",
                         "site_description": "OnePoint description",
                         "site_script": "",
+                        "site_readme": "Nothing here!",
                         "proxy": [
                             "https://proxy.onesrc.workers.dev/"
                         ]
@@ -300,7 +307,9 @@
                         },
                         "/": {
                             "funcName": "system_phony",
-                            "spConfig": {}
+                            "spConfig": {
+                                "admin": "请不要删除此项"
+                            }
                         },
                         "/demo_phony/": {
                             "funcName": "system_phony",
@@ -327,6 +336,7 @@
             },
             methods: {
                 deletePath: function (path) {
+                    if (path === '/') return;
                     this.config.DRIVE_MAP[path] = undefined;
                     delete this.config.DRIVE_MAP[path];
                 },
