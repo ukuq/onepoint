@@ -15,12 +15,19 @@ jobs:
     - uses: actions/setup-node@v1 # 安装nodejs，版本指定10
       with:
         node-version: '10.x'
+    - name: read config.json from secrets
+      env: 
+        CONFIG_JSON: ${{ secrets.CONFIG_JSON }} # secrets 提供
+      if: secrets.CONFIG_JSON
+      run:
+        echo $CONFIG_JSON > ./onepoint/config.json
     - name: install configure SCF CLI and deploy
       env: 
         APPID: ${{ secrets.TENCENTCLOUD_APP_ID }} # secrets 提供
         REGION: ap-hongkong
         SECRET_ID: ${{ secrets.TENCENTCLOUD_SECRET_ID }}
         SECRET_KEY: ${{ secrets.TENCENTCLOUD_SECRET_KEY }}
+      if: secrets.TENCENTCLOUD_APP_ID
       run: |
         sudo pip install scf
         scf configure set --appid $APPID --region $REGION --secret-id $SECRET_ID --secret-key $SECRET_KEY
@@ -32,6 +39,7 @@ jobs:
     - name: install nowsh CLI and deploy
       env: 
         TOKEN: ${{ secrets.NOWSH_TOKEN }} # secrets 提供
+      if: secrets.NOWSH_TOKEN
       run: |
         sudo npm i -g now
         mkdir ./now
