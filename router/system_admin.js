@@ -25,7 +25,7 @@ exports.func = async (spConfig, cache, event) => {
         if (event.query['raw'] !== undefined) return Msg.html(200, JSON.stringify(oneCache), { 'Content-Type': 'application/json' });
         else if (event.query['export'] !== undefined) return Msg.html(200, JSON.stringify(oneCache.exportDataArr()), { 'Content-Type': 'application/json' });
         else return Msg.html(200, fs.readFileSync(path.resolve(__dirname, '../html/admin/cache.html'), 'utf-8'), res_headers);
-    } else if (p2 === '/event') {
+    } else if (p2.startsWith('/event')) {
         return Msg.html(200, jsonPage(event), res_headers);
     } else if (p2 === '/files') {
         return Msg.html(200, fs.readFileSync(path.resolve(__dirname, '../html/admin/file2.html'), 'utf-8'), res_headers);

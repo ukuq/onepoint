@@ -16,7 +16,7 @@ exports.main_handler = async (event, context, callback) => {
     if (requestContext_path.endsWith('/')) requestContext_path = requestContext_path.slice(0, -1);// / or /abc/
     if (event['headers']['host'].startsWith(event['requestContext']['serviceId'])) {//长域名
         _event.splitPath['p0'] = `/${event['requestContext']['stage']}${requestContext_path}`;
-        _event.splitPath['p_12'] = event['path'].slice(requestContext_path.length) || '/';//  只有scf网关不规范 ,例如 /abc 前者才为假
+        _event.splitPath['p_12'] = decodeURIComponent(event['path']).slice(requestContext_path.length) || '/';//  只有scf网关不规范 ,例如 /abc 前者才为
     }
 
     return await op.handleEvent(_event);
