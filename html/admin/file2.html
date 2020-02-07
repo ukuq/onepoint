@@ -42,7 +42,8 @@
             <b-navbar toggleable="lg" type="dark" variant="dark" sticky>
                 <div class="container">
                     <b-navbar-brand href="#">
-                        <img src="https://i.loli.net/2020/01/31/H4BJUywjxf5GoZO.png" class="d-inline-block align-top" alt="logo" crossorigin="anonymous" >
+                        <img src="https://i.loli.net/2020/01/31/H4BJUywjxf5GoZO.png" class="d-inline-block align-top"
+                            alt="logo" crossorigin="anonymous">
                         ONEPOINT
                     </b-navbar-brand>
 
@@ -56,7 +57,7 @@
                         </b-navbar-nav>
 
                         <b-navbar-nav class="ml-auto">
-                            <b-nav-form>
+                            <b-nav-form @submit.stop.prevent="optBtnClick('find')">
                                 <b-form-input size="sm" class="mr-sm-2" placeholder="Search" v-model="searchData.text">
                                 </b-form-input>
                                 <b-button size="sm" class="my-2 my-sm-0" @click="optBtnClick('find')">
@@ -67,7 +68,8 @@
                                 <template v-slot:button-content>
                                     <em>User</em>
                                 </template>
-                                <b-dropdown-item href="#" @click="showAlert('You are the admin!','i')">Profile</b-dropdown-item>
+                                <b-dropdown-item href="#" @click="showAlert('You are the admin!','i')">Profile
+                                </b-dropdown-item>
                                 <b-dropdown-item href="logout">Logout</b-dropdown-item>
                             </b-nav-item-dropdown>
                         </b-navbar-nav>
@@ -155,7 +157,7 @@
                 </b-modal>
 
                 <b-modal id="modal-prompt" :title="promptData.title" @show="resetPrompt" @ok="handleOkPrompt">
-                    <form ref="form-prompt">
+                    <form ref="form-prompt" @submit.stop.prevent=handleOkPrompt()>
                         <b-form-group :state="promptData.state" :label="promptData.info"
                             invalid-feedback="input is invalid">
                             <b-form-input v-model="promptData.value" :state="promptData.state" required>
@@ -165,7 +167,7 @@
                 </b-modal>
 
                 <b-modal id="modal-touch" size="lg" title="touch a new file" @ok="optBtnClick('touch')">
-                    <form ref="form-touch">
+                    <form ref="form-touch" @submit.stop.prevent>
                         <b-form-group label="file name:">
                             <b-form-input v-model="uploadData.uploadTouch.name">
                             </b-form-input>
@@ -303,17 +305,17 @@
                         }
                     }).then((r) => {
                         _this.loadingData.isBusy = false;
-                        if (r.data.type === 1) {
+                        if (r.data.content) {
                             _this.nowPath = path;
-                            _this.content = r.data.data.content;
-                            _this.contentCache[path] = r.data.data.content;
+                            _this.content = r.data.content;
+                            _this.contentCache[path] = r.data.content;
                         } else console.log(r.data);
                     }).catch((e) => {
                         _this.loadingData.isBusy = false;
                         console.log(e);
                         if (e.response !== undefined) {
-                            _this.showAlert('error: ' + e.response.data.data.info, 'd');
-                        }else _this.showAlert('error: ' + e.message, 'd');
+                            _this.showAlert('error: ' + e.response.data.info, 'd');
+                        } else _this.showAlert('error: ' + e.message, 'd');
                     });
                 },
                 sendCmd(cmdType, cmdData) {
@@ -385,7 +387,7 @@
                         console.log(e);
                         if (e.response !== undefined) {
                             _this.showAlert('error: ' + e.response.data.data.info, 'd');
-                        }else _this.showAlert('error: ' + e.message, 'd');
+                        } else _this.showAlert('error: ' + e.message, 'd');
                         if (cmdType === 'upload' && _this.uploadData.uploadNow) {
                             _this.uploadData.uploadFail.unshift(_this.uploadData.uploadNow);
                             _this.uploadData.uploadNow = null;
@@ -407,7 +409,7 @@
                                 return 'ren ' + cmdData.path + ' ' + cmdData.name;
                             case 'touch':
                             case 'upload':
-                                return cmdType + ' ' + cmdData.path + cmdData.name || "";
+                                return cmdType + ' ' + cmdData.path + cmdData.name;
                             case 'find':
                                 return cmdType + ' ' + cmdData.path + ' ' + cmdData.text;
                             default:
@@ -485,12 +487,11 @@
                             });
                             return;
                         case 'touch':
-                            if (!this.uploadData.uploadTouch.name || !this.uploadData.uploadTouch.content)
-                                return;
+                            if (!this.uploadData.uploadTouch.name) return;
                             this.sendCmd(cmd, {
                                 path: this.nowPath,
                                 name: this.uploadData.uploadTouch.name,
-                                content: this.uploadData.uploadTouch.content
+                                content: this.uploadData.uploadTouch.content || ''
                             });
                             this.uploadData.uploadTouch.name = "";
                             this.uploadData.uploadTouch.content = "";
@@ -550,7 +551,7 @@
                     this.promptData.state = null;
                 },
                 handleOkPrompt(bvModalEvt) {
-                    bvModalEvt.preventDefault();
+                    if (bvModalEvt) bvModalEvt.preventDefault();
                     const valid = this.$refs['form-prompt'].checkValidity();
                     this.promptData.state = valid;
                     if (!valid) {

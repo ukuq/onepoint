@@ -10,6 +10,8 @@ class OneCache {
         this.initTime = new Date();
         this.eventlog = [[], [], [], []];//normal, api, xx, admin
         this.root = { type: undefined, next_obj: {} };
+        this.root_sp = {};
+        this.driveCache = {};
         let date = formatDate(new Date());
         keyPaths.forEach((path) => {
             let ps = path.split('/').filter((e) => { return !!e });
@@ -72,13 +74,18 @@ class OneCache {
     /**
      * 注意此项先缓存,后再取缓存结果. 即 msg 可能会被改变
      */
-    addMsg(path, msg) {
+    addMsg(path, msg, spPage) {
         if (msg.type === 0) this.addFile(path, msg.data.fileInfo, msg.data.downloadUrl);
-        else if (msg.type === 1 && !msg.data.prevHref && !msg.data.nextHref) {
-            msg.data.content = this.addList(path, msg.data.content);
+        else if (msg.type === 1) {
+            if (spPage !== undefined) {
+                if (!this.root_sp[path]) this.root_sp[path] = {};
+                this.root_sp[path][spPage] = msg;
+            } else if (!msg.data.prevHref && !msg.data.nextHref) {
+                msg.data.content = this.addList(path, msg.data.content);
+            }
         }
     }
-    getMsg(path) {
+    getMsg(path, spPage) {
         let ps = path.split('/').filter((e) => { return !!e });
         let pt = this.root, i;
         let dpath = '/';
@@ -96,6 +103,11 @@ class OneCache {
         } else if (pt.type === 0 && pt.date > new Date()) {
             msg = Msg.file(pt.data.fileInfo, pt.data.downloadUrl);
         } else msg = Msg.info(0);
+
+        if (msg.statusCode === 0) {
+            if (!spPage) spPage = 0;
+            if (this.root_sp[path] && this.root_sp[path][spPage]) msg = this.root_sp[path][spPage];
+        }
         msg.dpath = dpath;
         return msg;
     }

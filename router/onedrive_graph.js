@@ -1,5 +1,5 @@
 'use strict';
-const { Msg, formatDate } = require('../utils/msgutils');
+const { Msg } = require('../utils/msgutils');
 const { OneDrive } = require('../lib/onedriveAPI');
 
 let onedrive;
@@ -7,30 +7,37 @@ let _cache;
 let mconfig;
 
 exports.ls = ls;
-async function ls(path) {
+async function ls(path, skiptoken) {
 	try {
-		let data = await onedrive.msGetDriveItems(path);
-		if (data.children !== undefined) {//文件夹
-			let content = [];
-			data.children.forEach(e => {
-				content.push({
-					type: e['file'] ? 0 : 1,
-					name: e['name'],
-					size: Number(e['size']),
-					mime: e['file'] ? e['file']['mimeType'] : 'folder/onedrive',
-					time: formatDate(e['lastModifiedDateTime'])
-				});
-			});
-			return Msg.list(content);
-		} else {//文件
+		if (!path.endsWith('/')) {//处理文件情况
+			let data = await onedrive.msGetItemInfo(path);
 			return Msg.file({
 				type: 0,
 				name: data['name'],
-				size: Number(data['size']),
-				mime: data['file']['mimeType'],
-				time: formatDate(data['lastModifiedDateTime'])
+				size: data['size'],
+				mime: data['file']['mimeType'],//@info 暂时不处理目录不规范的情况,直接throw
+				time: data['lastModifiedDateTime']
 			}, data['@microsoft.graph.downloadUrl']);
 		}
+		if (path !== '/') path = path.slice(0, -1);
+		let params = {
+			//$top: 50
+		};
+		if (skiptoken) params.$skiptoken = skiptoken;
+		let data = await onedrive.msGetDriveItems(path, params);
+		let content = [];
+		data.value.forEach(e => {
+			content.push({
+				type: e['file'] ? 0 : 1,
+				name: e['name'],
+				size: e['size'],
+				mime: e['file'] ? e['file']['mimeType'] : 'folder/onedrive',
+				time: e['lastModifiedDateTime']
+			});
+		});
+		if (data['@odata.nextLink']) {
+			return Msg.list(content, '?spPage=' + /skiptoken=(\w*)/.exec(data['@odata.nextLink'])[1]);
+		} else return Msg.list(content);
 	} catch (error) {
 		if (error.response && error.response.status === 404) return Msg.info(404);
 		else throw error;
@@ -50,9 +57,9 @@ async function find(text) {
 		content.push({
 			type: e['file'] ? 0 : 1,
 			name: ma[1],
-			size: Number(e['size']),
+			size: e['size'],
 			mime: e['file'] ? e['file']['mimeType'] : 'folder/onedrive',
-			time: formatDate(e['lastModifiedDateTime'])
+			time: e['lastModifiedDateTime']
 		});
 	});
 	return Msg.list(content);
@@ -74,7 +81,7 @@ async function mv(srcPath, desPath) {
 exports.cp = cp;
 async function cp(srcPath, desPath) {
 	await onedrive.msCopy(srcPath, desPath);
-	return Msg.info(202);
+	return Msg.info(200);
 }
 
 exports.rm = rm;
@@ -110,26 +117,27 @@ exports.func = async (spConfig, cache, event) => {
 	onedrive = new OneDrive(spConfig['refresh_token'], spConfig['oauth']);
 	await onedrive.init();
 	let root = spConfig.root || '';
-	let p2 = root + event.splitPath.p2;
+	let p2 = root + event.p2;
+	let cmdData = event.cmd === 'ls' ? {} : event.body.cmdData;
 	switch (event.cmd) {
 		case 'ls':
-			return await ls(p2);
+			return await ls(p2, event.query.spPage);
 		case 'mkdir':
-			return await mkdir(root + event.body.path, event.body.name);
+			return await mkdir(p2, cmdData.name);
 		case 'mv':
-			return await mv(root + event.body.srcPath, root + event.body.desPath);
+			return await mv(p2, root + event.p2_des);
 		case 'cp':
-			return await cp(root + event.body.srcPath, root + event.body.desPath);
+			return await cp(p2, root + event.p2_des);
 		case 'rm':
-			return await rm(root + event.body.path);
+			return await rm(p2);
 		case 'ren':
-			return await ren(root + event.body.path, event.body.name);
+			return await ren(p2, cmdData.name);
 		case 'touch':
-			return await touch(root + event.body.path, event.body.name, event.body.content);
+			return await touch(p2, cmdData.name, cmdData.content);
 		case 'upload':
-			return await upload(root + event.body.path, event.body.cmdData.fileSystemInfo);
+			return await upload(p2, cmdData.fileSystemInfo);
 		case 'find':
-			return await find(event.body.cmdData.text);
+			return await find(cmdData.text);
 		default:
 			return Msg.info(400, "No such cmd");
 	}

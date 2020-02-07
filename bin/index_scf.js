@@ -1,7 +1,6 @@
 const querystring = require('querystring');
 const fs = require('fs');
 const path = require('path');
-const { genEvent } = require('../utils/eventutil');
 const { OnePoint } = require('./main');
 let op = new OnePoint();
 op.initialize(JSON.parse(fs.readFileSync(path.resolve(__dirname, '../config.json'), 'utf8')));
@@ -10,8 +9,8 @@ exports.main_handler = async (event, context, callback) => {
 
     let url = event['path'] + '?' + querystring.stringify(event['queryString']);
 
-    let _event = genEvent(event['httpMethod'], url, event.headers, event.body, "scf",event['requestContext']['sourceIp'],'',event['queryString']);
-    
+    let _event = op.genEvent(event['httpMethod'], url, event.headers, event.body, "scf", event['requestContext']['sourceIp'], '', event['queryString']);
+
     //处理域名和路径,分离得到 p0 p12
     let requestContext_path = event['requestContext']['path'];
     if (requestContext_path.endsWith('/')) requestContext_path = requestContext_path.slice(0, -1);// / or /abc/

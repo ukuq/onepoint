@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="https://i.loli.net/2020/01/31/NmHBFUPcXnrsj5b.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Load required Bootstrap and BootstrapVue CSS -->
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" />
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <!-- Load Vue followed by BootstrapVue -->
+    <script src="https://unpkg.com/vue@latest/dist/vue.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
+
+    <!-- Load the following for BootstrapVueIcons support -->
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
+
+    <script src="https://cdn.bootcss.com/blueimp-md5/2.12.0/js/md5.min.js"></script>
+
+    <style>
+        .opt-btns {
+            display: none;
+            position: absolute;
+        }
+
+        .opt-div:hover .opt-btns {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <template>
+            <b-navbar toggleable="lg" type="dark" variant="dark" sticky>
+                <div class="container">
+                    <b-navbar-brand href="#">
+                        <img src="https://i.loli.net/2020/01/31/H4BJUywjxf5GoZO.png" class="d-inline-block align-top"
+                            alt="logo" crossorigin="anonymous">
+                        ONEPOINT
+                    </b-navbar-brand>
+
+                    <b-collapse id="nav-collapse" is-nav>
+                        <b-navbar-nav>
+                            <b-nav-item href="../">Home</b-nav-item>
+                            <b-nav-item href="files">Files</b-nav-item>
+                            <b-nav-item href="setting">Setting</b-nav-item>
+                            <b-nav-item href="cache">Cache</b-nav-item>
+                            <b-nav-item href="./" active>Dashboard</b-nav-item>
+                        </b-navbar-nav>
+                        <b-navbar-nav class="ml-auto">
+                            <b-nav-item href="logout" right>Logout</b-nav-item>
+                        </b-navbar-nav>
+                    </b-collapse>
+                </div>
+            </b-navbar>
+            <div class="container">
+                <b-card no-body class="mt-3">
+                    <b-card-header>
+                        Dashboard
+                    </b-card-header>
+                    <b-card-body class="row">
+                        <div class="col-6"
+                            style="display: flex;justify-content: center;flex-direction: column;align-items: center;">
+                            <b-card-title>createTime:{{  formatDate(runInfo.createTime) }}</b-card-title>
+                            <b-card-title>initTime:{{ formatDate(runInfo.initTime) }}</b-card-title>
+                        </div>
+                        <div class="col-6">
+                            <b-list-group>
+                                <b-list-group-item class="d-flex justify-content-between align-items-center">
+                                    normal
+                                    <b-badge variant="primary" pill>{{ runInfo.normal }}</b-badge>
+                                </b-list-group-item>
+
+                                <b-list-group-item class="d-flex justify-content-between align-items-center">
+                                    api
+                                    <b-badge variant="primary" pill>{{ runInfo.api }}</b-badge>
+                                </b-list-group-item>
+
+                                <b-list-group-item class="d-flex justify-content-between align-items-center">
+                                    admin
+                                    <b-badge variant="primary" pill>{{ runInfo.admin }}</b-badge>
+                                </b-list-group-item>
+                            </b-list-group>
+                        </div>
+                    </b-card-body>
+                </b-card>
+                <b-card no-body class="mt-3">
+                    <b-card-header>
+                        DriveInfo
+                    </b-card-header>
+                    <b-card-body class="px-0">
+
+                        <b-table-simple hover outlined responsive>
+
+                            <b-thead head-variant="light">
+                                <b-tr>
+                                    <b-th>path</b-th>
+                                    <b-th>funcName</b-th>
+                                    <b-th>password</b-th>
+                                </b-tr>
+                            </b-thead>
+                            <b-tbody>
+                                <b-tr v-for="e in drivesInfos" :key="e.path">
+                                    <b-td>
+                                        {{ e.path }}
+                                    </b-td>
+                                    <b-td>{{ e.funcName }}</b-td>
+                                    <b-td>
+                                        <template v-if='e.password'>
+                                            {{ e.password }}
+                                            <span class="opt-div">
+                                                <b-icon icon="box-arrow-up-right" style="cursor: pointer;"></b-icon>
+                                                <div class="opt-btns">
+                                                    <b-button-group vertical>
+                                                        <b-button @click=getShareUrl(e.path,3600000,e.password)>1小时
+                                                        </b-button>
+                                                        <b-button @click=getShareUrl(e.path,86400000,e.password)>1天
+                                                        </b-button>
+                                                        <b-button @click=getShareUrl(e.path,604800000,e.password)>1星期
+                                                        </b-button>
+                                                    </b-button-group>
+                                                </div>
+                                            </span>
+                                        </template>
+                                        <span v-else>none</span>
+                                    </b-td>
+                                </b-tr>
+                            </b-tbody>
+                        </b-table-simple>
+                        <a :href="info">{{ info }}</a>
+                    </b-card-body>
+                </b-card>
+            </div>
+        </template>
+    </div>
+    <script>
+        var api_path = "../api/cmd"
+        var app = new Vue({
+            el: '#app',
+            data: {
+                runInfo: {},
+                drivesInfos: [],
+                info: 'default info'
+            },
+            created: function () {
+                let _this = this;
+                axios.get('./ajax/dashboard').then(e => {
+                    console.log(e.data);
+                    _this.runInfo = e.data.runInfo;
+                    _this.drivesInfos= e.data.drivesInfos;
+                })
+            },
+            methods: {
+                getShareUrl(path, time, password) {
+                    time = new Date().valueOf() + time;
+                    let token = md5(password +''+ time);
+                    console.log(password+', '+ time+', '+token);
+                    this.info = '..' + path + '?token=' + token + '&expiresdate=' + time;
+                }
+            }
+        });
+
+        function formatDate(str) {
+            let oDate = new Date(str);
+            if ('Invalid Date' == oDate) return oDate;
+            let oYear = oDate.getFullYear(),
+                oMonth = oDate.getMonth() < 9 ? "0" + (oDate.getMonth() + 1) : (oDate.getMonth() + 1),
+                oDay = oDate.getDate() < 10 ? "0" + oDate.getDate() : oDate.getDate(),
+                oHour = oDate.getHours() < 10 ? "0" + oDate.getHours() : oDate.getHours(),
+                oMinute = oDate.getMinutes() < 10 ? "0" + oDate.getMinutes() : oDate.getMinutes(),
+                oSecond = oDate.getSeconds() < 10 ? "0" + oDate.getSeconds() : oDate.getSeconds(),
+                oTime = oYear + '-' + oMonth + '-' + oDay + " " + oHour + ":" + oMinute + ":" + oSecond; //最后拼接时间
+            return oTime;
+        };
+    </script>
+</body>
+
+</html>

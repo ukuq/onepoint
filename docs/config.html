@@ -1,27 +1,28 @@
+<!doctype html>
 <html lang="zh-CN">
 
 <head>
     <link rel="shortcut icon" href="https://i.loli.net/2020/01/31/NmHBFUPcXnrsj5b.png">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Load required Bootstrap and BootstrapVue CSS -->
     <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" />
+
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <!-- Load Vue followed by BootstrapVue -->
     <script src="https://unpkg.com/vue@latest/dist/vue.min.js"></script>
-</head>
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
 
-<style>
-    body {
-        background: #e4e4e4;
-    }
-
-    .container>div {
-        background: white;
-    }
-</style>
+    <!-- Load the following for BootstrapVueIcons support -->
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
 </head>
 
 <body>
-    <div id="app" class="container border rounded p-3">
-        <div class="card my-3">
+    <div id="app" class="container border rounded p-3 my-3">
+
+
+        <div class="card">
             <div class="card-header">
                 README
             </div>
@@ -36,200 +37,177 @@
                 </p>
             </div>
         </div>
-        <div class="card my-3">
-            <div class="card-header">
-                核心配置
-            </div>
-            <div class="card-body">
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label>管理密码</label>
-                        <input v-model="config.G_CONFIG.admin_password" class="form-control"
-                            placeholder="admin_password">
+
+        <b-card no-body class="mt-3">
+            <b-tabs pills card>
+                <b-tab title="应用设置" active>
+                    <b-form-group label="管理员密码">
+                        <b-form-input v-model.trim="config.G_CONFIG.admin_password"></b-form-input>
+                    </b-form-group>
+                    <b-form-group label="主题类型">
+                        <b-form-select v-model="config.G_CONFIG.render_name" :options="['w.w']"></b-form-select>
+                    </b-form-group>
+                </b-tab>
+
+                <b-tab title="网站信息">
+                    <b-form-group label="网站名称">
+                        <b-form-input v-model="config.G_CONFIG.site_name"></b-form-input>
+                    </b-form-group>
+                    <b-form-group label="网站图标">
+                        <b-form-input v-model="config.G_CONFIG.site_icon" type="url"></b-form-input>
+                    </b-form-group>
+                    <b-form-group label="网站标题">
+                        <b-form-input v-model="config.G_CONFIG.site_title"></b-form-input>
+                    </b-form-group>
+                    <b-form-group label="网站关键字">
+                        <b-form-input v-model="config.G_CONFIG.site_keywords"></b-form-input>
+                    </b-form-group>
+
+                    <b-form-group label="网站描述">
+                        <b-form-textarea rows="3" max-rows="8" v-model="config.G_CONFIG.site_description">
+                        </b-form-textarea>
+                    </b-form-group>
+
+                    <b-form-group label="全站脚本">
+                        <b-form-textarea rows="3" max-rows="8" v-model="config.G_CONFIG.site_script"></b-form-textarea>
+                    </b-form-group>
+
+                    <b-form-group label="网站公告">
+                        <b-form-textarea rows="3" max-rows="8" v-model="config.G_CONFIG.site_readme"></b-form-textarea>
+                    </b-form-group>
+
+                    <b-form-group label="代理网站">
+                        <b-form-textarea rows="3" max-rows="8" v-model="config.G_CONFIG.proxy" disabled>
+                        </b-form-textarea>
+                    </b-form-group>
+                </b-tab>
+
+                <b-tab title="核心设置">
+
+                    <div class="d-flex">
+                        <b-form-group label="映射路径" class="col-4">
+                            <b-form-input v-model="tmp_config.path"></b-form-input>
+                        </b-form-group>
+                        <b-form-group label="云盘密码" class="col-4">
+                            <b-form-input v-model="tmp_config.password"></b-form-input>
+                        </b-form-group>
+                        <b-form-group label="模块类型" class="col-4">
+                            <b-form-select v-model="selected" :options="funcNames"></b-form-select>
+                        </b-form-group>
                     </div>
-                    <div class="form-group col-md-6">
-                        <label>主题类型</label>
-                        <select v-model="config.G_CONFIG.render_name" class="form-control">
-                            <option disabled value="">请选择</option>
-                            <option value="w.w">w.w</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="card my-3">
-            <div class="card-header">
-                网站信息
-            </div>
-            <div class="card-body">
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label>网站名称</label>
-                        <input v-model="config.G_CONFIG.site_name" class="form-control" placeholder="site_name">
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label>网站图标</label>
-                        <input v-model="config.G_CONFIG.site_icon" class="form-control" placeholder="site_icon">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label>网站标题</label>
-                        <input v-model="config.G_CONFIG.site_title" class="form-control" placeholder="site_title">
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label>关键字词</label>
-                        <input v-model="config.G_CONFIG.site_keywords" class="form-control" placeholder="site_keywords">
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label for="validationTextarea">网站描述</label>
-                    <textarea v-model="config.G_CONFIG.site_description" class="form-control"
-                        placeholder="site_description"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="validationTextarea">全站脚本</label>
-                    <textarea v-model="config.G_CONFIG.site_script" class="form-control"
-                        placeholder="site_script"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="validationTextarea">网站公告</label>
-                    <textarea v-model="config.G_CONFIG.site_readme" class="form-control"
-                        placeholder="site_readme:readme"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="validationTextarea">代理网站</label>
-                    <textarea v-model="config.G_CONFIG.proxy" class="form-control" placeholder="proxy"
-                        disabled></textarea>
-                </div>
-            </div>
-        </div>
-        <div class="card my-3">
-            <div class="card-header">
-                云盘核心
-            </div>
-            <div class="card-body">
-                <div class="form-row">
-                    <div class="form-group col-md-4">
-                        <label>映射路径</label>
-                        <input v-model="tmp_config.path" class="form-control" placeholder="path:注意以 / 结尾">
-                    </div>
-                    <div class="form-group col-md-4">
-                        <label>云盘密码</label>
-                        <input v-model="tmp_config.password" class="form-control" placeholder="password">
-                    </div>
-                    <div class="form-group col-md-4">
-                        <label>模块类型</label>
-                        <select v-model="selected" class="form-control">
-                            <option disabled value="">请选择</option>
-                            <option v-for="item in funcNames" :value="item">{{ item }}</option>
-                        </select>
-                    </div>
-                </div>
-                <div id="main-select">
-                    <div v-show="selected==='onedrive_graph'" class="form-row">
-                        <div class="form-group col-md-4">
-                            <label>根路径</label>
-                            <input v-model="tmp_config.onedrive_graph.root" placeholder="root:注意结尾不是/"
-                                class="form-control">
+                    <hr>
+
+                    <div v-show="selected==='onedrive_graph'">
+                        <div class="d-flex">
+                            <b-form-group label="根路径" class="col-4">
+                                <b-form-input v-model="tmp_config.onedrive_graph.root"></b-form-input>
+                            </b-form-group>
+                            <b-form-group label="认证类型" class="col-4">
+                                <b-form-input v-model.num="tmp_config.onedrive_graph.oauth" disabled></b-form-input>
+                            </b-form-group>
+                            <b-form-group label="获取令牌" class="col-4">
+                                <a class="btn btn-secondary d-block" href="https://ukuq.github.io/onepoint/onedrive/"
+                                    target="blank">GetToken</a>
+                            </b-form-group>
                         </div>
-                        <div class="form-group col-md-4">
-                            <label>认证类型</label>
-                            <input v-model="tmp_config.onedrive_graph.oauth" placeholder="oauth: 默认0"
-                                class="form-control" disabled>
-                        </div>
-                        <div class="form-group col-md-4">
-                            <label>获取令牌</label>
-                            <a class="btn btn-secondary d-block" href="https://ukuq.github.io/onepoint/onedrive/"
-                                target="blank">GetToken</a>
-                        </div>
-                        <div class="form-group col-md-12">
-                            <label>认证令牌</label>
-                            <textarea v-model="tmp_config.onedrive_graph.refresh_token" placeholder="refresh_token"
-                                class="form-control">
-                           </textarea>
+                        <b-form-group label="认证令牌" class="col-12">
+                            <b-form-textarea rows="3" max-rows="8" v-model="tmp_config.onedrive_graph.refresh_token">
+                            </b-form-textarea>
+                        </b-form-group>
+                    </div>
+
+
+                    <div v-show="selected==='onedrive_sharepoint'">
+                        <div class="d-flex">
+                            <b-form-group label="根路径" class="col-4">
+                                <b-form-input v-model="tmp_config.onedrive_sharepoint.root"></b-form-input>
+                            </b-form-group>
+                            <b-form-group label="分享链接" class="col-8">
+                                <b-form-input v-model="tmp_config.onedrive_sharepoint.shareUrl" type="url">
+                                </b-form-input>
+                            </b-form-group>
                         </div>
                     </div>
-                    <div v-show="selected==='onedrive_sharepoint'" class="form-row">
-                        <div class="form-group col-md-6">
-                            <label>根路径</label>
-                            <input v-model="tmp_config.onedrive_sharepoint.root" class="form-control"
-                                placeholder="root:注意结尾不是/">
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label>分享链接</label>
-                            <input v-model="tmp_config.onedrive_sharepoint.shareUrl" class="form-control"
-                                placeholder="shareUrl">
-                        </div>
-                    </div>
-                    <div v-show="selected==='gdrive_goindex'" class="form-row">
-                        <div class="form-group col-md-6">
-                            <label>cloudflare链接</label>
-                            <input v-model="tmp_config.gdrive_goindex.cfurl" placeholder="cfurl" class="form-control">
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label>goindex密码</label>
-                            <input v-model="tmp_config.gdrive_goindex.password" class="form-control"
-                                placeholder="password">
+
+                    <div v-show="selected==='gdrive_goindex'">
+                        <div class="d-flex">
+                            <b-form-group label="goindex密码" class="col-4">
+                                <b-form-input v-model.num="tmp_config.gdrive_goindex.password"></b-form-input>
+                            </b-form-group>
+                            <b-form-group label="cloudflare链接" class="col-8">
+                                <b-form-input v-model="tmp_config.gdrive_goindex.cfurl" type="url"></b-form-input>
+                            </b-form-group>
                         </div>
                     </div>
-                    <div v-show="selected==='linux_scf'" class="form-row">
-                        <div class="form-group col-md-6">
-                            <label>根路径</label>
-                            <input v-model="tmp_config.linux_scf.root" placeholder="root:注意结尾不是/" class="form-control">
+                    <div v-show="selected==='linux_scf'">
+                        <div class="d-flex">
+                            <b-form-group label="根路径" class="col-4">
+                                <b-form-input v-model="tmp_config.linux_scf.root"></b-form-input>
+                            </b-form-group>
                         </div>
                     </div>
-                    <div v-show="selected==='system_phony'" class="form-row">
-                        <div class="form-group col-md-12">
-                            <label>文件链接</label>
-                            <textarea v-model="tmp_config.system_phony.list" placeholder="list"
-                                class="form-control"></textarea>
+                    <div v-show="selected==='system_phony'">
+                        <div class="d-flex">
+                            <b-form-group label="文件链接" class="col-12">
+                                <b-form-textarea rows="3" max-rows="8" v-model="tmp_config.system_phony.list" disabled>
+                                </b-form-textarea>
                         </div>
+                        </b-form-group>
                     </div>
-                    <button v-on:click="addPath" :disabled="!selected" class="btn btn-primary">
-                        添加
-                    </button>
-                </div>
-                <div class="border rounded my-3 table-responsive">
-                    <table class="table table-hover table-bordered my-0">
-                        <thead>
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">path</th>
-                                <th scope="col">funcName</th>
-                                <th scope="col">spConfig</th>
-                                <th scope="col">password</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="a in drivePaths" :key="a">
-                                <td><button v-on:click="deletePath(a)">X</button></td>
-                                <td>{{ a }}</td>
-                                <td>{{ config.DRIVE_MAP[a].funcName }}</td>
-                                <td>{{ config.DRIVE_MAP[a].spConfig }}</td>
-                                <td>{{ config.DRIVE_MAP[a].password }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="card my-3">
-            <div class="card-header">
-                生成结果
-            </div>
-            <div class="card-body">
-                <textarea :value="configString" placeholder="this is the config" class="form-control" id="configString"
-                    style="height: 700px;"></textarea>
-            </div>
-        </div>
+                    <hr>
+                    <b-button @click="addPath" :disabled="!selected || !tmp_config.path" variant="primary" class="mx-3">确认添加</b-button>
+                </b-tab>
+
+
+                <b-tab title="生成结果">
+                    <b-form-textarea rows="25" v-model="configString">
+                    </b-form-textarea>
+                </b-tab>
+
+            </b-tabs>
+        </b-card>
+
+        <b-card no-body class="mt-3">
+            <b-table-simple hover bordered responsive>
+                <b-thead head-variant="light">
+                    <b-tr>
+                        <b-th sticky-column variant="light">
+                            <b-icon icon="gear"></b-icon>
+                        </b-th>
+                        <b-th>path</b-th>
+                        <b-th>funcName</b-th>
+                        <b-th>spConfig</b-th>
+                        <b-th>password</b-th>
+                    </b-tr>
+                </b-thead>
+                <b-tbody>
+                    <b-tr v-for="a in drivePaths" :key="a">
+                        <b-td sticky-column>
+                            <b-icon icon="x" v-on:click="deletePath(a)" style="cursor:pointer;"></b-icon>
+                        </b-td>
+                        <b-td>{{ a }}</b-td>
+                        <b-td>{{ config.DRIVE_MAP[a].funcName }}</b-td>
+                        <b-td>{{ config.DRIVE_MAP[a].spConfig }}</b-td>
+                        <b-td>{{ config.DRIVE_MAP[a].password }}</b-td>
+                    </b-tr>
+                </b-tbody>
+            </b-table-simple>
+        </b-card>
+
+
+
+
+
     </div>
     <script>
         var app = new Vue({
             el: '#app',
             data: {
                 message: 'Hello Vue!',
-                funcNames: ['onedrive_graph', 'onedrive_sharepoint', 'gdrive_goindex', 'linux_scf'],
+                funcNames: ['onedrive_graph', 'onedrive_sharepoint', 'gdrive_goindex', 'linux_scf',
+                    'system_phony'
+                ],
+                fields: ['funcName', 'spConfig', 'password'],
                 selected: '',
                 tmp_config: {
                     path: "",

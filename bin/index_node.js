@@ -1,7 +1,6 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { genEvent } = require('../utils/eventutil');
 const { OnePoint } = require('./main');
 let server;
 let op = new OnePoint();
@@ -15,7 +14,7 @@ module.exports = () => {
         });
         req.on('end', async () => {
             try {
-                let r = await op.handleEvent(genEvent(req.method, req.url, req.headers, body, "node", req.connection.remoteAddress));
+                let r = await op.handleRaw(req.method, req.url, req.headers, body, "node", req.connection.remoteAddress);
                 res.writeHead(r.statusCode, r.headers);
                 res.end(r.body);
                 res.end();

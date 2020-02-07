@@ -2,9 +2,11 @@ let Msg = {
     file: Msg_file,
     list: Msg_list,
     info: Msg_info,
-    html: Msg_html,
+    error: Msg_error,
+    json: Msg_json,
     m301: Msg_m301,
-    error: Msg_error
+    html: Msg_html,
+    html_json: Msg_html_json
 }
 
 function Msg_file(fileInfo, downloadUrl, headers) {
@@ -19,7 +21,7 @@ function Msg_file(fileInfo, downloadUrl, headers) {
     }
 }
 
-function Msg_list(content, prevHref, nextHref, headers) {
+function Msg_list(content, nextHref, prevHref, headers) {
     return {
         type: 1, //1_dir 固定值
         statusCode: 200,// 固定值
@@ -50,11 +52,37 @@ function Msg_error(statusCode, error, headers) {
         statusCode: statusCode,//enum: 200 301 401 403 404 500
         headers: headers,
         data: {
-            info: error.message
-        },
-        error: error
+            info: error.message,
+            error: error
+        }
     };
     return m;
+}
+
+function Msg_json(statusCode, obj, headers) {
+    let m = {
+        type: 2, //2_info 固定值
+        statusCode: statusCode,//enum: 200 301 401 403 404 500
+        headers: headers,
+        data: {
+            info: 'json msg',
+            json: obj
+        }
+    };
+    return m;
+}
+
+function Msg_m301(location) {
+    return {
+        type: 2,
+        statusCode: 301,
+        headers: {
+            'Location': location
+        },
+        data: {
+            info: "301:" + location
+        }
+    }
 }
 
 function Msg_html(statusCode, html, headers) {
@@ -68,15 +96,13 @@ function Msg_html(statusCode, html, headers) {
     }
 }
 
-function Msg_m301(location) {
+function Msg_html_json(statusCode, obj, headers) {
     return {
-        type: 3,
-        statusCode: 301,
-        headers: {
-            'Location': location
-        },
+        type: 3, //3_html 固定值
+        statusCode: statusCode,
+        headers: headers || { 'Content-Type': 'application/json' },
         data: {
-            html: "301:" + location
+            html: JSON.stringify(obj)
         }
     }
 }

@@ -8,18 +8,16 @@
         "site_keywords": "OnePoint",
         "site_description": "OnePoint description",
         "site_script": "",
-        "site_readme":"Nothing here!",
+        "site_readme": "Nothing here!",
         "proxy": [
             "https://proxy.onesrc.workers.dev/"
         ]
     },
     "DRIVE_MAP": {
-        
         "/": {
             "funcName": "system_phony",
             "spConfig": {}
         },
-        
         "/demo_sharepoint/": {
             "funcName": "onedrive_sharepoint",
             "spConfig": {
@@ -54,7 +52,7 @@
                 "oauth": 0
             }
         },
-        "/demo_password_123/": {
+        "/demo_password_123_密码测试/": {
             "funcName": "onedrive_sharepoint",
             "spConfig": {
                 "shareUrl": "https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/Es6CMetI4fJCr4GqWZ3uvA0BEnzJxxb4CU-iQr04VYomLQ?e=C9K35U",

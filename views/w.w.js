@@ -5,8 +5,8 @@ exports.render = render;
 //暂时不处理特殊字符
 function render(responseMsg, event, G_CONFIG) {
     let splitPath = event.splitPath;
-    let p_h0 = splitPath.p_h0;
-    let p_12 = splitPath.p_12;
+    let p_h0 = urlSpCharEncode(splitPath.p_h0);
+    let p_12 = urlSpCharEncode(splitPath.p_12);
     let data = responseMsg.data;
     let readmeFlag = false;
     let html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"><link rel="shortcut icon" href="${G_CONFIG.site_icon}"><title>${G_CONFIG.site_title}</title></head><body><nav class="navbar sticky-top navbar-dark bg-dark navbar-expand-lg"><div class="container"><a target="_self" href="https://github.com/ukuq/onepoint" class="navbar-brand"><img src="${G_CONFIG.site_icon}" alt="logo" crossorigin="anonymous" class="d-inline-block align-top" style="width: 30px;">${G_CONFIG.site_name}</a></div></nav><div class="container mt-3">`;
@@ -32,7 +32,7 @@ function render(responseMsg, event, G_CONFIG) {
             G_CONFIG.proxy.forEach((e) => {
                 html += `<option value="${e}">${e}</option>`;
             });
-            
+
             let fileInfo = data.fileInfo;
             let downloadUrl = data.downloadUrl;
             if (event.cookie.proxy) downloadUrl = event.cookie.proxy + '?url=' + encodeURIComponent(downloadUrl);
@@ -69,10 +69,10 @@ function render(responseMsg, event, G_CONFIG) {
             }
             data.content.forEach(e => {
                 if (e.type === 1 || e.type === 3) {//文件夹 
-                    html += `<tr><td><a href="${splitPath.p_h012}${e.name}/">${e.name}/</a></td><td>${e.time}</td><td class="text-right">${formatSize(e.size)}</td></tr>`;
+                    html += `<tr><td><a href="${splitPath.p_h012}${urlSpCharEncode(e.name)}/">${e.name}/</a></td><td>${e.time}</td><td class="text-right">${formatSize(e.size)}</td></tr>`;
                 } else if (e.type === 0) {//文件
                     if (e.name === 'README.md') { readmeFlag = true };
-                    html += `<tr><td><a href="${splitPath.p_h012}${e.name}?preview">${e.name}</a></td><td>${e.time}</td><td class="text-right">${formatSize(e.size)}</td></tr>`;
+                    html += `<tr><td><a href="${splitPath.p_h012}${urlSpCharEncode(e.name)}?preview">${e.name}</a></td><td>${e.time}</td><td class="text-right">${formatSize(e.size)}</td></tr>`;
                 }
             });
             if (data.nextHref) html += `<tr><td><a href="${data.nextHref}">Next...</a></td><td></td><td></td></tr>`;
@@ -80,7 +80,8 @@ function render(responseMsg, event, G_CONFIG) {
             break;
         case 2://info
             if (responseMsg.statusCode === 401) {
-                html += `<div class="border rounded my-3 pt-3"><form method="post" class="form-inline"><div class="form-group mx-sm-3 mb-2"><input type="password" name="password" class="form-control" placeholder="${data.info}"></div><button type="submit" class="btn btn-primary mb-2">Submit</button></form></div>`
+                let pass = data.info.split(':');
+                html += `<div class="border rounded my-3 pt-3"><form method="post" class="form-inline"><div class="form-group mx-sm-3 mb-2"><input type="password" name="${pass[0]}" class="form-control" placeholder="${pass[1]}"></div><button type="submit" class="btn btn-primary mb-2">Submit</button></form></div>`
             } else {
                 html += `<div class="border rounded my-3 p-3"><span>${data.info}</span></div>`
             }
@@ -94,7 +95,11 @@ function render(responseMsg, event, G_CONFIG) {
     //footer
     html += `<div class="text-right"><span class="text-muted">Powered by <a href="https://github.com/ukuq/onepoint">OnePoint</a></span><span class="text-muted ml-2">Processing time: <a href="javascript:void">${new Date() - event.start_time}ms</a></span></div>`;
     html += `</div><script src="https://cdn.bootcss.com/marked/0.7.0/marked.js"></script>${G_CONFIG.site_script}`;
-    if (readmeFlag) html += `<script src="https://unpkg.com/axios/dist/axios.min.js"></script><script>fetch('./README.md').then(response => response.text()).then(data => document.getElementById('readMe').innerHTML =marked(data)).catch(err => document.getElementById('readMe').innerHTML="Oh, error:" + err);</script>`;
+    if (readmeFlag) html += `<script src="https://unpkg.com/axios/dist/axios.min.js"></script><script>axios.get('./README.md?rand=' + Math.random()).then(data => document.getElementById('readMe').innerHTML =marked(data)).catch(err => document.getElementById('readMe').innerHTML="Oh, error:" + err);</script>`;
     html += `</body></html>`;
-    return html;
+    return {
+        statusCode: responseMsg.statusCode,
+        headers: responseMsg.headers,
+        body: html
+    };
 }
