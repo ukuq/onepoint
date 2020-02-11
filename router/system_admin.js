@@ -42,7 +42,7 @@ exports.func = async (spConfig, cache, event) => {
     function getHtmlFromFs(name) {
         if (name === 'files') name = 'file2';
         else if (name === 'dashboard') name = 'main';
-        return Msg.html(200, fs.readFileSync(path.resolve(__dirname, `../html/admin/${name}.html`), 'utf-8'),res_headers);
+        return Msg.html(200, fs.readFileSync(path.resolve(__dirname, `../html/admin/admin_${name}.html`), 'utf-8'),res_headers);
     }
 }
 
