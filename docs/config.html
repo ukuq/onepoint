@@ -99,10 +99,10 @@
 
                     <div v-show="selected==='onedrive_graph'">
                         <div class="d-flex">
-                            <b-form-group label="根路径" class="col-4">
+                            <b-form-group label="根路径(root)" class="col-4">
                                 <b-form-input v-model="tmp_config.onedrive_graph.root"></b-form-input>
                             </b-form-group>
-                            <b-form-group label="认证类型" class="col-4">
+                            <b-form-group label="认证类型(默认为0)" class="col-4">
                                 <b-form-input v-model.num="tmp_config.onedrive_graph.oauth" disabled></b-form-input>
                             </b-form-group>
                             <b-form-group label="获取令牌" class="col-4">
@@ -110,7 +110,7 @@
                                     target="blank">GetToken</a>
                             </b-form-group>
                         </div>
-                        <b-form-group label="认证令牌" class="col-12">
+                        <b-form-group label="认证令牌(refresh_token)" class="col-12">
                             <b-form-textarea rows="3" max-rows="8" v-model="tmp_config.onedrive_graph.refresh_token">
                             </b-form-textarea>
                         </b-form-group>
