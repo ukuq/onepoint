@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="https://i.loli.net/2020/01/31/NmHBFUPcXnrsj5b.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Load required Bootstrap and BootstrapVue CSS -->
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" />
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <!-- Load Vue followed by BootstrapVue -->
+    <script src="https://unpkg.com/vue@latest/dist/vue.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
+
+    <!-- Load the following for BootstrapVueIcons support -->
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
+
+</head>
+
+<body>
+    <div id="app">
+        <template>
+            <b-navbar toggleable="lg" type="dark" variant="dark" sticky>
+                <div class="container">
+                    <b-navbar-brand href="#">
+                        <img src="https://i.loli.net/2020/01/31/H4BJUywjxf5GoZO.png" class="d-inline-block align-top"
+                            alt="logo" crossorigin="anonymous">
+                        ONEPOINT
+                    </b-navbar-brand>
+
+                    <b-collapse id="nav-collapse" is-nav>
+                        <b-navbar-nav>
+                            <b-nav-item href="../">Home</b-nav-item>
+                            <b-nav-item href="files">Files</b-nav-item>
+                            <b-nav-item href="setting" active>Setting</b-nav-item>
+                            <b-nav-item href="cache">Cache</b-nav-item>
+                            <b-nav-item href="./">Dashboard</b-nav-item>
+                        </b-navbar-nav>
+                        <b-navbar-nav class="ml-auto">
+                            <b-nav-item href="logout" right>Logout</b-nav-item>
+                        </b-navbar-nav>
+                    </b-collapse>
+                </div>
+            </b-navbar>
+            <div class="container">
+                <pre><code>{{config }}</code></pre>
+            </div>
+        </template>
+    </div>
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                config: 'default info'
+            },
+            created: function () {
+                let _this = this;
+                axios.get('./ajax/setting').then(e => {
+                    console.log(e.data);
+                    _this.config = JSON.stringify(e.data, null, 2);
+                })
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,34 +1,21 @@
-const { Msg, formatDate } = require('../utils/msgutils');
+const { Msg } = require('../utils/msgutils');
 const { mime } = require('../utils/nodeutils');
 
-let mconfig;
+let list;
 exports.ls = ls;
 async function ls(p2) {
-    let fileName;
-    if (!p2.endsWith('/')) {
-        fileName = p2.slice(p2.lastIndexOf('/') + 1);
-        p2 = p2.slice(0, p2.lastIndexOf('/') + 1);
+    let p = /^\/([^/]+)?$/.exec(p2);
+    if (!p) return Msg.info(404, 'Nothing:Just For Mount |-_-');
+    if (!p[1]) {//folder
+        return Msg.list(list.map((e) => { return genInfoByUrl(e); }));
     }
-    if (p2 !== '/') return Msg.info(404, 'Nothing:Just For Mount |-_-');
-    let content = [];
-    if (mconfig.list) {
-        if (!fileName) {
-            mconfig.list.forEach((e) => {
-                content.push(genInfoByUrl(e));
-            });
-        } else {
-            let url = mconfig.list.find((e) => { return e.endsWith(fileName); });
-            if (url) {
-                return Msg.file(genInfoByUrl(url), url);
-            } else return Msg.info(404);
-        }
-    }
-    return Msg.list(content);
-
+    let url = list.find((e) => { return e.endsWith(p[1]); });
+    return url ? Msg.file(genInfoByUrl(url), url) : Msg.info(404);
 }
+
 exports.func = async (spConfig, cache, event) => {
-    mconfig = spConfig;
-    let p2 = event.splitPath.p2;
+    list = spConfig.list || [];
+    let p2 = event.p2;
     switch (event.cmd) {
         case 'ls':
             return await ls(p2);
@@ -43,6 +30,6 @@ function genInfoByUrl(url) {
         name: url.slice(url.lastIndexOf('/') + 1) || 'unknown',
         size: 1,
         mime: mime.getType(url) || 'onepoint/unknown',
-        time: formatDate(new Date())
+        time: new Date().toISOString()
     }
 }

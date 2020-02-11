@@ -121,94 +121,96 @@ async function handleEvent(event) {
     let { ph, p0, p_12 } = event['splitPath'];
     let p1, p2, driveInfo;
     let res_headers = { 'Content-Type': 'text/html' }, res_headers_json = { 'Content-Type': 'application/json' };
-    let responseMsg = Msg.info(0);
+    let responseMsg;
+    let drivePath;
     console.info('p_12:' + p_12);
 
-    //初始化 p1 p2 driveInfo
+    //初始化 p_12 drivePath driveInfo 
     if (p_12.startsWith('/admin/')) {
         oneCache.addEventLog(event, 3);
-        responseMsg.dpath = '/admin/';
+        drivePath = '/admin/';
         driveInfo = {
             funcName: 'system_admin',
             spConfig: {
                 G_CONFIG, DRIVE_MAP, DOMAIN_MAP, oneCache
             }
         };
-        p1 = '/admin';
-        p2 = p_12.slice(p1.length);
+        // p1 = '/admin';
+        // p2 = p_12.slice(p1.length);
     } else if (p_12.startsWith('/tmp/')) {
         return endMsg(400, res_headers, "400: '/tmp/' is private");
     } else if (p_12.startsWith('/api/')) {
         oneCache.addEventLog(event, 1);
-        if (!event.isadmin) return endMsg(401, res_headers, "401: noly admin can use this api ");
-        event.useApi = true;
-        if (p_12 === '/api/cmd') {
+        event.noRender = true;
+        if (p_12 === '/api/public/ls') {
+            event.cmd = 'ls';
+            event.spPage = event.query.spPage || 0;
+            p_12 = event.query.path || '/';
+            drivePath = oneCache.getDrivePath(p_12);
+            driveInfo = DRIVE_MAP[drivePath];
+        } else if (p_12 === '/api/cmd') {
+            if (!event.isadmin) return endMsg(401, res_headers, "401: noly admin can use this api ");
+            event.useApi = true;
             let cmdData = event.body.cmdData;
             event.cmd = event.body.cmdType;
+            event.cmdData = event.body.cmdData;
             if (cmdData.path) {
-                responseMsg = oneCache.getMsg(cmdData.path);
-                p1 = responseMsg.dpath.slice(0, -1);//p1仅用于find
-                p2 = cmdData.path.slice(responseMsg.dpath.length - 1);//@info 此处若请求不规范可能出现 ""
-                p_12 = cmdData.path;//此处 p_12 仅用于ls时更新缓存
+                p_12 = cmdData.path;
+                drivePath = oneCache.getDrivePath(p_12);
+                event.spPage = cmdData.spPage || 0;
             } else if (cmdData.srcPath && cmdData.desPath) {
-                responseMsg = oneCache.getMsg(cmdData.srcPath);
-                if (oneCache.getMsg(cmdData.desPath).dpath !== responseMsg.dpath) return endMsg(400, res_headers_json, Msg.info(400, cmdData.srcPath + " and " + cmdData.desPath + " is not in the same drive"));
-                p2 = cmdData.srcPath.slice(responseMsg.dpath.length - 1);
-                event.p2_des = cmdData.desPath.slice(responseMsg.dpath.length - 1);
+                p_12 = cmdData.srcPath;
+                drivePath = oneCache.getDrivePath(p_12);
+                if (oneCache.getDrivePath(cmdData.desPath) !== drivePath) return endMsg(400, res_headers_json, Msg.info(400, cmdData.srcPath + " and " + cmdData.desPath + " is not in the same drive"));
+                event.p2_des = cmdData.desPath.slice(drivePath.length - 1);
             } else return endMsg(400, res_headers, "400: cmdData is invalid");
-            driveInfo = DRIVE_MAP[responseMsg.dpath];
+            driveInfo = DRIVE_MAP[drivePath];
         } else return endMsg(400, res_headers, "400: no such api");
     } else {
         oneCache.addEventLog(event, 0);
         event.cmd = 'ls';
-        responseMsg = oneCache.getMsg(p_12, event.query.spPage);
-        driveInfo = DRIVE_MAP[responseMsg.dpath];
-        p1 = responseMsg.dpath.slice(0, -1);
-        p2 = p_12.slice(p1.length);
+        event.spPage = event.query.spPage || 0;
+        drivePath = oneCache.getDrivePath(p_12);
+        driveInfo = DRIVE_MAP[drivePath];
     }
-    console.log('dpath:' + responseMsg.dpath);
-
-    event['splitPath']['p2'] = p2;
+    p1 = drivePath.slice(0, -1);
+    p2 = p_12.slice(p1.length);
     event.p2 = p2;
-    if (!event.useApi) {
-        //处理云盘级密码
-        if (driveInfo.password && !event.isadmin) {//有密码 且 非管理员
-            //允许 query 云盘hash登录
-            let drivepass = event['body']['drivepass'];
-            if (event['method'] === 'GET' && event['query']['token'] && event['query']['expiresdate']) {
-                if (!isNaN(Number(event['query']['expiresdate'])) && (new Date(Number(event['query']['expiresdate'])) > new Date()) && (event['query']['token'] === getmd5(driveInfo.password + event['query']['expiresdate']))) {//利用分享的 password_date_hash 登录
-                    res_headers['set-cookie'] = _cookie.serialize('DRIVETOKEN', driveInfo.password_date_hash, { path: encodeURI(p0 + p1), maxAge: 3600 });
-                } else {
-                    responseMsg = Msg.info(401, 'drivepass:云盘token无效');
-                }
-            } else if (event['method'] === 'POST' && drivepass) {//使用密码 登录
-                if (drivepass === driveInfo.password) {//单个云盘登录
-                    res_headers['set-cookie'] = _cookie.serialize('DRIVETOKEN', driveInfo.password_date_hash, { path: encodeURI(p0 + p1), maxAge: 3600 });
-                } else {//密码错误
-                    responseMsg = Msg.info(401, 'drivepass:云盘密码错误');
-                }
-                console.log('使用密码登录:' + drivepass);
-            } else if (event['cookie']['DRIVETOKEN']) {//使用cookie
-                if (event['cookie']['DRIVETOKEN'] !== driveInfo.password_date_hash) {
-                    responseMsg = Msg.info(401, 'drivepass:云盘cookie失效');
-                }
-                console.log('使用cookie登录:' + event['cookie']['DRIVETOKEN']);
-            } else responseMsg = Msg.info(401, 'drivepass:请输入云盘密码');
-        }
-        event['splitPath']['p_h0'] = ph + p0;
-        event['splitPath']['p_h01'] = ph + p0 + p1;
-        event['splitPath']['p_h012'] = ph + p0 + p1 + p2;
+    console.log('drivePath:' + drivePath + ', p2:' + p2);
+
+    //处理云盘级密码
+    if (driveInfo.password && !event.isadmin) {//有密码 且 非管理员
+        //允许 query 云盘hash登录
+        let drivepass = event['body']['drivepass'];
+        if (event['method'] === 'GET' && event['query']['token'] && event['query']['expiresdate']) {
+            if (!isNaN(Number(event['query']['expiresdate'])) && (new Date(Number(event['query']['expiresdate'])) > new Date()) && (event['query']['token'] === getmd5(driveInfo.password + event['query']['expiresdate']))) {//利用分享的 password_date_hash 登录
+                res_headers['set-cookie'] = _cookie.serialize('DRIVETOKEN', driveInfo.password_date_hash, { path: encodeURI(p0 + p1), maxAge: 3600 });
+            } else {
+                responseMsg = Msg.info(401, 'drivepass:云盘token无效');
+            }
+        } else if (event['method'] === 'POST' && drivepass) {//使用密码 登录
+            if (drivepass === driveInfo.password) {//单个云盘登录
+                res_headers['set-cookie'] = _cookie.serialize('DRIVETOKEN', driveInfo.password_date_hash, { path: encodeURI(p0 + p1), maxAge: 3600 });
+            } else {//密码错误
+                responseMsg = Msg.info(401, 'drivepass:云盘密码错误');
+            }
+            console.log('使用密码登录:' + drivepass);
+        } else if (event['cookie']['DRIVETOKEN']) {//使用cookie
+            if (event['cookie']['DRIVETOKEN'] !== driveInfo.password_date_hash) {
+                responseMsg = Msg.info(401, 'drivepass:云盘cookie失效');
+            }
+            console.log('使用cookie登录:' + event['cookie']['DRIVETOKEN']);
+        } else responseMsg = Msg.info(401, 'drivepass:请输入云盘密码');
     }
 
-    if (responseMsg.statusCode === 0 || event.useApi) {//管理员不使用cache
+    if (!responseMsg && !event.useApi) responseMsg = oneCache.getMsg(p_12, event.spPage);
+    if (!responseMsg || drivePath === '/admin/') {//管理员不使用cache
         try {
-            responseMsg = await drive_funcs[driveInfo.funcName].func(driveInfo.spConfig, oneCache.driveCache[driveInfo.funcName], event);
+            responseMsg = await drive_funcs[driveInfo.funcName].func(driveInfo.spConfig, oneCache.driveCache[drivePath], event);
             if (event.cmd === 'ls') {
-                let spPage = event.query.spPage;
-                if (responseMsg.data.nextHref && spPage === undefined) spPage = 0;
-                oneCache.addMsg(p_12, responseMsg, spPage);
-            }
-            else if (event.cmd === 'find') responseMsg.dpath = p1 + '/';
+                responseMsg.spPage = event.spPage;
+                oneCache.addMsg(p_12, responseMsg, event.spPage);
+            } else if (event.cmd === 'find') responseMsg.parentPath = drivePath;
         } catch (error) {
             if (error.response) {
                 if (error.response.error) responseMsg = Msg.error(error.response.status, error.response.error);
@@ -244,7 +246,7 @@ async function handleEvent(event) {
         }
 
         let pageSize = 50;//分页功能
-        if (responseMsg.type === 1 && responseMsg.spPage === undefined && responseMsg.data.content.length > pageSize) {//@info 分页功能,兼容旧接口,只有云盘模块未提供href时启用
+        if (responseMsg.type === 1 && responseMsg.spPage === 0 && !responseMsg.data.nextHrefToken && responseMsg.data.content.length > pageSize) {//@info 分页功能,兼容旧接口,只有云盘模块未提供href时启用
             let content_len = responseMsg.data.content.length;
             let page = 1;
             if (!isNaN(Number(event.query['page']))) page = Number(event.query['page']);
@@ -257,15 +259,15 @@ async function handleEvent(event) {
     //处理直接 html返回
     if (responseMsg.type === 3) return endMsg(responseMsg.statusCode, responseMsg.headers, responseMsg.data.html);
     //处理api部分
-    if (event.useApi) return endMsg(responseMsg.statusCode, res_headers_json, JSON.stringify(responseMsg.data));
+    if (event.noRender) return endMsg(responseMsg.statusCode, res_headers_json, JSON.stringify(responseMsg.data));
     //处理文件下载
-    if (responseMsg.type === 0 && event.query['preview'] === undefined) return endMsg(301, { 'Location': responseMsg.data.downloadUrl }, "301:" + responseMsg.data.downloadUrl);
+    if (responseMsg.type === 0 && event.query['preview'] === undefined) return endMsg(302, { 'Location': responseMsg.data.downloadUrl }, "302:" + responseMsg.data.downloadUrl);
     console.log(responseMsg);
-    let res_render = render_funcs[G_CONFIG.render_name].render(responseMsg, event, G_CONFIG);
 
-    if (res_render.headers) for (let h in res_render.headers) res_headers[h] = responseMsg.headers[h];
-
-    return endMsg(res_render.statusCode, res_headers, res_render.body);
+    if (responseMsg.data.nextHrefToken) responseMsg.data.nextHref = '?spPage=' + responseMsg.data.nextHrefToken;
+    let res_body = render_funcs[G_CONFIG.render_name].render(responseMsg, event, G_CONFIG);
+    if (responseMsg.headers) for (let h in responseMsg.headers) res_headers[h] = responseMsg.headers[h];
+    return endMsg(responseMsg.statusCode, res_headers, res_body);
 };
 
 

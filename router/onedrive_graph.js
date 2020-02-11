@@ -23,7 +23,7 @@ async function ls(path, skiptoken) {
 		let params = {
 			//$top: 50
 		};
-		if (skiptoken) params.$skiptoken = skiptoken;
+		if (skiptoken && /\w*/.exec(skiptoken)) params.$skiptoken = skiptoken;
 		let data = await onedrive.msGetDriveItems(path, params);
 		let content = [];
 		data.value.forEach(e => {
@@ -35,9 +35,9 @@ async function ls(path, skiptoken) {
 				time: e['lastModifiedDateTime']
 			});
 		});
-		if (data['@odata.nextLink']) {
-			return Msg.list(content, '?spPage=' + /skiptoken=(\w*)/.exec(data['@odata.nextLink'])[1]);
-		} else return Msg.list(content);
+		let msg = Msg.list(content);
+		if (data['@odata.nextLink']) msg.data.nextHrefToken = /skiptoken=(\w*)/.exec(data['@odata.nextLink'])[1];
+		return msg;
 	} catch (error) {
 		if (error.response && error.response.status === 404) return Msg.info(404);
 		else throw error;
@@ -108,7 +108,7 @@ async function upload(filePath, fileSystemInfo) {
 	if (_cache[k] && new Date(_cache[k].expirationDateTime) > new Date()) return Msg.info(200, JSON.stringify(_cache[k]));
 	let res = await onedrive.msUploadSession(filePath, fileSystemInfo);
 	_cache[k] = res;
-	return Msg.info(200, JSON.stringify(res));
+	return Msg.json(200, res);
 }
 
 exports.func = async (spConfig, cache, event) => {
@@ -118,10 +118,10 @@ exports.func = async (spConfig, cache, event) => {
 	await onedrive.init();
 	let root = spConfig.root || '';
 	let p2 = root + event.p2;
-	let cmdData = event.cmd === 'ls' ? {} : event.body.cmdData;
+	let cmdData = event.cmdData;
 	switch (event.cmd) {
 		case 'ls':
-			return await ls(p2, event.query.spPage);
+			return await ls(p2, event.spPage);
 		case 'mkdir':
 			return await mkdir(p2, cmdData.name);
 		case 'mv':

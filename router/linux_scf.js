@@ -67,12 +67,12 @@ exports.func = async (spConfig, cache, event) => {
     if (!['node', 'scf', 'now'].includes(event.adapter))
         return Msg.info(500, "No such adapter: " + event.adapter);
     let root = spConfig.root || '';
-    let p2 = root + event.splitPath.p2;
+    let p2 = root + event.p2;
     switch (event.cmd) {
         case 'ls':
             return await ls(p2);
         case 'mkdir':
-            return await mkdir(root + event.body.path, event.body.name);
+            return await mkdir(p2, event.cmdData.name);
         default:
             return Msg.info(400, "No such cmd");
     }

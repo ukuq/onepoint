@@ -92,7 +92,7 @@
             },
             created: function () {
                 let _this = this;
-                axios.get('?export').then((res) => {
+                axios.get('./ajax/cache').then((res) => {
                     _this.cache = res.data;
                 }).catch((err) => {
                     _this.cache.push({

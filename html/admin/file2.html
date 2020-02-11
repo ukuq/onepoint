@@ -99,6 +99,10 @@
 
                     <b-button @click="updateContent()">Sync</b-button>
 
+                    <b-button v-show="nextHrefToken" @click="updateContent(nowPath,nextHrefToken)">
+                        LoadNext
+                    </b-button>
+
                     <b-button
                         v-show="uploadData.uploadQueue.length || uploadData.uploadSucess.length || uploadData.uploadFail.length"
                         v-b-modal.modal-upload>Upload Status</b-button>
@@ -116,8 +120,9 @@
 
 
                 </div>
-                <b-table hover responsive :items="content" :fields="fields" :busy="loadingData.isBusy"
-                    head-variant="light" class="border rounded mt-2">
+                <b-table hover responsive id="content-table" :items="content" :fields="fields"
+                    :busy="loadingData.isBusy" head-variant="light" class="border rounded mt-2"
+                    :per-page="pageData.perPage" :current-page="pageData.currentPage">
                     <template v-slot:cell(nameFormat)="data">
                         <div class="opt-div">
                             <b-icon icon="command" scale="1.25" shift-v="1.25" aria-hidden="true" class="opt-icon">
@@ -144,6 +149,14 @@
                         </div>
                     </template>
                 </b-table>
+                <div class="overflow-auto" style="display: flex;justify-content: flex-end;">
+                    <b-pagination v-model="pageData.currentPage" :total-rows="content.length"
+                        :per-page="pageData.perPage" aria-controls="content-table">
+                    </b-pagination>
+                    <b-form-select v-model="pageData.perPage" :options="pageData.pageOptions" class="mb-3 ml-2"
+                        style="width: 100px;">
+                    </b-form-select>
+                </div>
 
                 <div class="fixed-bottom">
                     <b-alert :show="alertData.dismissCountDown" dismissible fade :variant="alertData.type"
@@ -213,7 +226,19 @@
             data: {
                 nowPath: '/',
                 content: [],
+                nextHrefToken: '',
                 contentCache: {},
+                pageData: {
+                    currentPage: 1,
+                    perPage: 10,
+                    pageOptions: [{
+                        text: '10/Page',
+                        value: 10
+                    }, {
+                        text: '50/Page',
+                        value: 50
+                    }]
+                },
                 srcPath: '',
                 cmdType: '',
 
@@ -231,7 +256,7 @@
 
                 searchData: {
                     text: '',
-                    dpath: '',
+                    parentPath: '',
                     content: []
                 },
                 loadingbarData: {
@@ -281,15 +306,19 @@
                     if (path.startsWith('/')) this.updateContent(path);
                     else this.updateContent(this.nowPath + path);
                 },
-                updateContent(path) {
+                loadNextContent(page) {
+                    console.log(page);
+                },
+                updateContent(path, spPage) {
                     let flag;
                     let _this = this;
                     if (!path) {
                         path = this.nowPath;
                         flag = true;
                     }
-                    if (this.contentCache[path] && !flag) {
-                        this.content = this.contentCache[path];
+                    if (this.contentCache[path] && !flag && !spPage) {
+                        this.content = this.contentCache[path].content;
+                        this.nextHrefToken = this.contentCache[path].nextHrefToken;
                         this.nowPath = path;
                         return;
                     }
@@ -297,18 +326,25 @@
                         "Processing other tasks, try again later", 'w');
                     this.loadingData.isBusy = true;
                     this.loadingData.info = "loading... " + path;
-                    console.log('try: ls ' + path);
+                    console.log('try: ls ' + path + (spPage ? '?spPage=' + spPage : ''));
                     axios.post(api_path, {
                         cmdType: 'ls',
                         cmdData: {
-                            path: path
+                            path: path,
+                            spPage: spPage
                         }
                     }).then((r) => {
                         _this.loadingData.isBusy = false;
+                        console.log(r.data);
                         if (r.data.content) {
                             _this.nowPath = path;
-                            _this.content = r.data.content;
-                            _this.contentCache[path] = r.data.content;
+                            if (!spPage) _this.contentCache[path] = r.data;
+                            else {
+                                r.data.content.forEach((e) => _this.contentCache[path].content.push(e));
+                                _this.contentCache[path].nextHrefToken = r.data.nextHrefToken;
+                            }
+                            _this.content = _this.contentCache[path].content;
+                            _this.nextHrefToken = r.data.nextHrefToken;
                         } else console.log(r.data);
                     }).catch((e) => {
                         _this.loadingData.isBusy = false;
@@ -372,10 +408,10 @@
                                 });
                                 return;
                             case 'upload':
-                                _this.fileUpload(JSON.parse(res.data.data.info));
+                                _this.fileUpload(JSON.parse(res.data.json));
                                 return;
                             case 'find':
-                                _this.nowPath = res.data.dpath;
+                                _this.nowPath = res.data.parentPath;
                                 _this.content = res.data.data.content;
                                 return;
                             default:
@@ -386,7 +422,7 @@
                         _this.loadingbarData.show = false;
                         console.log(e);
                         if (e.response !== undefined) {
-                            _this.showAlert('error: ' + e.response.data.data.info, 'd');
+                            _this.showAlert('error: ' + e.response.data.info, 'd');
                         } else _this.showAlert('error: ' + e.message, 'd');
                         if (cmdType === 'upload' && _this.uploadData.uploadNow) {
                             _this.uploadData.uploadFail.unshift(_this.uploadData.uploadNow);
@@ -409,7 +445,7 @@
                                 return 'ren ' + cmdData.path + ' ' + cmdData.name;
                             case 'touch':
                             case 'upload':
-                                return cmdType + ' ' + cmdData.path + cmdData.name;
+                                return cmdType + ' ' + cmdData.path + (cmdData.name || '');
                             case 'find':
                                 return cmdType + ' ' + cmdData.path + ' ' + cmdData.text;
                             default:

@@ -77,39 +77,40 @@ class OneCache {
     addMsg(path, msg, spPage) {
         if (msg.type === 0) this.addFile(path, msg.data.fileInfo, msg.data.downloadUrl);
         else if (msg.type === 1) {
-            if (spPage !== undefined) {
+            if (spPage !== 0 || msg.data.nextHrefToken) {
                 if (!this.root_sp[path]) this.root_sp[path] = {};
                 this.root_sp[path][spPage] = msg;
-            } else if (!msg.data.prevHref && !msg.data.nextHref) {
+            } else {
                 msg.data.content = this.addList(path, msg.data.content);
             }
         }
     }
-    getMsg(path, spPage) {
+    getDrivePath(path) {
         let ps = path.split('/').filter((e) => { return !!e });
-        let pt = this.root, i;
+        let pt = this.root;
         let dpath = '/';
-        let msg;
-        for (i = 0; i < ps.length; i++) {
+        for (let i = 0; i < ps.length; i++) {
             if (!pt.next_obj[ps[i]]) break;
             pt = pt.next_obj[ps[i]];
             if (pt.data && pt.data.type === 3) dpath += ps[i] + '/';
         }
-        if (i < ps.length) {
-            if (pt.type !== undefined) msg = Msg.info(404);//充分条件, 不为undefined一定是404,反过来不一定成立.
-            else msg = Msg.info(0);////flag 标记未找到cache
-        } else if (pt.type === 1) {
-            msg = Msg.list(pt.next_arr);
-        } else if (pt.type === 0 && pt.date > new Date()) {
-            msg = Msg.file(pt.data.fileInfo, pt.data.downloadUrl);
-        } else msg = Msg.info(0);
-
-        if (msg.statusCode === 0) {
-            if (!spPage) spPage = 0;
-            if (this.root_sp[path] && this.root_sp[path][spPage]) msg = this.root_sp[path][spPage];
+        return dpath;
+    }
+    getMsg(path, spPage) {
+        let ps = path.split('/').filter((e) => { return !!e });
+        let pt = this.root, i;
+        for (i = 0; i < ps.length; i++) {
+            if (!pt.next_obj[ps[i]]) break;
+            pt = pt.next_obj[ps[i]];
         }
-        msg.dpath = dpath;
-        return msg;
+        if (i < ps.length) {
+            if (pt.type !== undefined) return Msg.info(404);//充分条件, 不为undefined一定是404,反过来不一定成立.
+        } else if (pt.type === 1) {
+            return Msg.list(pt.next_arr);
+        } else if (pt.type === 0 && pt.date > new Date()) {
+            return Msg.file(pt.data.fileInfo, pt.data.downloadUrl);
+        }
+        if (this.root_sp[path] && this.root_sp[path][spPage]) return this.root_sp[path][spPage];
     }
 
     exportDataArr() {

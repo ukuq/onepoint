@@ -5,8 +5,9 @@ exports.render = render;
 //暂时不处理特殊字符
 function render(responseMsg, event, G_CONFIG) {
     let splitPath = event.splitPath;
-    let p_h0 = urlSpCharEncode(splitPath.p_h0);
+    let p_h0 = urlSpCharEncode(splitPath.ph + splitPath.p0);
     let p_12 = urlSpCharEncode(splitPath.p_12);
+    let p_h012 = p_h0 + p_12;
     let data = responseMsg.data;
     let readmeFlag = false;
     let html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"><link rel="shortcut icon" href="${G_CONFIG.site_icon}"><title>${G_CONFIG.site_title}</title></head><body><nav class="navbar sticky-top navbar-dark bg-dark navbar-expand-lg"><div class="container"><a target="_self" href="https://github.com/ukuq/onepoint" class="navbar-brand"><img src="${G_CONFIG.site_icon}" alt="logo" crossorigin="anonymous" class="d-inline-block align-top" style="width: 30px;">${G_CONFIG.site_name}</a></div></nav><div class="container mt-3">`;
@@ -64,15 +65,15 @@ function render(responseMsg, event, G_CONFIG) {
             html += `<div class="border rounded mt-3 table-responsive"><table class="table table-hover mb-0"><thead class="thead-light"><tr><th scope="col" style="width: 60%;">Name</th><th scope="col">Time</th><th scope="col" class="text-right">Size</th></tr></thead><tbody>`;
             if (data.prevHref) {
                 html += `<tr><td><a href="${data.prevHref}">Previous...</a></td><td></td><td></td></tr>`;
-            } else if (splitPath.p_12 !== '/') {
+            } else if (p_12 !== '/') {
                 html += `<tr><td><a href="../">..</a></td><td></td><td></td></tr>`;
             }
             data.content.forEach(e => {
                 if (e.type === 1 || e.type === 3) {//文件夹 
-                    html += `<tr><td><a href="${splitPath.p_h012}${urlSpCharEncode(e.name)}/">${e.name}/</a></td><td>${e.time}</td><td class="text-right">${formatSize(e.size)}</td></tr>`;
+                    html += `<tr><td><a href="${p_h012}${urlSpCharEncode(e.name)}/">${e.name}/</a></td><td>${e.time}</td><td class="text-right">${formatSize(e.size)}</td></tr>`;
                 } else if (e.type === 0) {//文件
                     if (e.name === 'README.md') { readmeFlag = true };
-                    html += `<tr><td><a href="${splitPath.p_h012}${urlSpCharEncode(e.name)}?preview">${e.name}</a></td><td>${e.time}</td><td class="text-right">${formatSize(e.size)}</td></tr>`;
+                    html += `<tr><td><a href="${p_h012}${urlSpCharEncode(e.name)}?preview">${e.name}</a></td><td>${e.time}</td><td class="text-right">${formatSize(e.size)}</td></tr>`;
                 }
             });
             if (data.nextHref) html += `<tr><td><a href="${data.nextHref}">Next...</a></td><td></td><td></td></tr>`;
@@ -95,11 +96,7 @@ function render(responseMsg, event, G_CONFIG) {
     //footer
     html += `<div class="text-right"><span class="text-muted">Powered by <a href="https://github.com/ukuq/onepoint">OnePoint</a></span><span class="text-muted ml-2">Processing time: <a href="javascript:void">${new Date() - event.start_time}ms</a></span></div>`;
     html += `</div><script src="https://cdn.bootcss.com/marked/0.7.0/marked.js"></script>${G_CONFIG.site_script}`;
-    if (readmeFlag) html += `<script src="https://unpkg.com/axios/dist/axios.min.js"></script><script>axios.get('./README.md?rand=' + Math.random()).then(data => document.getElementById('readMe').innerHTML =marked(data)).catch(err => document.getElementById('readMe').innerHTML="Oh, error:" + err);</script>`;
+    if (readmeFlag) html += `<script src="https://unpkg.com/axios/dist/axios.min.js"></script><script>axios.get('./README.md').then(data => document.getElementById('readMe').innerHTML =marked(data)).catch(err => document.getElementById('readMe').innerHTML="Oh, error:" + err);</script>`;
     html += `</body></html>`;
-    return {
-        statusCode: responseMsg.statusCode,
-        headers: responseMsg.headers,
-        body: html
-    };
+    return html;
 }

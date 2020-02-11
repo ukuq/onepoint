@@ -1,5 +1,5 @@
 'use strict';
-const { Msg, formatDate } = require('../utils/msgutils');
+const { Msg } = require('../utils/msgutils');
 const { SharePoint } = require('../lib/sharepointAPI');
 const { mime } = require('../utils/nodeutils');
 
@@ -9,15 +9,16 @@ exports.ls = ls;
 async function ls(path) {
     try {
         let data = await sharepoint.spListData(path);
-        if (data.Row.length > 0) {//文件夹
+        let offset = (new Date().getTimezoneOffset() - data.RegionalSettingsTimeZoneBias || 0) * 60000;
+        if (data.ListData.Row.length > 0) {//文件夹
             let content = [];
-            data.Row.forEach(e => {
+            data.ListData.Row.forEach(e => {
                 content.push({
                     type: Number(e['FSObjType']),
                     name: e['LinkFilename'],
                     size: Number(e['SMTotalFileStreamSize']),
                     mime: Number(e['FSObjType']) ? mime.getType(e['LinkFilename']) : 'folder/sharepoint',
-                    time: formatDate(e['SMLastModifiedDate'])
+                    time: new Date(new Date(e['SMLastModifiedDate']) - offset).toISOString()
                 });
             });
             return Msg.list(content);
@@ -29,7 +30,7 @@ async function ls(path) {
                 name: info['name'],
                 size: info['size'],
                 mime: info['file']['mimeType'],
-                time: formatDate(info['lastModifiedDateTime'])
+                time: new Date(new Date(info['lastModifiedDateTime']) - offset).toISOString()
             }, info['@content.downloadUrl']);
         }
     } catch (error) {
@@ -42,7 +43,7 @@ exports.func = async (spConfig, cache, event) => {
     sharepoint = new SharePoint(spConfig['shareUrl']);
     await sharepoint.init();
     let root = spConfig.root || '';
-    let p2 = root + event.splitPath.p2;
+    let p2 = root + event.p2;
     switch (event.cmd) {
         case 'ls':
             return await ls(p2);

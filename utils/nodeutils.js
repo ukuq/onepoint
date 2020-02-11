@@ -22,11 +22,7 @@ exports.querystring = querystring;
 exports.getmd5 = getmd5;
 const axios = require('axios');
 const service = axios.create({
-  timeout: 5000,
-  //proxy: {
-  //   host: '127.0.0.1',
-  //   port: 8899
-  //  }
+  timeout: 10000,
 });
 service.interceptors.request.use(
   (config) => {
