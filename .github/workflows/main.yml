@@ -43,5 +43,5 @@ jobs:
         cp -r ./onepoint/ ./now/onepoint/api/
         cp ./onepoint/test/nowsh/now.json ./now/onepoint
         cd now/onepoint
-        now --token $TOKEN --confirm
+        now --token $TOKEN
         cd ../../
