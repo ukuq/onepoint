@@ -2,7 +2,6 @@ const { formatSize, urlSpCharEncode } = require('../utils/msgutils');
 const { mime } = require('../utils/nodeutils');
 exports.render = render;
 
-//暂时不处理特殊字符
 function render(responseMsg, event, G_CONFIG) {
     let splitPath = event.splitPath;
     let p_h0 = urlSpCharEncode(splitPath.ph + splitPath.p0);
@@ -10,7 +9,9 @@ function render(responseMsg, event, G_CONFIG) {
     let p_h012 = p_h0 + p_12;
     let data = responseMsg.data;
     let readmeFlag = false;
-    let html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"><link rel="shortcut icon" href="${G_CONFIG.site_icon}"><title>${G_CONFIG.site_title}</title></head><body><nav class="navbar sticky-top navbar-dark bg-dark navbar-expand-lg"><div class="container"><a target="_self" href="https://github.com/ukuq/onepoint" class="navbar-brand"><img src="${G_CONFIG.site_icon}" alt="logo" crossorigin="anonymous" class="d-inline-block align-top" style="width: 30px;">${G_CONFIG.site_name}</a></div></nav><div class="container mt-3">`;
+    let html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="${G_CONFIG.site_icon}"><title>${G_CONFIG.site_title}</title></head><body><nav class="navbar sticky-top navbar-dark bg-dark navbar-expand-lg"><div class="container"><a target="_self" href="https://github.com/ukuq/onepoint" class="navbar-brand"><img src="${G_CONFIG.site_icon}" alt="logo" class="d-inline-block align-top" style="width: 30px;">${G_CONFIG.site_name}</a></div></nav><div class="container mt-3">`;
 
     //导航栏
     html += `<nav class="" aria-label="breadcrumb"><ol class="breadcrumb">`;
@@ -59,7 +60,7 @@ function render(responseMsg, event, G_CONFIG) {
             } else {
                 html += `<div>此格式不支持预览 :-(</div>`;
             }
-            html += `</div><script src="https://cdn.jsdelivr.net/npm/js-cookie@beta/dist/js.cookie.min.js"></script><script>if(Cookies.get('proxy')){let s = document.getElementById('proxy-opt').options;let c = Cookies.get('proxy');for(let i=0;i< s.length;i++){if(s[i].value===c)s[i].selected = "selected";}};document.getElementById('proxy-submit').onclick = function(){Cookies.set('proxy',document.getElementById('proxy-opt').value,{ expires: 7 });window.location.reload();};document.querySelector('#share-btn').addEventListener('click',(event)=>{copyTextContent(null,window.location.href.slice(0,window.location.href.indexOf('?')));let target=event.target;let tt=target.textContent;target.innerHTML='已复制';setTimeout(()=>target.innerHTML=tt,500)});function copyTextContent(source,text){let result=false;let target=document.createElement('pre');target.style.opacity='0';target.textContent=text||source.textContent;document.body.appendChild(target);try{let range=document.createRange();range.selectNode(target);window.getSelection().removeAllRanges();window.getSelection().addRange(range);document.execCommand('copy');window.getSelection().removeAllRanges();result=true}catch(e){}document.body.removeChild(target);return result}</script>`;
+            html += `</div><script src="https://cdn.bootcss.com/js-cookie/2.2.1/js.cookie.min.js"></script><script>if(Cookies.get('proxy')){let s = document.getElementById('proxy-opt').options;let c = Cookies.get('proxy');for(let i=0;i< s.length;i++){if(s[i].value===c)s[i].selected = "selected";}};document.getElementById('proxy-submit').onclick = function(){Cookies.set('proxy',document.getElementById('proxy-opt').value,{ expires: 7 });window.location.reload();};document.querySelector('#share-btn').addEventListener('click',(event)=>{copyTextContent(null,window.location.href.slice(0,window.location.href.indexOf('?')));let target=event.target;let tt=target.textContent;target.innerHTML='已复制';setTimeout(()=>target.innerHTML=tt,500)});function copyTextContent(source,text){let result=false;let target=document.createElement('pre');target.style.opacity='0';target.textContent=text||source.textContent;document.body.appendChild(target);try{let range=document.createRange();range.selectNode(target);window.getSelection().removeAllRanges();window.getSelection().addRange(range);document.execCommand('copy');window.getSelection().removeAllRanges();result=true}catch(e){}document.body.removeChild(target);return result}</script>`;
             break;
         case 1://list
             html += `<div class="border rounded mt-3 table-responsive"><table class="table table-hover mb-0"><thead class="thead-light"><tr><th scope="col" style="width: 60%;">Name</th><th scope="col">Time</th><th scope="col" class="text-right">Size</th></tr></thead><tbody>`;
@@ -96,7 +97,7 @@ function render(responseMsg, event, G_CONFIG) {
     //footer
     html += `<div class="text-right"><span class="text-muted">Powered by <a href="https://github.com/ukuq/onepoint">OnePoint</a></span><span class="text-muted ml-2">Processing time: <a href="javascript:void">${new Date() - event.start_time}ms</a></span></div>`;
     html += `</div><script src="https://cdn.bootcss.com/marked/0.7.0/marked.js"></script>${G_CONFIG.site_script}`;
-    if (readmeFlag) html += `<script src="https://unpkg.com/axios/dist/axios.min.js"></script><script>axios.get('./README.md').then(data => document.getElementById('readMe').innerHTML =marked(data)).catch(err => document.getElementById('readMe').innerHTML="Oh, error:" + err);</script>`;
+    if (readmeFlag) html += `<script src="https://cdn.bootcss.com/axios/0.19.0/axios.min.js"></script><script>axios.get('./README.md').then(data => document.getElementById('readMe').innerHTML =marked(data)).catch(err => document.getElementById('readMe').innerHTML="Oh, error:" + err);</script>`;
     html += `</body></html>`;
     return html;
 }

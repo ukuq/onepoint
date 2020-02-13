@@ -50,7 +50,7 @@ exports.OnePoint = OnePoint;
 function initialize(config_json) {
     G_CONFIG = config_json['G_CONFIG'];
     DRIVE_MAP = config_json['DRIVE_MAP'];
-    DOMAIN_MAP = config_json['DOMAIN_MAP'];
+    DOMAIN_MAP = config_json['DOMAIN_MAP'] || {};
     console.log(DRIVE_MAP);
     refreshCache();
     console.log("initialize success");
@@ -216,7 +216,7 @@ async function handleEvent(event) {
                 if (error.response.error) responseMsg = Msg.error(error.response.status, error.response.error);
                 else responseMsg = Msg.error(error.response.status, { message: error.message, headers: error.response.headers, data: error.response.data });
             }
-            else responseMsg = Msg.error(500, error);
+            else responseMsg = Msg.error(500, { message: error.message, stack: error.stack });
             console.log(error.message);
             console.log(error.stack);
         }
