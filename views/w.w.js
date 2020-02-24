@@ -64,12 +64,12 @@ function render(responseMsg, event, G_CONFIG) {
             break;
         case 1://list
             html += `<div class="border rounded mt-3 table-responsive"><table class="table table-hover mb-0"><thead class="thead-light"><tr><th scope="col" style="width: 60%;">Name</th><th scope="col">Time</th><th scope="col" class="text-right">Size</th></tr></thead><tbody>`;
-            if (data.prevHref) {
-                html += `<tr><td><a href="${data.prevHref}">Previous...</a></td><td></td><td></td></tr>`;
+            if (data.prev) {
+                html += `<tr><td><a href="${data.prev}">Previous...</a></td><td></td><td></td></tr>`;
             } else if (p_12 !== '/') {
                 html += `<tr><td><a href="../">..</a></td><td></td><td></td></tr>`;
             }
-            data.content.forEach(e => {
+            data.list.forEach(e => {
                 if (e.type === 1 || e.type === 3) {//文件夹 
                     html += `<tr><td><a href="${p_h012}${urlSpCharEncode(e.name)}/">${e.name}/</a></td><td>${e.time}</td><td class="text-right">${formatSize(e.size)}</td></tr>`;
                 } else if (e.type === 0) {//文件
@@ -77,7 +77,7 @@ function render(responseMsg, event, G_CONFIG) {
                     html += `<tr><td><a href="${p_h012}${urlSpCharEncode(e.name)}?preview">${e.name}</a></td><td>${e.time}</td><td class="text-right">${formatSize(e.size)}</td></tr>`;
                 }
             });
-            if (data.nextHref) html += `<tr><td><a href="${data.nextHref}">Next...</a></td><td></td><td></td></tr>`;
+            if (data.next) html += `<tr><td><a href="${data.next}">Next...</a></td><td></td><td></td></tr>`;
             html += `</tbody></table></div>`;
             break;
         case 2://info

@@ -7,17 +7,13 @@ const _cookie = require('cookie');
 const querystring = require('querystring');
 
 const drive_funcs = {};//云盘模块
-drive_funcs['linux_scf'] = require("../router/linux_scf");
-drive_funcs['onedrive_graph'] = require("../router/onedrive_graph");
-drive_funcs['onedrive_sharepoint'] = require("../router/onedrive_sharepoint");
-drive_funcs['gdrive_goindex'] = require("../router/gdrive_goindex");
-drive_funcs['system_admin'] = require("../router/system_admin");
-drive_funcs['system_phony'] = require("../router/system_phony");
-
-const render_funcs = {};//渲染模块
-render_funcs['simple'] = require("../views/simple");
-render_funcs['w.w'] = require("../views/w.w");
-
+['linux_scf', 'onedrive_graph', 'onedrive_sharepoint', 'gdrive_goindex', 'system_admin', 'system_phony'].forEach((e) => {
+    drive_funcs[e] = require(`../router/${e}`);
+});
+const render_funcs = {};//渲染模块,目前建议使用w.w
+['w.w', 'simple', 'oneindex_like', 'xysk_like'].forEach((e) => {
+    render_funcs[e] = require(`../views/${e}`);
+});
 let G_CONFIG, DRIVE_MAP, DOMAIN_MAP;
 
 let oneCache = new OneCache();//cache管理模块
@@ -27,17 +23,23 @@ let oneCache = new OneCache();//cache管理模块
  * time:20200123
  */
 
-
 class OnePoint {//@info 暂时这样处理,对外接口不变
-    initialize(config) {
-        return initialize(config);
+    initialize(adapter_funcs) {
+        this.adapter_funcs = adapter_funcs;
+        console.log('running...');
     }
 
     genEvent(method, url, headers, body, adapter, sourceIp, p0, query, cookie) {
         return genEvent(method, url, headers, body, adapter, sourceIp, p0, query, cookie);
     }
 
+    updateConfig(config) {
+        this.config = config;
+        initialize(config);
+    }
+
     async handleEvent(event) {
+        if (!this.config) this.updateConfig(await this.adapter_funcs.readConfig());
         return await handleEvent(event);
     }
 
@@ -45,8 +47,8 @@ class OnePoint {//@info 暂时这样处理,对外接口不变
         return await this.handleEvent(genEvent(method, url, headers, body, adapter, sourceIp, p0, query, cookie));
     }
 }
-exports.OnePoint = OnePoint;
-
+var onepoint = new OnePoint();
+exports.op = onepoint;
 function initialize(config_json) {
     G_CONFIG = config_json['G_CONFIG'];
     DRIVE_MAP = config_json['DRIVE_MAP'];
@@ -132,19 +134,18 @@ async function handleEvent(event) {
         driveInfo = {
             funcName: 'system_admin',
             spConfig: {
-                G_CONFIG, DRIVE_MAP, DOMAIN_MAP, oneCache
+                G_CONFIG, DRIVE_MAP, DOMAIN_MAP, oneCache, onepoint
             }
         };
-        // p1 = '/admin';
-        // p2 = p_12.slice(p1.length);
     } else if (p_12.startsWith('/tmp/')) {
         return endMsg(400, res_headers, "400: '/tmp/' is private");
     } else if (p_12.startsWith('/api/')) {
         oneCache.addEventLog(event, 1);
         event.noRender = true;
+        //@flag 此部分以后考虑去掉
         if (p_12 === '/api/public/ls') {
             event.cmd = 'ls';
-            event.spPage = event.query.spPage || 0;
+            event.sp_page = event.query.sp_page || 0;
             p_12 = event.query.path || '/';
             drivePath = oneCache.getDrivePath(p_12);
             driveInfo = DRIVE_MAP[drivePath];
@@ -157,7 +158,7 @@ async function handleEvent(event) {
             if (cmdData.path) {
                 p_12 = cmdData.path;
                 drivePath = oneCache.getDrivePath(p_12);
-                event.spPage = cmdData.spPage || 0;
+                event.sp_page = cmdData.sp_page || 0;
             } else if (cmdData.srcPath && cmdData.desPath) {
                 p_12 = cmdData.srcPath;
                 drivePath = oneCache.getDrivePath(p_12);
@@ -169,9 +170,10 @@ async function handleEvent(event) {
     } else {
         oneCache.addEventLog(event, 0);
         event.cmd = 'ls';
-        event.spPage = event.query.spPage || 0;
+        event.sp_page = event.query.sp_page || 0;
         drivePath = oneCache.getDrivePath(p_12);
         driveInfo = DRIVE_MAP[drivePath];
+        event.noRender = event.query.json !== undefined;
     }
     p1 = drivePath.slice(0, -1);
     p2 = p_12.slice(p1.length);
@@ -203,35 +205,37 @@ async function handleEvent(event) {
         } else responseMsg = Msg.info(401, 'drivepass:请输入云盘密码');
     }
 
-    if (!responseMsg && !event.useApi) responseMsg = oneCache.getMsg(p_12, event.spPage);
+    if (!responseMsg && !event.useApi) responseMsg = oneCache.getMsg(p_12, event.sp_page);
     if (!responseMsg || drivePath === '/admin/') {//管理员不使用cache
         try {
             responseMsg = await drive_funcs[driveInfo.funcName].func(driveInfo.spConfig, oneCache.driveCache[drivePath], event);
             if (event.cmd === 'ls') {
-                responseMsg.spPage = event.spPage;
-                oneCache.addMsg(p_12, responseMsg, event.spPage);
+                responseMsg.sp_page = event.sp_page;
+                oneCache.addMsg(p_12, responseMsg, event.sp_page);
             } else if (event.cmd === 'find') responseMsg.parentPath = drivePath;
         } catch (error) {
-            if (error.response) {
-                if (error.response.error) responseMsg = Msg.error(error.response.status, error.response.error);
-                else responseMsg = Msg.error(error.response.status, { message: error.message, headers: error.response.headers, data: error.response.data });
+            let info = error.message;
+            if (error.response && error.response.data) {
+                if (error.response.data.error) info = error.response.data.error.message;
+                info = info || error.response.data.message || JSON.stringify(error.response.data);
             }
-            else responseMsg = Msg.error(500, { message: error.message, stack: error.stack });
-            console.log(error.message);
-            console.log(error.stack);
+            responseMsg = Msg.info(400, info);
+            // console.log(error);
         }
     }
 
     //处理目录级密码
-    if (responseMsg.type === 1 && !event.isadmin) {//文件列表 非管理员
+    if (responseMsg.type === 1 && !event.useApi) {//文件列表 非管理员api
         let pass;//目录级加密
-        responseMsg.data.content = responseMsg.data.content.filter((e) => {
-            if (e.name.startsWith('.password')) {
-                pass = e.name.slice(10);
-                return false;
-            }
-            return true;
-        });
+        if (!event.isadmin) {//管理员cookie忽略密码
+            responseMsg.data.list = responseMsg.data.list.filter((e) => {
+                if (e.name.startsWith('.password')) {
+                    pass = e.name.slice(10);
+                    return false;
+                }
+                return true;
+            });
+        }
         if (pass) {
             let dirpass = event['body']['dirpass'];
             if (event['method'] === 'POST' && dirpass) {// post
@@ -246,25 +250,23 @@ async function handleEvent(event) {
         }
 
         let pageSize = 50;//分页功能
-        if (responseMsg.type === 1 && responseMsg.spPage === 0 && !responseMsg.data.nextHrefToken && responseMsg.data.content.length > pageSize) {//@info 分页功能,兼容旧接口,只有云盘模块未提供href时启用
-            let content_len = responseMsg.data.content.length;
+        if (responseMsg.type === 1 && event.sp_page === 0 && !responseMsg.data.nextToken && responseMsg.data.list.length > pageSize) {//@info 分页功能,兼容旧接口,只有云盘模块未提供href时启用
+            let content_len = responseMsg.data.list.length;
             let page = 1;
             if (!isNaN(Number(event.query['page']))) page = Number(event.query['page']);
-            responseMsg.data.content = responseMsg.data.content.slice((page - 1) * pageSize, page * pageSize);
-            if (page > 1) responseMsg.data.prevHref = '?page=' + (page - 1);
-            if (content_len > page * pageSize) responseMsg.data.nextHref = '?page=' + (page + 1);
+            responseMsg.data.list = responseMsg.data.list.slice((page - 1) * pageSize, page * pageSize);
+            if (page > 1) responseMsg.data.prev = '?page=' + (page - 1);
+            if (content_len > page * pageSize) responseMsg.data.next = '?page=' + (page + 1);
         }
     }
-
+    if (responseMsg.data.nextToken) responseMsg.data.next = '?sp_page=' + responseMsg.data.nextToken;
     //处理直接 html返回
     if (responseMsg.type === 3) return endMsg(responseMsg.statusCode, responseMsg.headers, responseMsg.data.html);
     //处理api部分
-    if (event.noRender) return endMsg(responseMsg.statusCode, res_headers_json, JSON.stringify(responseMsg.data));
+    if (event.noRender) return endMsg(responseMsg.statusCode, Object.assign(res_headers_json, responseMsg.headers), JSON.stringify(responseMsg.data));
     //处理文件下载
     if (responseMsg.type === 0 && event.query['preview'] === undefined) return endMsg(302, { 'Location': responseMsg.data.downloadUrl }, "302:" + responseMsg.data.downloadUrl);
     console.log(responseMsg);
-
-    if (responseMsg.data.nextHrefToken) responseMsg.data.nextHref = '?spPage=' + responseMsg.data.nextHrefToken;
     let res_body = render_funcs[G_CONFIG.render_name].render(responseMsg, event, G_CONFIG);
     if (responseMsg.headers) for (let h in responseMsg.headers) res_headers[h] = responseMsg.headers[h];
     return endMsg(responseMsg.statusCode, res_headers, res_body);
@@ -275,9 +277,9 @@ function genEvent(method, url, headers, body, adapter, sourceIp = '0.0.0.0', p0 
     if (!body) body = {};
     else if (typeof body === 'string') {
         if (headers['content-type']) {
-            if (headers['content-type'].startsWith('application/x-www-form-urlencoded')) {
+            if (headers['content-type'].includes('application/x-www-form-urlencoded')) {
                 body = querystring.parse(body);
-            } else if (headers['content-type'].startsWith('application/json')) {
+            } else if (headers['content-type'].includes('application/json')) {
                 body = JSON.parse(body);
             }
         }

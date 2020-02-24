@@ -1,25 +1,23 @@
 const { formatSize ,urlSpCharEncode } = require('../utils/msgutils');
-const { mime } = require('../utils/nodeutils');
 exports.render = render;
 
-//暂时不处理特殊字符
+//仅支持最基本的文件列出功能,不预览,不代理,不更新,不维护
 function render(responseMsg, event, G_CONFIG) {
     let splitPath = event.splitPath;
-    let p_h0 = splitPath.p_h0;
-    let p_12 = splitPath.p_12;
+    let p_h0 = urlSpCharEncode(splitPath.ph + splitPath.p0);
+    let p_12 = urlSpCharEncode(splitPath.p_12);
+    let p_h012 = p_h0 + p_12;
     let data = responseMsg.data;
-    let readmeFlag = false;
-    let html = `<html lang="zh-CN"><head><meta charset="UTF-8"><link rel="shortcut icon" href="https://ukuq.github.io/onepoint/favicon.png"></head>`;
+    let html = `<html lang="zh-CN"><head><meta charset="UTF-8"><link rel="shortcut icon" href="${G_CONFIG.site_icon}"></head>`;
     html += `<body>`;
     let tmpIncPath = p_h0 + '/';
     html += `<div><a href="${tmpIncPath}">home</a><span>/</span>`;
-    let flag = p_h0.endsWith('/');
     p_12.split('/').forEach((e, i, t) => {
         if (e) {
             tmpIncPath += e;
-            if (flag || i !== t.length - 1) tmpIncPath += '/';
-            html += `<span><a href="${tmpIncPath}">${e}</a></span>`;
-            if (i !== t.length - 1) html += `<span>/</span>`;
+            tmpIncPath += '/';
+            if (i !== t.length - 1) html += `<span><a href="${tmpIncPath}">${e}</a></span>`;
+            else html += `<span>${e}</span>`;
         }
     });
     html += `</div>`;
@@ -28,25 +26,25 @@ function render(responseMsg, event, G_CONFIG) {
             break;
         case 1://list
             html += `<table><thead><tr><th>Name</th><th>Last modified</th><th>Size</th></tr></thead><tbody>`
-            if (data.prevHref) {
-                html += `<tr><td><a href="${data.prevHref}">上一页</a></td><td></td><td></td><tr>`
-            } else if (splitPath.p_12 !== '/') {
+            if (data.prev) {
+                html += `<tr><td><a href="${data.prev}">上一页</a></td><td></td><td></td><tr>`
+            } else if (p_12 !== '/') {
                 html += `<tr><td><a href="../">..</a></td><td></td><td></td>`
             }
-            data.content.forEach(e => {
+            data.list.forEach(e => {
                 if (e.type === 1 || e.type === 3) {//文件夹 
-                    html += `<tr><td><a href="${splitPath.p_h012}${e.name}/">${e.name}/</a></td><td>${e.time}</td><td>${formatSize(e.size)}</td><tr>`
+                    html += `<tr><td><a href="${p_h012}${e.name}/">${e.name}/</a></td><td>${e.time}</td><td>${formatSize(e.size)}</td><tr>`
                 } else if (e.type === 0) {//文件
-                    if (e.name === 'README.md') { readmeFlag = true };
-                    html += `<tr><td><a href="${splitPath.p_h012}${e.name}">${e.name}</a></td><td>${e.time}</td><td>${formatSize(e.size)}</td><td><tr>`
+                    html += `<tr><td><a href="${p_h012}${e.name}">${e.name}</a></td><td>${e.time}</td><td>${formatSize(e.size)}</td><td><tr>`
                 }
             });
-            if (data.nextHref) html += `<tr><td><a href="${data.nextHref}">下一页</a></td><td></td><td></td><tr>`;
+            if (data.next) html += `<tr><td><a href="${data.next}">下一页</a></td><td></td><td></td><tr>`;
             html += `</tbody></table>`;
             break;
         case 2://info
             if (responseMsg.statusCode === 401) {
-                html += `<form action="" method="post"><input type="password" name="password" placeholder="${data.info}"><input type="submit" value="提交" ></form>`;
+                let pass = data.info.split(':');
+                html += `<form action="" method="post"><input type="password" name="${pass[0]}" placeholder="${pass[1]}"><input type="submit" value="submit" ></form>`;
             } else {
                 html += `<div><span>${data.info}</span></div>`
             }

@@ -11,17 +11,17 @@ async function ls(path) {
         let data = await sharepoint.spListData(path);
         let offset = (new Date().getTimezoneOffset() - data.RegionalSettingsTimeZoneBias || 0) * 60000;
         if (data.ListData.Row.length > 0) {//文件夹
-            let content = [];
+            let list = [];
             data.ListData.Row.forEach(e => {
-                content.push({
+                list.push({
                     type: Number(e['FSObjType']),
                     name: e['LinkFilename'],
                     size: Number(e['SMTotalFileStreamSize']),
-                    mime: Number(e['FSObjType']) ? mime.getType(e['LinkFilename']) : 'folder/sharepoint',
+                    mime: Number(e['FSObjType']) ? mime.getType(e['LinkFilename']) : '',
                     time: new Date(new Date(e['SMLastModifiedDate']) - offset).toISOString()
                 });
             });
-            return Msg.list(content);
+            return Msg.list(list);
         } else {//文件 或 空文件夹
             let info = await sharepoint.spGetItemInfo(data.CurrentFolderSpItemUrl);
             if (!info.file) return Msg.list([]);//空文件夹

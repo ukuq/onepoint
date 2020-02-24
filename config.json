@@ -1,5 +1,6 @@
 {
     "G_CONFIG": {
+        "admin_username":"admin",
         "admin_password": "admin",
         "render_name": "w.w",
         "site_name": "OnePoint Demo",
@@ -38,18 +39,18 @@
                 "cfurl": "https://goindex.onesrc.workers.dev"
             }
         },
-        "/demo_onedrive/": {
-            "funcName": "onedrive_graph",
-            "spConfig": {
-                "refresh_token": "OAQABAAAAAACQN9QBRU3jT6bcBQLZNUj7qYv3YSeiMsEu9BaICGzevCs5Fh8UDBFaDp0DdAA_vse2HYPIjcTS27BJb_Vh_FBj6gXv7Xf37SpLyiw6I8GMofyMUM7PpjbJdIuaA7QRunZKijQxEGSDnLPj-GoVrlnMlsyxRgYptnNuciTxRLiwzO67B-_TxAdU5RTyhLSVhSOORYmTDfrZolR5KtIVvqMztUAs1-kMUZAXOEiqBBHO_arzD3Z35yAocoXsiBi1-NdNGz9agVYLzOhnV3xzwIp_3FLkQbXom4tJpLQCtsR-g_1izairu2JALzYq0rDDhL1w225YJi0yS93Fq96tfwJDtgshe8et0q9YMIRxwaW5eK1mDJBQkmJGgm39AGjRmNW2SNiZPdgqIapi6cJzVqnB-a-ctp6mW4p4o_p8kgMhFJGSdAOR_RT6J0zsBt1dbVyvO_xaeh0jkPi6v0N_Frku3uYWPvpSEjQ3e-F8GWmN3Wr9QGNHLwAVVNRL3urvLKXmRZ-yVZfE1xlqys4loqBrg50kcUOWeWhG-60PaO1hTQgxL28mnNc02QZHGBP3Y_72HsTJZWRneVFh-L6N7kwaktoIV6yxC7ocnW6rHpWPW5efujc9U-ZYaTwUaevYC7SOVdA-LnnTw-ydGtNLghM5jTaQR8k6-mgo0v7gi32yzoNDHhFQeKJptBlyb9vdzviFfJMtkZj3-uQy1kHtDAs6cfwOPUlENnRhIpWvxqFxYfkBKvhtWBOm4C_MJdDuHc9SojLkOByI5lwrFU7FAmI-IAA",
-                "oauth": 0
-            }
-        },
         "/demo_onedrive_1/": {
             "funcName": "onedrive_graph",
             "spConfig": {
                 "refresh_token": "OAQABAAAAAABeAFzDwllzTYGDLh_qYbH8T4VEMWcDAA66TH1bqjcGBV7gILezW8TUS_VOmxrmWwvOjLepq0RegTqQItPllIHLVmBqbYX4zEdcNWV4kU7-heUVoYDKHZP1Zrs209oeBce1sZGKJp-wbhsTFGdJ-Q1hee10lOt4o1cwdMK5V0561ZmTFvSHP60O1DRaGjm3AlxqaEoylFo-a9tdL090-kGAiCHttwh4D3d5qPsWYZFrY3bb3XQu88froQwvB6Q2EzKoXx8FZs9pAIf1k0QuWdCx9wwb2_Nwr4pL9wJVPN8Q9eSUcbYpJEZwLKJhOc29J2s2aZpeBZ5rJH4NYSM4q0HEW7lqvR3KjKamr93W5rSfpE9LaqifoHTrp0zrY7dJmQiQ0V3qJKZ9CWDNwHGqCfDtRXMWyuQQ4xs2jgMTj0L2FMxb9BeQGYAjjbSm53aiYxv7adQzr7PZezL2voIGljIO553GLd3jFTPwrubTEIPnkgTXuHxR_qH-uVFBIji0Oosb56j5aSgYIsc8TlsGLN0Czx6V6D84poizWENn9mWVzhy3eZR2sNc6m1Tdxl1ifafZukFoElFkeCK41vuhAJjHU1ichuCYsl3OuN78ItisNtZvmGi6RjXC3nd6d8QdMEcnilsRTIl-wb0xM5QAhzZWM2wuIpUvAICiZwNBOGjzAgk20EL-tJsQMd_BxvM8J_HTGBIU23sZYgoLKOVPI6QOMM74sLsBjAvsOvmVLU3OH3GFcMjj3DTFVjgP7AXOaTFjHVVlJE76ArYvHRuK1SeVRNQmzK3q-7sLIc8Kgc7zMCAA",
                 "oauth": 0
+            }
+        },
+        "/demo_onedrive_2/": {
+            "funcName": "onedrive_graph",
+            "spConfig": {
+                "refresh_token": "OAQABAAAAAAD32Me_adtYS4A5iUsE7inoN5eLCtuGw7w_Tet8aXmvp6ic05XEkEHQwQF2MgJkaTp-mEZKlXH0QvI3NCbZh9NI5wvP_r0nqb6UaBeLxeOCgrlbhH1FzeX0ep0ZZQ8D0J6ky1yEazxxkg8c4FsMvUWVxkw5kiHYVc3DK_Y3WmtvRHFxazeWgxBaiYm9jfbcR8maVNeey6oGZCw6zUvwrINoLOCok05imP_GEf_eHCsDcISTU0MI_XpEy9Ak0i8jo6ii74EUVEtJAloaaf56OtIQliyWkH56VtVsRnDpW1DftsJY1qRsCbSq7PmpLWscvLW8qdmvFy13_nEhp8PAei41fz9XnDT4AS7gWHUpFGmw837MVSDz0jk2LJrFBh7_CywK9uaj3mdY49paJEP7YuIVf8RkQMMFFudFazeKwx19TPZepZmR580rpr6qhs2aL4WG6YhacWnRfKZGGs_sL9aJviBkzvO_vDWjxO7cMvKd_SXDt9s8_IeloARxvbKZQ-z2ojbYm_bbY7917fxDlISRrDp_SVHJtq9s-YS3ZS6lFA_aBChaIXTxskJXZB-jHueQ7arEi7N4zCB4hUb58J5DIL_BEdcps_icYAySjbRFU170kTIw7aB67wjIiTLoXMoMopMU9FmfctnqB34ubTNK6FHWMICRRWZLiThyEFSYwM9ER0HyJFQjncMxBs2cuhJx5zZeXeQhEsrVuJtULxdWeZr-4Grhz3XlyhH72jyjFeXAvey1Ew_H7myl0aBKFosqSNMSXLBY-x32v6uUaCKPziaQHKfWQ8cAoNrhM2yb_CAA",
+                "oauth": 1
             }
         },
         "/demo_password_123_密码测试/": {
@@ -69,7 +70,13 @@
                     "https://ukuq.github.io/onepoint/favicon.png",
                     "http://www.w3school.com.cn/i/horse.ogg",
                     "http://www.w3school.com.cn/i/movie.mp4",
-                    "http://www.w3school.com.cn/i/movie.ogg"
+                    "http://www.w3school.com.cn/i/movie.ogg",
+                    "https://zfile.jun6.net/directlink/视频/带字幕的视频.mp4",
+                    "https://zfile.jun6.net/directlink/视频/带字幕的视频.mp4.vtt",
+                    "https://zfile.jun6.net/directlink/音频/刘乐瑶 - 父亲写的散文诗.mp3",
+                    "https://zfile.jun6.net/directlink/音频/人民不需要自由（108个关键词）.mp3",
+                    "https://zfile.jun6.net/directlink/音频/任素汐 - 胡广生.mp3",
+                    "https://zfile.jun6.net/directlink/视频/Lemon (Full Covered by.mp4"
                 ]
             }
         }

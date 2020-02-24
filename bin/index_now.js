@@ -1,8 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const { OnePoint } = require('./main');
-let op = new OnePoint();
-op.initialize(JSON.parse(fs.readFileSync(path.resolve(__dirname, '../config.json'), 'utf8')));
+const { op } = require('./main');
+op.initialize({ readConfig });
 
 module.exports = async (req, res) => {
     try {
@@ -16,4 +15,8 @@ module.exports = async (req, res) => {
         res.write("error");
         res.end();
     }
+}
+
+async function readConfig() {
+    return JSON.parse(fs.readFileSync(path.resolve(__dirname, '../config.json'), 'utf8'));
 }

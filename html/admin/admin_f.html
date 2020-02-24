@@ -101,7 +101,7 @@
 
                     <b-button @click="updateContent()">Sync</b-button>
 
-                    <b-button v-show="nextHrefToken" @click="updateContent(nowPath,nextHrefToken)">
+                    <b-button v-show="nextToken" @click="updateContent(nowPath,nextToken)">
                         LoadNext
                     </b-button>
 
@@ -228,7 +228,7 @@
             data: {
                 nowPath: '/',
                 content: [],
-                nextHrefToken: '',
+                nextToken: '',
                 contentCache: {},
                 pageData: {
                     currentPage: 1,
@@ -311,16 +311,16 @@
                 loadNextContent(page) {
                     console.log(page);
                 },
-                updateContent(path, spPage) {
+                updateContent(path, sp_page) {
                     let flag;
                     let _this = this;
                     if (!path) {
                         path = this.nowPath;
                         flag = true;
                     }
-                    if (this.contentCache[path] && !flag && !spPage) {
-                        this.content = this.contentCache[path].content;
-                        this.nextHrefToken = this.contentCache[path].nextHrefToken;
+                    if (this.contentCache[path] && !flag && !sp_page) {
+                        this.list = this.contentCache[path].content;
+                        this.nextToken = this.contentCache[path].nextToken;
                         this.nowPath = path;
                         return;
                     }
@@ -328,25 +328,25 @@
                         "Processing other tasks, try again later", 'w');
                     this.loadingData.isBusy = true;
                     this.loadingData.info = "loading... " + path;
-                    console.log('try: ls ' + path + (spPage ? '?spPage=' + spPage : ''));
+                    console.log('try: ls ' + path + (sp_page ? '?sp_page=' + sp_page : ''));
                     axios.post(api_path, {
                         cmdType: 'ls',
                         cmdData: {
                             path: path,
-                            spPage: spPage
+                            sp_page: sp_page
                         }
                     }).then((r) => {
                         _this.loadingData.isBusy = false;
                         console.log(r.data);
-                        if (r.data.content) {
+                        if (r.data.list) {
                             _this.nowPath = path;
-                            if (!spPage) _this.contentCache[path] = r.data;
+                            if (!sp_page) _this.contentCache[path] = r.data;
                             else {
-                                r.data.content.forEach((e) => _this.contentCache[path].content.push(e));
-                                _this.contentCache[path].nextHrefToken = r.data.nextHrefToken;
+                                r.data.list.forEach((e) => _this.contentCache[path].list.push(e));
+                                _this.contentCache[path].nextToken = r.data.nextToken;
                             }
-                            _this.content = _this.contentCache[path].content;
-                            _this.nextHrefToken = r.data.nextHrefToken;
+                            _this.list = _this.contentCache[path].content;
+                            _this.nextToken = r.data.nextToken;
                         } else console.log(r.data);
                     }).catch((e) => {
                         _this.loadingData.isBusy = false;
@@ -374,7 +374,7 @@
                                     "type": 1,
                                     "name": cmdData.name,
                                     "size": 0,
-                                    "mime": "folder/unknown",
+                                    "mime": "",
                                     "time": formatDate(new Date())
                                 });
                                 return;
@@ -404,7 +404,7 @@
                                 _this.contentCache[cmdData.path].unshift({
                                     "type": 0,
                                     "name": cmdData.name,
-                                    "size": formatSize(cmdData.content.length),
+                                    "size": formatSize(cmdData.list.length),
                                     "mime": "onepoint/unknown",
                                     "time": formatDate(new Date())
                                 });
@@ -414,7 +414,7 @@
                                 return;
                             case 'find':
                                 _this.nowPath = res.data.parentPath;
-                                _this.content = res.data.data.content;
+                                _this.list = res.data.data.content;
                                 return;
                             default:
                                 console.log("unknown: " + cmdType);
@@ -529,10 +529,10 @@
                             this.sendCmd(cmd, {
                                 path: this.nowPath,
                                 name: this.uploadData.uploadTouch.name,
-                                content: this.uploadData.uploadTouch.content || ''
+                                content: this.uploadData.uploadTouch.list || ''
                             });
                             this.uploadData.uploadTouch.name = "";
-                            this.uploadData.uploadTouch.content = "";
+                            this.uploadData.uploadTouch.list = "";
                             return;
                         case 'upload':
                             if (this.uploadData.uploadNow || this.uploadData.uploadQueue.length === 0) return;

@@ -10,7 +10,7 @@ async function ls(p2) {
         return Msg.list(list.map((e) => { return genInfoByUrl(e); }));
     }
     let url = list.find((e) => { return e.endsWith(p[1]); });
-    return url ? Msg.file(genInfoByUrl(url), url) : Msg.info(404);
+    return url ? Msg.file(genInfoByUrl(url), encodeURI(url)) : Msg.info(404);
 }
 
 exports.func = async (spConfig, cache, event) => {

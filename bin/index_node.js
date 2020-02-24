@@ -1,10 +1,9 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { OnePoint } = require('./main');
+const { op } = require('./main');
 let server;
-let op = new OnePoint();
-op.initialize(JSON.parse(fs.readFileSync(path.resolve(__dirname, '../config.json'), 'utf8')));
+op.initialize({ readConfig, writeConfig });
 module.exports = () => {
     if (server) server.close();
     server = http.createServer((req, res) => {
@@ -15,9 +14,23 @@ module.exports = () => {
         req.on('end', async () => {
             try {
                 let r = await op.handleRaw(req.method, req.url, req.headers, body, "node", req.connection.remoteAddress);
+                //@info 本地测试用
+                if (req.method === 'OPTIONS' && req.headers['access-control-request-headers']) {
+
+                    r.statusCode = 204,
+                        r.headers = {
+                            'access-control-allow-methods': 'GET,POST,PUT,PATCH,TRACE,DELETE,HEAD,OPTIONS',
+                            'access-control-allow-headers': 'Content-Type',
+                            'access-control-max-age': '1728000'
+                        },
+                        r.body = ""
+                }
+
+                r.headers['Access-Control-Allow-Origin'] = 'http://localhost:8080';
+                r.headers['Access-Control-Allow-Credentials'] = true;
+
                 res.writeHead(r.statusCode, r.headers);
                 res.end(r.body);
-                res.end();
             } catch (error) {
                 console.log(error);
                 res.writeHead(500, {});
@@ -28,3 +41,11 @@ module.exports = () => {
     }).listen(80);
 }
 module.exports();
+
+async function readConfig() {
+    return JSON.parse(fs.readFileSync(path.resolve(__dirname, '../config.json'), 'utf8'));
+}
+
+async function writeConfig(config) {
+    fs.writeFileSync(path.resolve(__dirname, '../config.json'), JSON.stringify(config));
+}

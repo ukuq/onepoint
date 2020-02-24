@@ -1,5 +1,5 @@
 const { fs, mime, path } = require("../utils/nodeutils");
-const { Msg, formatDate } = require('../utils/msgutils');
+const { Msg } = require('../utils/msgutils');
 
 exports.ls = ls;
 function ls(p2) {
@@ -13,28 +13,28 @@ function ls(p2) {
                     let len = files.length;
                     console.log('total: ' + len);
                     if (len === 0) return resolve(Msg.list([]));
-                    let content = [];
+                    let list = [];
                     files.forEach((file) => {
                         fs.stat(path.resolve(p2, file), (err, st) => {
                             if (err) {
                                 console.log(p2 + ":" + err.message);
                                 len--;
-                                if (content.length === len) resolve(Msg.list(content));
+                                if (list.length === len) resolve(Msg.list(list));
                                 return;
                             }
                             let nodeData = {
                                 type: 0,
                                 name: file,
                                 size: st.size,
-                                mime: mime.getType(file) || 'onepoint/unknown',
-                                time: formatDate(st.mtime)
+                                mime: mime.getType(file) || 'application/vnd.onepoint.unknown',
+                                time: new Date(st.mtime).toISOString()
                             };
                             if (st.isDirectory()) {
                                 nodeData.type = 1;
-                                nodeData.mime = 'folder/linux'
+                                nodeData.mime = ''
                             }
-                            content.push(nodeData);
-                            if (content.length === len) return resolve(Msg.list(content));
+                            list.push(nodeData);
+                            if (list.length === len) return resolve(Msg.list(list));
                         });
                     });
                 });
@@ -43,8 +43,8 @@ function ls(p2) {
                     type: 0,
                     name: p2.slice(p2.lastIndexOf('/') + 1),
                     size: stats.size,
-                    mime: mime.getType(p2) || 'onepoint/unknown',
-                    time: formatDate(stats.mtime)
+                    mime: mime.getType(p2) || 'application/vnd.onepoint.unknown',
+                    time: new Date(stats.mtime).toISOString()
                 }, 'none://'));
             } else {
                 return resolve(Msg.info(403, "403 设备文件"));

@@ -25,18 +25,18 @@ async function ls(path, skiptoken) {
 		};
 		if (skiptoken && /\w*/.exec(skiptoken)) params.$skiptoken = skiptoken;
 		let data = await onedrive.msGetDriveItems(path, params);
-		let content = [];
+		let list = [];
 		data.value.forEach(e => {
-			content.push({
+			list.push({
 				type: e['file'] ? 0 : 1,
 				name: e['name'],
 				size: e['size'],
-				mime: e['file'] ? e['file']['mimeType'] : 'folder/onedrive',
+				mime: e['file'] ? e['file']['mimeType'] : '',
 				time: e['lastModifiedDateTime']
 			});
 		});
-		let msg = Msg.list(content);
-		if (data['@odata.nextLink']) msg.data.nextHrefToken = /skiptoken=(\w*)/.exec(data['@odata.nextLink'])[1];
+		let msg = Msg.list(list);
+		if (data['@odata.nextLink']) msg.data.nextToken = /skiptoken=(\w*)/.exec(data['@odata.nextLink'])[1];
 		return msg;
 	} catch (error) {
 		if (error.response && error.response.status === 404) return Msg.info(404);
@@ -50,19 +50,19 @@ async function find(text) {
 	let data = await onedrive.msSearch(text);
 	if (data.value.length === 0) return Msg.list([]);
 	let reg = new RegExp('.+/Documents' + (mconfig.root || '') + '/(.+)');
-	let content = [];
+	let list = [];
 	data.value.forEach((e) => {
 		let ma = reg.exec(e.webUrl);
 		if (!ma || !ma[1]) return;
-		content.push({
+		list.push({
 			type: e['file'] ? 0 : 1,
 			name: ma[1],
 			size: e['size'],
-			mime: e['file'] ? e['file']['mimeType'] : 'folder/onedrive',
+			mime: e['file'] ? e['file']['mimeType'] : '',
 			time: e['lastModifiedDateTime']
 		});
 	});
-	return Msg.list(content);
+	return Msg.list(list);
 }
 
 
@@ -105,7 +105,7 @@ async function touch(path, filename, content) {
 exports.upload = upload;
 async function upload(filePath, fileSystemInfo) {
 	let k = filePath + JSON.stringify(fileSystemInfo);
-	if (_cache[k] && new Date(_cache[k].expirationDateTime) > new Date()) return Msg.info(200, JSON.stringify(_cache[k]));
+	if (_cache[k] && new Date(_cache[k].expirationDateTime) > new Date()) return Msg.json(200, _cache[k]);
 	let res = await onedrive.msUploadSession(filePath, fileSystemInfo);
 	_cache[k] = res;
 	return Msg.json(200, res);
@@ -119,9 +119,10 @@ exports.func = async (spConfig, cache, event) => {
 	let root = spConfig.root || '';
 	let p2 = root + event.p2;
 	let cmdData = event.cmdData;
+	console.log(event);
 	switch (event.cmd) {
 		case 'ls':
-			return await ls(p2, event.spPage);
+			return await ls(p2, event.sp_page);
 		case 'mkdir':
 			return await mkdir(p2, cmdData.name);
 		case 'mv':
