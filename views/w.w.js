@@ -1,7 +1,7 @@
 const { formatSize, urlSpCharEncode } = require('../utils/msgutils');
-const { mime } = require('../utils/nodeutils');
+const { getmime } = require('../utils/nodeutils');
 exports.render = render;
-
+//@info proxy部分提至main.js,自动根据cookie觉得是否代理.
 function render(responseMsg, event, G_CONFIG) {
     let splitPath = event.splitPath;
     let p_h0 = urlSpCharEncode(splitPath.ph + splitPath.p0);
@@ -37,7 +37,6 @@ function render(responseMsg, event, G_CONFIG) {
 
             let fileInfo = data.fileInfo;
             let downloadUrl = data.downloadUrl;
-            if (event.cookie.proxy) downloadUrl = event.cookie.proxy + '?url=' + encodeURIComponent(downloadUrl);
             let type = fileInfo['mime'].slice(0, fileInfo['mime'].indexOf('/'));
             html += `</select><div class="input-group-append"><button class="btn btn-outline-secondary" id="proxy-submit" type="button">Proxy</button><a type="button" class="btn btn-outline-secondary" href="${downloadUrl}">Download</a><button type="button" class="btn btn-outline-secondary" id="share-btn">Share</button></div></div>`;
             html += `<div class="border rounded my-3 p-3">`;
@@ -50,7 +49,7 @@ function render(responseMsg, event, G_CONFIG) {
                 <script>const dp = new DPlayer({container: document.getElementById('dplayer'),lang:'zh-cn',video: {url: '${downloadUrl}',pic: '',type: 'auto'}});</script>`;
             } else if (type === 'audio') {
                 html += `<audio src="${downloadUrl}" controls autoplay style="width: 75%;" class="rounded mx-auto d-block"></audio>`;
-            } else if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'mpp', 'rtf', 'vsd', 'vsdx'].includes(mime.getExtension(fileInfo['mime']))) {
+            } else if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'mpp', 'rtf', 'vsd', 'vsdx'].includes(getmime(fileInfo['mime']))) {
                 html += `<iframe src="https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(downloadUrl)}" class="border rounded" style="height: 1700px;width: 100%;">This browser does not support iframe</iframe>`;
             } else if (fileInfo['mime'].endsWith('pdf')) {
                 html += `<div id="pdf-preview"></div><script src="https://cdn.bootcss.com/pdfobject/2.1.1/pdfobject.min.js"></script><script>PDFObject.embed("${downloadUrl}", "#pdf-preview");</script><style>.pdfobject{height:1600px!important;}</style>`;
@@ -64,12 +63,12 @@ function render(responseMsg, event, G_CONFIG) {
             break;
         case 1://list
             html += `<div class="border rounded mt-3 table-responsive"><table class="table table-hover mb-0"><thead class="thead-light"><tr><th scope="col" style="width: 60%;">Name</th><th scope="col">Time</th><th scope="col" class="text-right">Size</th></tr></thead><tbody>`;
-            if (data.prevHref) {
-                html += `<tr><td><a href="${data.prevHref}">Previous...</a></td><td></td><td></td></tr>`;
+            if (data.prev) {
+                html += `<tr><td><a href="${data.prev}">Previous...</a></td><td></td><td></td></tr>`;
             } else if (p_12 !== '/') {
                 html += `<tr><td><a href="../">..</a></td><td></td><td></td></tr>`;
             }
-            data.content.forEach(e => {
+            data.list.forEach(e => {
                 if (e.type === 1 || e.type === 3) {//文件夹 
                     html += `<tr><td><a href="${p_h012}${urlSpCharEncode(e.name)}/">${e.name}/</a></td><td>${e.time}</td><td class="text-right">${formatSize(e.size)}</td></tr>`;
                 } else if (e.type === 0) {//文件
@@ -77,7 +76,7 @@ function render(responseMsg, event, G_CONFIG) {
                     html += `<tr><td><a href="${p_h012}${urlSpCharEncode(e.name)}?preview">${e.name}</a></td><td>${e.time}</td><td class="text-right">${formatSize(e.size)}</td></tr>`;
                 }
             });
-            if (data.nextHref) html += `<tr><td><a href="${data.nextHref}">Next...</a></td><td></td><td></td></tr>`;
+            if (data.next) html += `<tr><td><a href="${data.next}">Next...</a></td><td></td><td></td></tr>`;
             html += `</tbody></table></div>`;
             break;
         case 2://info

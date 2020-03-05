@@ -2,9 +2,7 @@ let Msg = {
     file: Msg_file,
     list: Msg_list,
     info: Msg_info,
-    error: Msg_error,
     json: Msg_json,
-    m301: Msg_m301,
     html: Msg_html,
     html_json: Msg_html_json
 }
@@ -21,15 +19,13 @@ function Msg_file(fileInfo, downloadUrl, headers) {
     }
 }
 
-function Msg_list(content, nextHref, prevHref, headers) {
+function Msg_list(list, next, prev, headers) {
     return {
         type: 1, //1_dir 固定值
         statusCode: 200,// 固定值
         headers: headers,
         data: {
-            content: content,
-            prevHref: prevHref,
-            nextHref: nextHref
+            list, prev, next
         }
     };
 }
@@ -46,19 +42,6 @@ function Msg_info(statusCode, info, headers) {
     return m;
 }
 
-function Msg_error(statusCode, error, headers) {
-    let m = {
-        type: 2, //2_info 固定值
-        statusCode: statusCode,//enum: 200 301 401 403 404 500
-        headers: headers,
-        data: {
-            info: error.message,
-            error: error
-        }
-    };
-    return m;
-}
-
 function Msg_json(statusCode, obj, headers) {
     let m = {
         type: 2, //2_info 固定值
@@ -70,19 +53,6 @@ function Msg_json(statusCode, obj, headers) {
         }
     };
     return m;
-}
-
-function Msg_m301(location) {
-    return {
-        type: 2,
-        statusCode: 301,
-        headers: {
-            'Location': location
-        },
-        data: {
-            info: "301:" + location
-        }
-    }
 }
 
 function Msg_html(statusCode, html, headers) {
@@ -106,19 +76,6 @@ function Msg_html_json(statusCode, obj, headers) {
         }
     }
 }
-
-function formatDate(str) {
-    let oDate = new Date(str);
-    if ('Invalid Date' == oDate) return oDate;
-    let oYear = oDate.getFullYear(),
-        oMonth = oDate.getMonth() < 9 ? "0" + (oDate.getMonth() + 1) : (oDate.getMonth() + 1),
-        oDay = oDate.getDate() < 10 ? "0" + oDate.getDate() : oDate.getDate(),
-        oHour = oDate.getHours() < 10 ? "0" + oDate.getHours() : oDate.getHours(),
-        oMinute = oDate.getMinutes() < 10 ? "0" + oDate.getMinutes() : oDate.getMinutes(),
-        oSecond = oDate.getSeconds() < 10 ? "0" + oDate.getSeconds() : oDate.getSeconds(),
-        oTime = oYear + '-' + oMonth + '-' + oDay + " " + oHour + ":" + oMinute + ":" + oSecond;//最后拼接时间
-    return oTime;
-};
 
 function urlSpCharEncode(s) {
     if (!s) return s;
@@ -145,9 +102,7 @@ function urlSpCharEncode(s) {
     return res;
 }
 function formatSize(size) {
-    if (isNaN(size)) return "";
-    if (size === undefined) return "";
-    else size = Number(size);
+    if (typeof size !== "number") size = NaN;
     let count = 0;
     while (size >= 1024) {
         size /= 1024;
@@ -157,4 +112,4 @@ function formatSize(size) {
     size += [' B', ' KB', ' MB', ' GB'][count];
     return size;
 };
-module.exports = { Msg, formatDate, formatSize, urlSpCharEncode };
+module.exports = { Msg, formatSize, urlSpCharEncode };

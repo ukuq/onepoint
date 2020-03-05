@@ -2,20 +2,22 @@
 <html lang="zh-CN">
 
 <head>
-    <link rel="shortcut icon" href="https://i.loli.net/2020/01/31/NmHBFUPcXnrsj5b.png">
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="https://cdn.onesrc.cn/uploads/images/onepoint.png">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <!-- Load required Bootstrap and BootstrapVue CSS -->
-    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
-    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" />
+    <link type="text/css" rel="stylesheet" href="https://unpkg.zhimg.com/bootstrap@4.4.1/dist/css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet"
+        href="https://unpkg.zhimg.com/bootstrap-vue@2.4.1/dist/bootstrap-vue.min.css" />
 
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.zhimg.com/axios@0.19.1/dist/axios.min.js"></script>
 
     <!-- Load Vue followed by BootstrapVue -->
-    <script src="https://unpkg.com/vue@latest/dist/vue.min.js"></script>
-    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
+    <script src="https://unpkg.zhimg.com/vue@2.6.11/dist/vue.min.js"></script>
+    <script src="https://unpkg.zhimg.com/bootstrap-vue@2.4.1/dist/bootstrap-vue.min.js"></script>
 
     <!-- Load the following for BootstrapVueIcons support -->
-    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
+    <script src="https://unpkg.zhimg.com/bootstrap-vue@2.4.1/dist/bootstrap-vue-icons.min.js"></script>
 </head>
 
 <body>
@@ -102,11 +104,11 @@
                             <b-form-group label="根路径(root)" class="col-4">
                                 <b-form-input v-model="tmp_config.onedrive_graph.root"></b-form-input>
                             </b-form-group>
-                            <b-form-group label="认证类型(默认为0)" class="col-4">
-                                <b-form-input v-model.num="tmp_config.onedrive_graph.oauth" disabled></b-form-input>
+                            <b-form-group label="认证类型(默认为0,世纪互联为1)" class="col-4">
+                                <b-form-input v-model.num="tmp_config.onedrive_graph.oauth"></b-form-input>
                             </b-form-group>
                             <b-form-group label="获取令牌" class="col-4">
-                                <a class="btn btn-secondary d-block" href="https://ukuq.github.io/onepoint/onedrive/"
+                                <a class="btn btn-secondary d-block" href="https://point.onesrc.cn/oauth2/"
                                     target="blank">GetToken</a>
                             </b-form-group>
                         </div>
@@ -155,7 +157,8 @@
                         </b-form-group>
                     </div>
                     <hr>
-                    <b-button @click="addPath" :disabled="!selected || !tmp_config.path" variant="primary" class="mx-3">确认添加</b-button>
+                    <b-button @click="addPath" :disabled="!selected || !tmp_config.path" variant="primary" class="mx-3">
+                        确认添加</b-button>
                 </b-tab>
 
 
@@ -203,6 +206,7 @@
         var app = new Vue({
             el: '#app',
             data: {
+                loadFlag: true,
                 message: 'Hello Vue!',
                 funcNames: ['onedrive_graph', 'onedrive_sharepoint', 'gdrive_goindex', 'linux_scf',
                     'system_phony'

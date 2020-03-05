@@ -1,4 +1,4 @@
-let { Msg, formatDate } = require("./msgutils");
+let { Msg } = require("./msgutils");
 
 class OneCache {
 
@@ -12,12 +12,12 @@ class OneCache {
         this.root = { type: undefined, next_obj: {} };
         this.root_sp = {};
         this.driveCache = {};
-        let date = formatDate(new Date());
+        let date = new Date().toISOString();
         keyPaths.forEach((path) => {
             let ps = path.split('/').filter((e) => { return !!e });
             let pt = this.root;
             for (let i = 0; i < ps.length; i++) {
-                if (!pt.next_obj[ps[i]]) pt.next_obj[ps[i]] = { type: undefined, drive: path, data: { type: 3, name: ps[i], size: NaN, mime: "folder/onepoint", time: date }, next_obj: {} };
+                if (!pt.next_obj[ps[i]]) pt.next_obj[ps[i]] = { type: undefined, drive: path, data: { type: 3, name: ps[i], size: NaN, mime: "", time: date }, next_obj: {} };
                 pt = pt.next_obj[ps[i]];
             }
         });
@@ -60,6 +60,8 @@ class OneCache {
             next_arr.push(next_obj[e].data);
         }
         next_arr.sort((e1, e2) => {
+            if (e1.type > e2.type) return -1;//云盘 文件夹 文件 排序
+            else if (e1.type < e2.type) return 1;
             let x1 = e1.name.toLowerCase();
             let x2 = e2.name.toLowerCase();
             if (x1 < x2) return -1;
@@ -74,14 +76,14 @@ class OneCache {
     /**
      * 注意此项先缓存,后再取缓存结果. 即 msg 可能会被改变
      */
-    addMsg(path, msg, spPage) {
+    addMsg(path, msg, sp_page) {
         if (msg.type === 0) this.addFile(path, msg.data.fileInfo, msg.data.downloadUrl);
         else if (msg.type === 1) {
-            if (spPage !== 0 || msg.data.nextHrefToken) {
+            if (sp_page !== 0 || msg.data.nextToken) {
                 if (!this.root_sp[path]) this.root_sp[path] = {};
-                this.root_sp[path][spPage] = msg;
+                this.root_sp[path][sp_page] = msg;
             } else {
-                msg.data.content = this.addList(path, msg.data.content);
+                msg.data.list = this.addList(path, msg.data.list);
             }
         }
     }
@@ -96,7 +98,7 @@ class OneCache {
         }
         return dpath;
     }
-    getMsg(path, spPage) {
+    getMsg(path, sp_page) {
         let ps = path.split('/').filter((e) => { return !!e });
         let pt = this.root, i;
         for (i = 0; i < ps.length; i++) {
@@ -110,7 +112,7 @@ class OneCache {
         } else if (pt.type === 0 && pt.date > new Date()) {
             return Msg.file(pt.data.fileInfo, pt.data.downloadUrl);
         }
-        if (this.root_sp[path] && this.root_sp[path][spPage]) return this.root_sp[path][spPage];
+        if (this.root_sp[path] && this.root_sp[path][sp_page]) return this.root_sp[path][sp_page];
     }
 
     exportDataArr() {

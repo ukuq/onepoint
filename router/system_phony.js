@@ -1,5 +1,5 @@
 const { Msg } = require('../utils/msgutils');
-const { mime } = require('../utils/nodeutils');
+const { getmime } = require('../utils/nodeutils');
 
 let list;
 exports.ls = ls;
@@ -10,7 +10,7 @@ async function ls(p2) {
         return Msg.list(list.map((e) => { return genInfoByUrl(e); }));
     }
     let url = list.find((e) => { return e.endsWith(p[1]); });
-    return url ? Msg.file(genInfoByUrl(url), url) : Msg.info(404);
+    return url ? Msg.file(genInfoByUrl(url), encodeURI(url)) : Msg.info(404);
 }
 
 exports.func = async (spConfig, cache, event) => {
@@ -29,7 +29,7 @@ function genInfoByUrl(url) {
         type: 0,
         name: url.slice(url.lastIndexOf('/') + 1) || 'unknown',
         size: 1,
-        mime: mime.getType(url) || 'onepoint/unknown',
+        mime: getmime(url),
         time: new Date().toISOString()
     }
 }

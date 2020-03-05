@@ -29,7 +29,7 @@ async function ls(path) {
             };
             if (e['mimeType'].endsWith('folder')) {
                 rData.type = 1;
-                rData.mime = 'folder/googledrive'
+                rData.mime = ''
             }
             rDatas.push(rData);
         });
