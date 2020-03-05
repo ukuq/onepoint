@@ -7,7 +7,7 @@ const _cookie = require('cookie');
 const querystring = require('querystring');
 
 const drive_funcs = {};//云盘模块
-['linux_scf', 'onedrive_graph', 'onedrive_sharepoint', 'gdrive_goindex', 'system_admin', 'system_phony'].forEach((e) => {
+['linux_scf', 'onedrive_graph', 'onedrive_sharepoint', 'gdrive_goindex', 'system_admin', 'system_phony', 'system_webdav'].forEach((e) => {
     drive_funcs[e] = require(`../router/${e}`);
 });
 const render_funcs = {};//渲染模块,目前建议使用w.w
@@ -56,6 +56,9 @@ function initialize(config_json) {
     console.log(DRIVE_MAP);
     refreshCache();
     console.log("initialize success");
+    //@info 此处用于兼容配置文件, 以后可能会剔除 @flag
+    G_CONFIG.access_origins = G_CONFIG.access_origins || [];
+    G_CONFIG.admin_username = G_CONFIG.admin_username || 'admin';
 }
 
 /**
@@ -82,6 +85,20 @@ function refreshCache() {
  * @param {*} isBase64Encoded 
  */
 function endMsg(statusCode, headers, body, isBase64Encoded) {
+    let o = onepoint.event.headers.origin;
+    if (o && G_CONFIG.access_origins.includes(o)) {
+        if (onepoint.event.method === 'OPTIONS' && onepoint.event.headers['access-control-request-headers']) {
+            statusCode = 204;
+            headers = {
+                'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,TRACE,DELETE,HEAD,OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Max-Age': '1728000'
+            };
+            body = "";
+        }
+        headers['Access-Control-Allow-Origin'] = o;
+        headers['Access-Control-Allow-Credentials'] = true;
+    }
     console.log('end_time:' + new Date().toLocaleString(), 'utf-8');
     return {
         'isBase64Encoded': isBase64Encoded || false,
@@ -108,6 +125,9 @@ function endMsg(statusCode, headers, body, isBase64Encoded) {
 async function handleEvent(event) {
     event['start_time'] = new Date();
     console.log('start_time:' + event.start_time.toLocaleString(), 'utf-8');
+
+    onepoint.event = event;
+
     if (event.start_time.getUTCDate() !== G_CONFIG.initTime.getUTCDate()) refreshCache();
 
     if (DOMAIN_MAP[event['sourceIp']]) {//eg: www.example.com/point
@@ -120,7 +140,7 @@ async function handleEvent(event) {
 
 
     console.log(event);
-    let { ph, p0, p_12 } = event['splitPath'];
+    let { p0, p_12 } = event['splitPath'];
     let p1, p2, driveInfo;
     let res_headers = { 'Content-Type': 'text/html' }, res_headers_json = { 'Content-Type': 'application/json' };
     let responseMsg;
@@ -142,14 +162,7 @@ async function handleEvent(event) {
     } else if (p_12.startsWith('/api/')) {
         oneCache.addEventLog(event, 1);
         event.noRender = true;
-        //@flag 此部分以后考虑去掉
-        if (p_12 === '/api/public/ls') {
-            event.cmd = 'ls';
-            event.sp_page = event.query.sp_page || 0;
-            p_12 = event.query.path || '/';
-            drivePath = oneCache.getDrivePath(p_12);
-            driveInfo = DRIVE_MAP[drivePath];
-        } else if (p_12 === '/api/cmd') {
+        if (p_12 === '/api/cmd') {
             if (!event.isadmin) return endMsg(401, res_headers, "401: noly admin can use this api ");
             event.useApi = true;
             let cmdData = event.body.cmdData;
@@ -169,7 +182,7 @@ async function handleEvent(event) {
         } else return endMsg(400, res_headers, "400: no such api");
     } else {
         oneCache.addEventLog(event, 0);
-        event.cmd = 'ls';
+        event.cmd = event.query.download === undefined ? 'ls' : 'download';
         event.sp_page = event.query.sp_page || 0;
         drivePath = oneCache.getDrivePath(p_12);
         driveInfo = DRIVE_MAP[drivePath];
@@ -186,13 +199,13 @@ async function handleEvent(event) {
         let drivepass = event['body']['drivepass'];
         if (event['method'] === 'GET' && event['query']['token'] && event['query']['expiresdate']) {
             if (!isNaN(Number(event['query']['expiresdate'])) && (new Date(Number(event['query']['expiresdate'])) > new Date()) && (event['query']['token'] === getmd5(driveInfo.password + event['query']['expiresdate']))) {//利用分享的 password_date_hash 登录
-                res_headers['set-cookie'] = _cookie.serialize('DRIVETOKEN', driveInfo.password_date_hash, { path: encodeURI(p0 + p1), maxAge: 3600 });
+                res_headers['Set-Cookie'] = _cookie.serialize('DRIVETOKEN', driveInfo.password_date_hash, { path: encodeURI(p0 + p1), maxAge: 3600 });
             } else {
                 responseMsg = Msg.info(401, 'drivepass:云盘token无效');
             }
         } else if (event['method'] === 'POST' && drivepass) {//使用密码 登录
             if (drivepass === driveInfo.password) {//单个云盘登录
-                res_headers['set-cookie'] = _cookie.serialize('DRIVETOKEN', driveInfo.password_date_hash, { path: encodeURI(p0 + p1), maxAge: 3600 });
+                res_headers['Set-Cookie'] = _cookie.serialize('DRIVETOKEN', driveInfo.password_date_hash, { path: encodeURI(p0 + p1), maxAge: 3600 });
             } else {//密码错误
                 responseMsg = Msg.info(401, 'drivepass:云盘密码错误');
             }
@@ -205,7 +218,7 @@ async function handleEvent(event) {
         } else responseMsg = Msg.info(401, 'drivepass:请输入云盘密码');
     }
 
-    if (!responseMsg && !event.useApi) responseMsg = oneCache.getMsg(p_12, event.sp_page);
+    if (!responseMsg && !event.useApi && event.cmd === 'ls') responseMsg = oneCache.getMsg(p_12, event.sp_page);
     if (!responseMsg || drivePath === '/admin/') {//管理员不使用cache
         try {
             responseMsg = await drive_funcs[driveInfo.funcName].func(driveInfo.spConfig, oneCache.driveCache[drivePath], event);
@@ -214,13 +227,19 @@ async function handleEvent(event) {
                 oneCache.addMsg(p_12, responseMsg, event.sp_page);
             } else if (event.cmd === 'find') responseMsg.parentPath = drivePath;
         } catch (error) {
+            //@info 这一部分看起来有点繁琐，但为了提取出一些有用的错误信息，还是很有必要的。
             let info = error.message;
-            if (error.response && error.response.data) {
-                if (error.response.data.error) info = error.response.data.error.message;
-                info = info || error.response.data.message || JSON.stringify(error.response.data);
+            let errcode = 400;
+            if (error.response) {
+                if (error.response.data) {
+                    if (error.response.data.error) info = error.response.data.error.message;
+                    else info = error.response.data.message;
+                    info = info || error.response.data.pipe ? error.message : JSON.stringify(error.response.data);
+                }
+                if (error.response.status === 404) { errcode = 404; info = '404:' + info; }
             }
-            responseMsg = Msg.info(400, info);
-            // console.log(error);
+            responseMsg = Msg.info(errcode, info);
+            console.log(error);
         }
     }
 
@@ -240,7 +259,7 @@ async function handleEvent(event) {
             let dirpass = event['body']['dirpass'];
             if (event['method'] === 'POST' && dirpass) {// post
                 if (dirpass === pass) {
-                    res_headers['set-cookie'] = _cookie.serialize('DIRTOKEN', getmd5(pass), { path: encodeURI(p0 + p1 + p2), maxAge: 3600 });
+                    res_headers['Set-Cookie'] = _cookie.serialize('DIRTOKEN', getmd5(pass), { path: encodeURI(p0 + p1 + p2), maxAge: 3600 });
                 } else {
                     responseMsg = Msg.info(401, 'dirpass:目录密码错误');
                 }
@@ -262,14 +281,15 @@ async function handleEvent(event) {
     if (responseMsg.data.nextToken) responseMsg.data.next = '?sp_page=' + responseMsg.data.nextToken;
     //处理直接 html返回
     if (responseMsg.type === 3) return endMsg(responseMsg.statusCode, responseMsg.headers, responseMsg.data.html);
+    //处理cookie设置的代理,代理程序参考 https://www.onesrc.cn/p/using-cloudflare-to-write-a-download-assistant.html
+    if (responseMsg.type === 0 && event.cookie.proxy) responseMsg.data.downloadUrl = event.cookie.proxy + '?url=' + encodeURIComponent(responseMsg.data.downloadUrl);
     //处理api部分
-    if (event.noRender) return endMsg(responseMsg.statusCode, Object.assign(res_headers_json, responseMsg.headers), JSON.stringify(responseMsg.data));
+    if (event.noRender) return endMsg(responseMsg.statusCode, Object.assign(res_headers, responseMsg.headers, res_headers_json), JSON.stringify(responseMsg.data));
     //处理文件下载
     if (responseMsg.type === 0 && event.query['preview'] === undefined) return endMsg(302, { 'Location': responseMsg.data.downloadUrl }, "302:" + responseMsg.data.downloadUrl);
     console.log(responseMsg);
     let res_body = render_funcs[G_CONFIG.render_name].render(responseMsg, event, G_CONFIG);
-    if (responseMsg.headers) for (let h in responseMsg.headers) res_headers[h] = responseMsg.headers[h];
-    return endMsg(responseMsg.statusCode, res_headers, res_body);
+    return endMsg(responseMsg.statusCode, Object.assign(res_headers, responseMsg.headers), res_body);
 };
 
 

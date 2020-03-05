@@ -1,5 +1,5 @@
 const { Msg } = require('../utils/msgutils');
-const { mime } = require('../utils/nodeutils');
+const { getmime } = require('../utils/nodeutils');
 
 let list;
 exports.ls = ls;
@@ -29,7 +29,7 @@ function genInfoByUrl(url) {
         type: 0,
         name: url.slice(url.lastIndexOf('/') + 1) || 'unknown',
         size: 1,
-        mime: mime.getType(url) || 'onepoint/unknown',
+        mime: getmime(url),
         time: new Date().toISOString()
     }
 }

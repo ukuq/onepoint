@@ -1,6 +1,6 @@
 {
     "G_CONFIG": {
-        "admin_username":"admin",
+        "admin_username": "admin",
         "admin_password": "admin",
         "render_name": "w.w",
         "site_name": "OnePoint Demo",
@@ -9,10 +9,13 @@
         "site_keywords": "OnePoint",
         "site_description": "OnePoint description",
         "site_script": "",
-        "site_readme": "Nothing here!",
+        "site_readme": "支持前后端分离,可在 /admin/ 路径下尝试访问",
         "proxy": [
             "https://proxy.onesrc.workers.dev/"
-        ]
+        ],
+        "initTime": "2020-03-03T09:48:13.758Z",
+        "admin_password_date_hash": "c289ffe12a30c94530b7fc4e532e2f42",
+        "access_origins":["http://localhost:8080"]
     },
     "DRIVE_MAP": {
         "/": {
@@ -59,7 +62,8 @@
                 "shareUrl": "https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/Es6CMetI4fJCr4GqWZ3uvA0BEnzJxxb4CU-iQr04VYomLQ?e=C9K35U",
                 "root": "/image"
             },
-            "password": "123"
+            "password": "123",
+            "password_date_hash": "ae6e334f62fb5d989398deed87568c94"
         },
         "/demo_phony/": {
             "funcName": "system_phony",
@@ -74,17 +78,11 @@
                     "https://zfile.jun6.net/directlink/视频/带字幕的视频.mp4",
                     "https://zfile.jun6.net/directlink/视频/带字幕的视频.mp4.vtt",
                     "https://zfile.jun6.net/directlink/音频/刘乐瑶 - 父亲写的散文诗.mp3",
-                    "https://zfile.jun6.net/directlink/音频/人民不需要自由（108个关键词）.mp3",
                     "https://zfile.jun6.net/directlink/音频/任素汐 - 胡广生.mp3",
-                    "https://zfile.jun6.net/directlink/视频/Lemon (Full Covered by.mp4"
+                    "https://zfile.jun6.net/directlink/视频/Lemon (Full Covered by.mp4",
+                    "https://zfile.jun6.net/directlink/图片/图片铜牌03.jpg"
                 ]
             }
-        }
-    },
-    "DOMAIN_MAP": {
-        "110.11.110.11": {
-            "domain": "www.example.com",
-            "path": "/point"
         }
     }
 }

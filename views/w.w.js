@@ -1,7 +1,7 @@
 const { formatSize, urlSpCharEncode } = require('../utils/msgutils');
-const { mime } = require('../utils/nodeutils');
+const { getmime } = require('../utils/nodeutils');
 exports.render = render;
-
+//@info proxy部分提至main.js,自动根据cookie觉得是否代理.
 function render(responseMsg, event, G_CONFIG) {
     let splitPath = event.splitPath;
     let p_h0 = urlSpCharEncode(splitPath.ph + splitPath.p0);
@@ -37,7 +37,6 @@ function render(responseMsg, event, G_CONFIG) {
 
             let fileInfo = data.fileInfo;
             let downloadUrl = data.downloadUrl;
-            if (event.cookie.proxy) downloadUrl = event.cookie.proxy + '?url=' + encodeURIComponent(downloadUrl);
             let type = fileInfo['mime'].slice(0, fileInfo['mime'].indexOf('/'));
             html += `</select><div class="input-group-append"><button class="btn btn-outline-secondary" id="proxy-submit" type="button">Proxy</button><a type="button" class="btn btn-outline-secondary" href="${downloadUrl}">Download</a><button type="button" class="btn btn-outline-secondary" id="share-btn">Share</button></div></div>`;
             html += `<div class="border rounded my-3 p-3">`;
@@ -50,7 +49,7 @@ function render(responseMsg, event, G_CONFIG) {
                 <script>const dp = new DPlayer({container: document.getElementById('dplayer'),lang:'zh-cn',video: {url: '${downloadUrl}',pic: '',type: 'auto'}});</script>`;
             } else if (type === 'audio') {
                 html += `<audio src="${downloadUrl}" controls autoplay style="width: 75%;" class="rounded mx-auto d-block"></audio>`;
-            } else if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'mpp', 'rtf', 'vsd', 'vsdx'].includes(mime.getExtension(fileInfo['mime']))) {
+            } else if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'mpp', 'rtf', 'vsd', 'vsdx'].includes(getmime(fileInfo['mime']))) {
                 html += `<iframe src="https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(downloadUrl)}" class="border rounded" style="height: 1700px;width: 100%;">This browser does not support iframe</iframe>`;
             } else if (fileInfo['mime'].endsWith('pdf')) {
                 html += `<div id="pdf-preview"></div><script src="https://cdn.bootcss.com/pdfobject/2.1.1/pdfobject.min.js"></script><script>PDFObject.embed("${downloadUrl}", "#pdf-preview");</script><style>.pdfobject{height:1600px!important;}</style>`;

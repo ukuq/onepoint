@@ -1,7 +1,7 @@
 'use strict';
 const { Msg } = require('../utils/msgutils');
 const { SharePoint } = require('../lib/sharepointAPI');
-const { mime } = require('../utils/nodeutils');
+const { getmime } = require('../utils/nodeutils');
 
 let sharepoint;
 
@@ -17,13 +17,13 @@ async function ls(path) {
                     type: Number(e['FSObjType']),
                     name: e['LinkFilename'],
                     size: Number(e['SMTotalFileStreamSize']),
-                    mime: Number(e['FSObjType']) ? mime.getType(e['LinkFilename']) : '',
+                    mime: Number(e['FSObjType']) ? '' : getmime(e['LinkFilename']),
                     time: new Date(new Date(e['SMLastModifiedDate']) - offset).toISOString()
                 });
             });
             return Msg.list(list);
         } else {//文件 或 空文件夹
-            let info = await sharepoint.spGetItemInfo(data.CurrentFolderSpItemUrl);
+            let info = await sharepoint.spGetItemInfo(data.ListData.CurrentFolderSpItemUrl);
             if (!info.file) return Msg.list([]);//空文件夹
             return Msg.file({
                 type: 0,

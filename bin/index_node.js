@@ -14,23 +14,9 @@ module.exports = () => {
         req.on('end', async () => {
             try {
                 let r = await op.handleRaw(req.method, req.url, req.headers, body, "node", req.connection.remoteAddress);
-                //@info 本地测试用
-                if (req.method === 'OPTIONS' && req.headers['access-control-request-headers']) {
-
-                    r.statusCode = 204,
-                        r.headers = {
-                            'access-control-allow-methods': 'GET,POST,PUT,PATCH,TRACE,DELETE,HEAD,OPTIONS',
-                            'access-control-allow-headers': 'Content-Type',
-                            'access-control-max-age': '1728000'
-                        },
-                        r.body = ""
-                }
-
-                r.headers['Access-Control-Allow-Origin'] = 'http://localhost:8080';
-                r.headers['Access-Control-Allow-Credentials'] = true;
-
                 res.writeHead(r.statusCode, r.headers);
-                res.end(r.body);
+                if (r.headers['x-type'] === "stream") r.body.pipe(res);
+                else res.end(r.body);
             } catch (error) {
                 console.log(error);
                 res.writeHead(500, {});

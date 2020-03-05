@@ -1,4 +1,4 @@
-const { fs, mime, path } = require("../utils/nodeutils");
+const { fs, getmime, path } = require("../utils/nodeutils");
 const { Msg } = require('../utils/msgutils');
 
 exports.ls = ls;
@@ -26,7 +26,7 @@ function ls(p2) {
                                 type: 0,
                                 name: file,
                                 size: st.size,
-                                mime: mime.getType(file) || 'application/vnd.onepoint.unknown',
+                                mime: getmime(file),
                                 time: new Date(st.mtime).toISOString()
                             };
                             if (st.isDirectory()) {
@@ -43,7 +43,7 @@ function ls(p2) {
                     type: 0,
                     name: p2.slice(p2.lastIndexOf('/') + 1),
                     size: stats.size,
-                    mime: mime.getType(p2) || 'application/vnd.onepoint.unknown',
+                    mime: getmime(p2),
                     time: new Date(stats.mtime).toISOString()
                 }, 'none://'));
             } else {
