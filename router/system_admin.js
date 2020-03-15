@@ -21,7 +21,7 @@ exports.func = async (spConfig, cache, event) => {
             case '/site':
                 return Msg.html_json(200, { site_name: G_CONFIG.site_name, site_readme: G_CONFIG.site_readme, proxy_cookie: event.cookie.proxy, proxy: G_CONFIG.proxy });
             case '/proxy':
-                return Msg.html(200, "proxy", { 'Set-Cookie': cookie.serialize('proxy', event.query.proxy, { path: event.splitPath.p0 + '/' }) });
+                return Msg.html(200, "proxy", { 'Set-Cookie': cookie.serialize('proxy', event.query.proxy || "", { path: event.splitPath.p0 + '/' }) });
             case '/event':
                 return Msg.html_json(200, event);
             case '/login':
@@ -31,6 +31,9 @@ exports.func = async (spConfig, cache, event) => {
                 else return Msg.info(403, "账号或密码错误");
             case '/logout':
                 return Msg.html(204, "logout", { 'Set-Cookie': cookie.serialize('ADMINTOKEN', '0', { path: event.splitPath.p0 + '/', maxAge: 3600 }) });
+            case '/search':
+                
+                return;
             default:
                 break;
         }
@@ -74,6 +77,7 @@ ajax_funcs['setting'] = () => {
 ajax_funcs['cache'] = () => {
     let cache = _event.query.raw === undefined ? oneCache.exportDataArr() : oneCache;
     return Msg.html_json(200, cache);
+    //return Msg.html_json(200,oneCache.search());
 }
 
 ajax_funcs['event'] = () => {

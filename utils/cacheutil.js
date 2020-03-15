@@ -9,7 +9,7 @@ class OneCache {
     initDrives(keyPaths) {
         this.initTime = new Date();
         this.eventlog = [[], [], [], []];//normal, api, xx, admin
-        this.root = { type: undefined, next_obj: {} };
+        this.root = { type: undefined, data: { type: 3, name: 'root', size: NaN, mime: "", time: this.initTime }, next_obj: {} };
         this.root_sp = {};
         this.driveCache = {};
         let date = new Date().toISOString();
@@ -32,9 +32,8 @@ class OneCache {
             pt = pt.next_obj[ps[i]];
         }
         pt.type = 0;
-        pt.data = {};
-        pt.data.fileInfo = fileInfo;
-        pt.data.downloadUrl = downloadUrl;
+        pt.data = fileInfo;
+        pt.downloadUrl = downloadUrl;
         pt.date = new Date(new Date().valueOf() + 300000);//5 min
     }
     addList(path, fileInfoArr) {
@@ -110,7 +109,7 @@ class OneCache {
         } else if (pt.type === 1) {
             return Msg.list(pt.next_arr);
         } else if (pt.type === 0 && pt.date > new Date()) {
-            return Msg.file(pt.data.fileInfo, pt.data.downloadUrl);
+            return Msg.file(pt.data, pt.downloadUrl);
         }
         if (this.root_sp[path] && this.root_sp[path][sp_page]) return this.root_sp[path][sp_page];
     }
@@ -119,6 +118,10 @@ class OneCache {
         let r = [];
         OneCache._exportDataArr(this.root, '', r);
         return r;
+    }
+
+    search(q) {
+        return OneCache._search(this.root);
     }
 
     addEventLog(event, type) {
@@ -141,6 +144,28 @@ OneCache._exportDataArr = (Obj, path, expObj) => {
         expObj.push({ path: path1, data: Obj.next_obj[e].data });
         OneCache._exportDataArr(Obj.next_obj[e], path1, expObj);
     });
+}
+
+
+OneCache._search = (Obj) => {
+    //如果是文件夹节点,且不知道后面节点的状态
+    // if (Obj.type === undefined && Obj.data.type !== 0) {
+    //     return { name: Obj.data.name, data: null };
+    // }
+    let arr = [];
+    console.log("search in: " + Obj.data.name);
+    Object.keys(Obj.next_obj).forEach((e) => {
+        let d = Obj.next_obj[e].data;
+        if (d.type === 0) {
+            arr.push(d.name);
+        } else {
+            let folder = {};
+            if (Obj.next_obj[e].type === undefined) folder[d.name] = null;
+            else folder[d.name] = OneCache._search(Obj.next_obj[e]);
+            arr.push(folder);
+        }
+    });
+    return arr;
 }
 
 exports.OneCache = OneCache;
