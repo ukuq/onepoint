@@ -35,27 +35,27 @@ function render(responseMsg, event, G_CONFIG) {
                 html += `<option value="${e}">${e}</option>`;
             });
 
-            let fileInfo = data.fileInfo;
-            let downloadUrl = data.downloadUrl;
-            let type = fileInfo['mime'].slice(0, fileInfo['mime'].indexOf('/'));
-            html += `</select><div class="input-group-append"><button class="btn btn-outline-secondary" id="proxy-submit" type="button">Proxy</button><a type="button" class="btn btn-outline-secondary" href="${downloadUrl}">Download</a><button type="button" class="btn btn-outline-secondary" id="share-btn">Share</button></div></div>`;
+            let file = data.file;
+            let url = data.url;
+            let type = file['mime'].slice(0, file['mime'].indexOf('/'));
+            html += `</select><div class="input-group-append"><button class="btn btn-outline-secondary" id="proxy-submit" type="button">Proxy</button><a type="button" class="btn btn-outline-secondary" href="${url}">Download</a><button type="button" class="btn btn-outline-secondary" id="share-btn">Share</button></div></div>`;
             html += `<div class="border rounded my-3 p-3">`;
             if (type === 'image') {
-                html += `<img src="${downloadUrl}" class="rounded mx-auto d-block">`;
+                html += `<img src="${url}" class="rounded mx-auto d-block">`;
             } else if (type === 'video') {
                 html += `<link class="dplayer-css" rel="stylesheet" href="//cdn.bootcss.com/dplayer/1.25.0/DPlayer.min.css">
                 <script src="//cdn.bootcss.com/dplayer/1.25.0/DPlayer.min.js"></script>
                 <div class="border rounded" id="dplayer"></div>
-                <script>const dp = new DPlayer({container: document.getElementById('dplayer'),lang:'zh-cn',video: {url: '${downloadUrl}',pic: '',type: 'auto'}});</script>`;
+                <script>const dp = new DPlayer({container: document.getElementById('dplayer'),lang:'zh-cn',video: {url: '${url}',pic: '',type: 'auto'}});</script>`;
             } else if (type === 'audio') {
-                html += `<audio src="${downloadUrl}" controls autoplay style="width: 75%;" class="rounded mx-auto d-block"></audio>`;
-            } else if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'mpp', 'rtf', 'vsd', 'vsdx'].includes(getmime(fileInfo['mime']))) {
-                html += `<iframe src="https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(downloadUrl)}" class="border rounded" style="height: 1700px;width: 100%;">This browser does not support iframe</iframe>`;
-            } else if (fileInfo['mime'].endsWith('pdf')) {
-                html += `<div id="pdf-preview"></div><script src="https://cdn.bootcss.com/pdfobject/2.1.1/pdfobject.min.js"></script><script>PDFObject.embed("${downloadUrl}", "#pdf-preview");</script><style>.pdfobject{height:1600px!important;}</style>`;
-            } else if (type === 'text' || (fileInfo['size'] < 1024)) {
+                html += `<audio src="${url}" controls autoplay style="width: 75%;" class="rounded mx-auto d-block"></audio>`;
+            } else if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'mpp', 'rtf', 'vsd', 'vsdx'].includes(getmime(file['mime']))) {
+                html += `<iframe src="https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(url)}" class="border rounded" style="height: 1700px;width: 100%;">This browser does not support iframe</iframe>`;
+            } else if (file['mime'].endsWith('pdf')) {
+                html += `<div id="pdf-preview"></div><script src="https://cdn.bootcss.com/pdfobject/2.1.1/pdfobject.min.js"></script><script>PDFObject.embed("${url}", "#pdf-preview");</script><style>.pdfobject{height:1600px!important;}</style>`;
+            } else if (type === 'text' || (file['size'] < 1024)) {
                 html += `<div id="code-preview">loading...</div>`;
-                html += `<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script><script>fetch('${downloadUrl}').then(response => response.text()).then(data => {document.getElementById('code-preview').innerHTML ='<pre><code>'+marked(data)+'</code></pre>';hljs.highlightBlock(document.getElementById('code-preview'));}).catch(err => document.getElementById('code-preview').innerHTML="Oh, error:" + err);</script>`;
+                html += `<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script><script>fetch('${url}').then(response => response.text()).then(data => {document.getElementById('code-preview').innerHTML ='<pre><code>'+marked(data)+'</code></pre>';hljs.highlightBlock(document.getElementById('code-preview'));}).catch(err => document.getElementById('code-preview').innerHTML="Oh, error:" + err);</script>`;
             } else {
                 html += `<div>此格式不支持预览 :-(</div>`;
             }

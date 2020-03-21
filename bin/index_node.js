@@ -24,7 +24,7 @@ module.exports = () => {
                 res.end();
             }
         });
-    }).listen(80);
+    }).listen(8020);
 }
 module.exports();
 
@@ -33,5 +33,10 @@ async function readConfig() {
 }
 
 async function writeConfig(config) {
-    fs.writeFileSync(path.resolve(__dirname, '../config.json'), JSON.stringify(config));
+    return new Promise((resolve) => {
+        fs.writeFile(path.resolve(__dirname, '../config.json'), JSON.stringify(config), (err) => {
+            if (err) resolve(false);
+            else resolve(true);
+        })
+    });
 }

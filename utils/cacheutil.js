@@ -23,7 +23,7 @@ class OneCache {
         });
         OneCache._genNextDrive(this.root);
     }
-    addFile(path, fileInfo, downloadUrl) {
+    addFile(path, file, url) {
         if (path === '/') throw "Add you kidding me? File path should not be a '/'!";
         let ps = path.split('/').filter((e) => { return !!e });
         let pt = this.root;
@@ -32,11 +32,11 @@ class OneCache {
             pt = pt.next_obj[ps[i]];
         }
         pt.type = 0;
-        pt.data = fileInfo;
-        pt.downloadUrl = downloadUrl;
+        pt.data = file;
+        pt.url = url;
         pt.date = new Date(new Date().valueOf() + 300000);//5 min
     }
-    addList(path, fileInfoArr) {
+    addList(path, fileArr) {
         let ps = path.split('/').filter((e) => { return !!e });
         let pt = this.root;
         for (let i = 0; i < ps.length; i++) {
@@ -44,7 +44,7 @@ class OneCache {
             pt = pt.next_obj[ps[i]];
         }
         let next_obj = {};
-        fileInfoArr.forEach(e => {
+        fileArr.forEach(e => {
             next_obj[e.name] = { type: undefined, data: e, next_obj: {} };
         });
 
@@ -76,7 +76,7 @@ class OneCache {
      * 注意此项先缓存,后再取缓存结果. 即 msg 可能会被改变
      */
     addMsg(path, msg, sp_page) {
-        if (msg.type === 0) this.addFile(path, msg.data.fileInfo, msg.data.downloadUrl);
+        if (msg.type === 0) this.addFile(path, msg.data.file, msg.data.url);
         else if (msg.type === 1) {
             if (sp_page !== 0 || msg.data.nextToken) {
                 if (!this.root_sp[path]) this.root_sp[path] = {};
@@ -109,7 +109,7 @@ class OneCache {
         } else if (pt.type === 1) {
             return Msg.list(pt.next_arr);
         } else if (pt.type === 0 && pt.date > new Date()) {
-            return Msg.file(pt.data, pt.downloadUrl);
+            return Msg.file(pt.data, pt.url);
         }
         if (this.root_sp[path] && this.root_sp[path][sp_page]) return this.root_sp[path][sp_page];
     }

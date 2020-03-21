@@ -7,25 +7,23 @@ let Msg = {
     html_json: Msg_html_json
 }
 
-function Msg_file(fileInfo, downloadUrl, headers) {
+function Msg_file(file, url) {
     return {
         type: 0, //0_file 固定值
         statusCode: 200,//200 固定值
-        headers: headers,
         data: {
-            fileInfo: fileInfo,
-            downloadUrl: downloadUrl
+            file: file,
+            url: url
         }
     }
 }
 
-function Msg_list(list, next, prev, headers) {
+function Msg_list(list, nextToken) {
     return {
         type: 1, //1_dir 固定值
         statusCode: 200,// 固定值
-        headers: headers,
         data: {
-            list, prev, next
+            list, nextToken
         }
     };
 }

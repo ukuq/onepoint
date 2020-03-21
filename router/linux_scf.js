@@ -14,8 +14,8 @@ function ls(p2) {
                     console.log('total: ' + len);
                     if (len === 0) return resolve(Msg.list([]));
                     let list = [];
-                    files.forEach((file) => {
-                        fs.stat(path.resolve(p2, file), (err, st) => {
+                    files.forEach((fileName) => {
+                        fs.stat(path.resolve(p2, fileName), (err, st) => {
                             if (err) {
                                 console.log(p2 + ":" + err.message);
                                 len--;
@@ -24,9 +24,9 @@ function ls(p2) {
                             }
                             let nodeData = {
                                 type: 0,
-                                name: file,
+                                name: fileName,
                                 size: st.size,
-                                mime: getmime(file),
+                                mime: getmime(fileName),
                                 time: new Date(st.mtime).toISOString()
                             };
                             if (st.isDirectory()) {

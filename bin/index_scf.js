@@ -53,15 +53,15 @@ async function readConfig() {
 }
 
 async function writeConfig(config) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         cos.putObject({
             Bucket: cosConfig.Bucket,
             Region: 'ap-hongkong',
             Key: 'onepoint-config.json',
             Body: JSON.stringify(config),
-        }, function (err, data) {
-            if (err) reject(err);
-            else resolve(data);
+        }, function (err) {
+            if (err) resolve(false);
+            else resolve(true);
         });
     });
 }
