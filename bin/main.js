@@ -149,7 +149,7 @@ async function handleEvent(event) {
     if (event['cookie']['ADMINTOKEN'] === G_CONFIG.admin_password_date_hash) event.isadmin = true;
 
 
-    console.log(event);
+    console.log(JSON.stringify(event));
     let { p0, p_12 } = event['splitPath'];
     let p1, p2, driveInfo;
     let responseMsg;
@@ -296,7 +296,7 @@ async function handleEvent(event) {
     if (event.noRender) return endMsg(responseMsg.statusCode, Object.assign({}, responseMsg.headers, { 'Content-Type': 'application/json' }), JSON.stringify(responseMsg.data));
     //处理文件下载
     if (responseMsg.type === 0 && event.query['preview'] === undefined) return endMsg(302, { 'Location': responseMsg.data.url }, "302:" + responseMsg.data.url);
-    console.log(responseMsg);
+    console.log(JSON.stringify(responseMsg));
     let res_body = render_funcs[G_CONFIG.render_name].render(responseMsg, event, G_CONFIG);
     return endMsg(responseMsg.statusCode, responseMsg.headers, res_body);
 };

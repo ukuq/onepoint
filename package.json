@@ -1,8 +1,8 @@
 {
   "name": "onepoint",
-  "version": "1.3.2",
-  "description": "onepoint npm",
-  "main": "index.js",
+  "version": "1.3.3",
+  "description": "a tiny file index and manage program",
+  "main": "bin/main.js",
   "scripts": {
     "test": "node test/run.js"
   },
@@ -17,6 +17,9 @@
     "scf",
     "serverless"
   ],
+  "bin": {
+    "onepoint": "bin/index_node.js"
+  },
   "author": "ukuq",
   "license": "MIT",
   "bugs": {

@@ -9,7 +9,7 @@
         "site_keywords": "OnePoint",
         "site_description": "OnePoint description",
         "site_script": "",
-        "site_readme": "支持前后端分离,可在 /admin/ 路径下尝试访问",
+        "site_readme": "部署完成后，一定要修改管理员密码，切记",
         "proxy": [
             "https://proxy.onesrc.workers.dev/"
         ],
@@ -73,16 +73,15 @@
                     "https://ukuq.github.io/hello-word/README.md",
                     "https://ukuq.github.io/onepoint/favicon.png",
                     "http://www.w3school.com.cn/i/horse.ogg",
-                    "http://www.w3school.com.cn/i/movie.mp4",
-                    "http://www.w3school.com.cn/i/movie.ogg",
-                    "https://zfile.jun6.net/directlink/视频/带字幕的视频.mp4",
-                    "https://zfile.jun6.net/directlink/视频/带字幕的视频.mp4.vtt",
-                    "https://zfile.jun6.net/directlink/音频/刘乐瑶 - 父亲写的散文诗.mp3",
-                    "https://zfile.jun6.net/directlink/音频/任素汐 - 胡广生.mp3",
-                    "https://zfile.jun6.net/directlink/视频/Lemon (Full Covered by.mp4",
-                    "https://zfile.jun6.net/directlink/图片/图片铜牌03.jpg"
+                    "http://www.w3school.com.cn/i/movie.mp4"
                 ]
             }
+        }
+    },
+    "DOMAIN_MAP":{
+        "::ffff:127.0.0.1":{
+            "ph":"https://127.0.0.1",
+            "p0":"/onepoint"
         }
     }
 }

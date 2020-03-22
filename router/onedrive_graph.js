@@ -119,7 +119,6 @@ exports.func = async (spConfig, cache, event) => {
 	let root = spConfig.root || '';
 	let p2 = root + event.p2;
 	let cmdData = event.cmdData;
-	console.log(event);
 	switch (event.cmd) {
 		case 'ls':
 			return await ls(p2, event.sp_page);

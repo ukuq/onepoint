@@ -108,27 +108,27 @@ const vue_html = `
 <html lang=en>
 
 <head>
-  <meta charset=utf-8>
-  <meta http-equiv=X-UA-Compatible content="IE=edge">
-  <meta name=viewport content="width=device-width,initial-scale=1">
-  <link rel=icon href=https://cdn.onesrc.cn/uploads/images/onepoint_30.png>
-  <title>ONEPOINT</title>
-  <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200304/dist/css/app.16834194.css rel=preload as=style>
-  <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200304/dist/css/chunk-vendors.5cbff696.css rel=preload as=style>
-  <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200304/dist/js/app.387c1e30.js rel=preload as=script>
-  <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200304/dist/js/chunk-vendors.6d33914d.js rel=preload as=script>
-  <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200304/dist/css/chunk-vendors.5cbff696.css rel=stylesheet>
-  <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200304/dist/css/app.16834194.css rel=stylesheet>
+    <meta charset=utf-8>
+    <meta http-equiv=X-UA-Compatible content="IE=edge">
+    <meta name=viewport content="width=device-width,initial-scale=1">
+    <link rel=icon href=https://cdn.onesrc.cn/uploads/images/onepoint_30.png>
+    <title>ONEPOINT</title>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200322/dist/css/app.16834194.css rel=preload as=style>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200322/dist/css/chunk-vendors.5cbff696.css rel=preload as=style>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200322/dist/js/app.18ab85b8.js rel=preload as=script>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200322/dist/js/chunk-vendors.6d33914d.js rel=preload as=script>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200322/dist/css/chunk-vendors.5cbff696.css rel=stylesheet>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200322/dist/css/app.16834194.css rel=stylesheet>
 </head>
 
 <body><noscript><strong>We're sorry but vue1 doesn't work properly without JavaScript enabled. Please enable it to
-      continue.</strong></noscript>
+            continue.</strong></noscript>
   <script>
     window.p_h0 = new RegExp('(.+)/admin').exec(window.location.href)[1];
   </script>
-  <div id=app></div>
-  <script src=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200304/dist/js/chunk-vendors.6d33914d.js> </script>
-  <script src=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200304/dist/js/app.387c1e30.js> </script>
+    <div id=app></div>
+    <script src=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200322/dist/js/chunk-vendors.6d33914d.js> </script>
+    <script src=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200322/dist/js/app.18ab85b8.js> </script>
 </body>
 
 </html>`

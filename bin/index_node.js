@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -27,6 +28,7 @@ module.exports = () => {
     }).listen(8020);
 }
 module.exports();
+console.log('OnePoint is running at http://localhost:8020');
 
 async function readConfig() {
     return JSON.parse(fs.readFileSync(path.resolve(__dirname, '../config.json'), 'utf8'));
