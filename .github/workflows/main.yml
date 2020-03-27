@@ -19,7 +19,7 @@ jobs:
       env: 
         CONFIG_JSON: ${{ secrets.CONFIG_JSON }} # secrets 提供
       run:
-        echo $CONFIG_JSON > ./onepoint/config.json
+        echo $CONFIG_JSON > ./onepoint/config2.json
     - name: install configure SCF CLI and deploy
       env: 
         APPID: ${{ secrets.TENCENTCLOUD_APP_ID }} # secrets 提供
