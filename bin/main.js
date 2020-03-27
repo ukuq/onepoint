@@ -142,8 +142,8 @@ async function handleEvent(event) {
 
     if (DOMAIN_MAP[event['sourceIp']]) {//eg: www.example.com/point
         let domain_path = DOMAIN_MAP[event['sourceIp']];
-        event.splitPath.ph = domain_path.domain;
-        event.splitPath.p0 = domain_path.path;
+        event.splitPath.ph = domain_path.ph;
+        event.splitPath.p0 = domain_path.p0;
     }
 
     if (event['cookie']['ADMINTOKEN'] === G_CONFIG.admin_password_date_hash) event.isadmin = true;
@@ -230,6 +230,7 @@ async function handleEvent(event) {
     if (!responseMsg && event.isNormal && event.cmd === 'ls') responseMsg = oneCache.getMsg(p_12, event.sp_page);
     if (!responseMsg) {//管理员不使用cache
         try {
+            console.log('trying...');
             responseMsg = await drive_funcs[driveInfo.funcName].func(driveInfo.spConfig, oneCache.driveCache[drivePath], event);
             if (event.cmd === 'ls') {
                 responseMsg.sp_page = event.sp_page;

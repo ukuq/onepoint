@@ -17,7 +17,7 @@ async function ls(path, skiptoken) {
 				size: data['size'],
 				mime: data['file']['mimeType'],//@info 暂时不处理目录不规范的情况,直接throw
 				time: data['lastModifiedDateTime']
-			}, data['@microsoft.graph.downloadUrl']);
+			}, data['@microsoft.graph.downloadUrl'] || data['@content.downloadUrl']);
 		}
 		if (path !== '/') path = path.slice(0, -1);
 		let params = {
@@ -32,7 +32,8 @@ async function ls(path, skiptoken) {
 				name: e['name'],
 				size: e['size'],
 				mime: e['file'] ? e['file']['mimeType'] : '',
-				time: e['lastModifiedDateTime']
+				time: e['lastModifiedDateTime'],
+				url: e['@microsoft.graph.downloadUrl'] || e['@content.downloadUrl']
 			});
 		});
 		let msg = Msg.list(list);
@@ -114,7 +115,7 @@ async function upload(filePath, fileSystemInfo) {
 exports.func = async (spConfig, cache, event) => {
 	_cache = cache;
 	mconfig = spConfig;
-	onedrive = new OneDrive(spConfig['refresh_token'], spConfig['oauth']);
+	onedrive = new OneDrive(spConfig['refresh_token'], spConfig['oauth'], spConfig['oauth_opt']);
 	await onedrive.init();
 	let root = spConfig.root || '';
 	let p2 = root + event.p2;

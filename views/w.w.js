@@ -97,6 +97,7 @@ function render(responseMsg, event, G_CONFIG) {
     html += `<div class="text-right"><span class="text-muted">Powered by <a href="https://github.com/ukuq/onepoint">OnePoint</a></span><span class="text-muted ml-2">Processing time: <a href="javascript:void">${new Date() - event.start_time}ms</a></span></div>`;
     html += `</div><script src="https://cdn.bootcss.com/marked/0.7.0/marked.js"></script>${G_CONFIG.site_script}`;
     if (readmeFlag) html += `<script src="https://cdn.bootcss.com/axios/0.19.0/axios.min.js"></script><script>axios.get('./README.md').then(data => document.getElementById('readMe').innerHTML =marked(data)).catch(err => document.getElementById('readMe').innerHTML="Oh, error:" + err);</script>`;
+    else html+=`<script>document.getElementById('readMe').innerHTML =marked(document.getElementById('readMe').textContent)</script>`
     html += `</body></html>`;
     return html;
 }

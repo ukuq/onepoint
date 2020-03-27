@@ -1,4 +1,5 @@
 let { Msg } = require("./msgutils");
+let { getmime } = require('./nodeutils');
 
 class OneCache {
 
@@ -31,10 +32,11 @@ class OneCache {
             if (!pt.next_obj[ps[i]]) pt.next_obj[ps[i]] = { type: undefined, next_obj: {} };
             pt = pt.next_obj[ps[i]];
         }
+        if (file.mime === 'application/octet-stream') file.mime = getmime(file.name);
         pt.type = 0;
         pt.data = file;
         pt.url = url;
-        pt.date = new Date(new Date().valueOf() + 300000);//5 min
+        pt.date = Date.now() + 300000;//5 min
     }
     addList(path, fileArr) {
         let ps = path.split('/').filter((e) => { return !!e });
@@ -45,7 +47,13 @@ class OneCache {
         }
         let next_obj = {};
         fileArr.forEach(e => {
-            next_obj[e.name] = { type: undefined, data: e, next_obj: {} };
+            if (e.url) {
+                next_obj[e.name] = { type: 0, data: e, url: e.url, date: Date.now() + 300000, next_obj: {} };
+                //delete e.url;
+            }
+            else next_obj[e.name] = { type: undefined, data: e, next_obj: {} };
+            //@info 这种是处理不声明mime的流氓式上传导致的mime不准确问题
+            if (e.mime === 'application/octet-stream') e.mime = getmime(e.name);
         });
 
         if (pt.next_drive) {//map add
@@ -70,6 +78,7 @@ class OneCache {
         pt.type = 1;
         pt.next_obj = next_obj;
         pt.next_arr = next_arr;
+        pt.date = Date.now() + 86400000;//1 day
         return next_arr;
     }
     /**
@@ -80,7 +89,8 @@ class OneCache {
         else if (msg.type === 1) {
             if (sp_page !== 0 || msg.data.nextToken) {
                 if (!this.root_sp[path]) this.root_sp[path] = {};
-                this.root_sp[path][sp_page] = msg;
+                this.root_sp[path][sp_page].date = Date.now() + 86400000;//1 day
+                this.root_sp[path][sp_page].msg = msg;
             } else {
                 msg.data.list = this.addList(path, msg.data.list);
             }
@@ -105,13 +115,13 @@ class OneCache {
             pt = pt.next_obj[ps[i]];
         }
         if (i < ps.length) {
-            if (pt.type !== undefined) return Msg.info(404);//充分条件, 不为undefined一定是404,反过来不一定成立.
-        } else if (pt.type === 1) {
+            if (i===ps.length-1 && pt.type !== undefined) return Msg.info(404);//充分条件, 不为undefined一定是404,反过来不一定成立.
+        } else if (pt.type === 1 && pt.date > Date.now()) {
             return Msg.list(pt.next_arr);
-        } else if (pt.type === 0 && pt.date > new Date()) {
+        } else if (pt.type === 0 && pt.date > Date.now()) {
             return Msg.file(pt.data, pt.url);
         }
-        if (this.root_sp[path] && this.root_sp[path][sp_page]) return this.root_sp[path][sp_page];
+        if (this.root_sp[path] && this.root_sp[path][sp_page] && this.root_sp[path][sp_page].date > Date.now()) return this.root_sp[path][sp_page];
     }
 
     exportDataArr() {

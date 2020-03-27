@@ -5,7 +5,10 @@ exports.ls = ls;
 function ls(p2) {
     return new Promise((resolve) => {
         fs.stat(p2, (err, stats) => {
-            if (err) return resolve(Msg.info(403, err.message));
+            if (err) {
+                if (err.code === 'ENOENT') return resolve(Msg.info(404));
+                else return resolve(Msg.info(403, err.message));
+            }
             if (stats.isDirectory()) {
                 console.log("查看" + p2 + "目录");
                 fs.readdir(p2, (err, files) => {
@@ -45,7 +48,7 @@ function ls(p2) {
                     size: stats.size,
                     mime: getmime(p2),
                     time: new Date(stats.mtime).toISOString()
-                }, 'none://'));
+                }, '?download'));
             } else {
                 return resolve(Msg.info(403, "403 设备文件"));
             }
@@ -70,11 +73,55 @@ exports.func = async (spConfig, cache, event) => {
     let p2 = root + event.p2;
     switch (event.cmd) {
         case 'ls':
-            return await ls(p2);
+            return await ls(p2, event);
         case 'mkdir':
             return await mkdir(p2, event.cmdData.name);
+        case 'download':
+            //@flag 暂不开放
+            return Msg.html(403,"403 now");
+            return new Promise((resolve) => {
+                fs.stat(p2, (err, stats) => {
+                    if (err) {
+                        if (err.code === 'ENOENT') return resolve(Msg.info(404));
+                        else return resolve(Msg.info(403, err.message));
+                    }
+                    if (stats.isFile()) {
+                        let h = {};
+                        h['Content-Length'] = stats.size;
+                        h['Content-Type'] = getmime(p2);
+                        h['x-type'] = 'stream';
+                        if (event.headers.range) {
+                            let range = parseHttpRange(event.headers.range, stats.size);
+                            h['Content-Range'] = `bytes ${range.start}-${range.end}/${stats.size}`;
+                            let d = fs.createReadStream(p2, {
+                                "start": range.start,
+                                "end": range.end
+                            });
+                            return resolve(Msg.html(206, d, h));
+                        } else {
+                            h['Accept-Ranges'] = 'bytes';
+                            h['Content-Disposition'] = "attachment; filename=" + encodeURIComponent(p2.slice(p2.lastIndexOf('/') + 1));
+                            return resolve(Msg.html(200, fs.createReadStream(p2), h));
+                        };
+                    } else {
+                        return resolve(Msg.info(403));
+                    }
+                });
+            });
         default:
             return Msg.info(400, "No such cmd");
     }
 }
 
+function parseHttpRange(str, size) {
+    str = str || '';
+    str = str.split("=")[1] || "";
+    let range = str.split("-"),
+        start = Number(range[0]) || 0;
+    end = Number(range[1]) || size - 1;
+    if (start > end || end > size) { throw new Error('http range is invalid') };
+    return {
+        start: start,
+        end: end
+    };
+};

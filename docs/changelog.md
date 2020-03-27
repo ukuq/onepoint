@@ -1,5 +1,23 @@
 # 更新日志
 
+
+## 200327
+
+onedrive_graph 新增无管理员 onedrive 支持
+onedrive_graph 新增网站 sharepoint 支持
+onedrive_graph 新增支持自定义 secret key
+onedrive_graph 优化 api 请求次数
+
+onecache 修复缓存导致的404问题
+onecache 优化 list 类型缓存时间判断
+onecache 优化 mime 不规范导致的文件类型不能识别的问题
+
+w.w 修复 site_readme 显示问题
+
+## 200322
+
+完善文档，优化 linux 部署部分。
+
 ## 200321
 
 event 增加 set_cookie 数组，统一管理 cookie 的设置
