@@ -59,6 +59,13 @@ function initialize(config_json) {
     //@info 此处用于兼容配置文件, 以后可能会剔除 @flag
     G_CONFIG.access_origins = G_CONFIG.access_origins || [];
     G_CONFIG.admin_username = G_CONFIG.admin_username || 'admin';
+    for (let k in DRIVE_MAP) {
+        if (!k.endsWith('/')) {
+            DRIVE_MAP[k + '/'] = DRIVE_MAP[k];
+            delete DRIVE_MAP[k];
+            k += '/';
+        }
+    }
 }
 
 /**
@@ -196,6 +203,11 @@ async function handleEvent(event) {
         driveInfo = DRIVE_MAP[drivePath];
         event.isNormal = true;
         event.noRender = event.query.json !== undefined;
+    }
+    if (!driveInfo) {
+        driveInfo = {
+            funcName: 'system_phony', spConfig: {}
+        };
     }
     p1 = drivePath.slice(0, -1);
     p2 = p_12.slice(p1.length);
