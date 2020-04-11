@@ -1,6 +1,15 @@
 # 更新日志
 
 
+## 200411
+
+onecache 新增上传删除等文件操作后自动刷新缓存
+onecache 优化缓存结构
+
+system_admin 优化管理界面，简化设置
+
+w.w 新增 idoc 预览
+
 ## 200327
 
 onedrive_graph 新增无管理员 onedrive 支持

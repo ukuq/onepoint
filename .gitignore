@@ -1,6 +1,10 @@
 #experiment
+todo.md
 onepoint*
 tmp*
+lib/googledriveAPI.js
+router/system_coding.js
+
 # Logs
 logs
 *.log

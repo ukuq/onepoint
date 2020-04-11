@@ -239,15 +239,16 @@ async function handleEvent(event) {
         } else responseMsg = Msg.info(401, 'drivepass:请输入云盘密码');
     }
 
-    if (!responseMsg && event.isNormal && event.cmd === 'ls') responseMsg = oneCache.getMsg(p_12, event.sp_page);
+    if (!responseMsg && event.isNormal && event.cmd === 'ls') {
+        responseMsg = oneCache.getMsg(p_12, event.sp_page);
+        if (responseMsg) responseMsg.cache = true;
+    }
     if (!responseMsg) {//管理员不使用cache
         try {
             console.log('trying...');
             responseMsg = await drive_funcs[driveInfo.funcName].func(driveInfo.spConfig, oneCache.driveCache[drivePath], event);
-            if (event.cmd === 'ls') {
-                responseMsg.sp_page = event.sp_page;
-                oneCache.addMsg(p_12, responseMsg, event.sp_page);
-            }
+            responseMsg.sp_page = event.sp_page;
+            if (responseMsg.statusCode < 300) oneCache.addMsg(p_12, responseMsg, event.cmd, event.cmdData ? event.cmdData.desPath : '');
         } catch (error) {
             //@info 这一部分看起来有点繁琐，但为了提取出一些有用的错误信息，还是很有必要的。
             let info = error.message;
@@ -260,7 +261,9 @@ async function handleEvent(event) {
                 }
                 if (error.response.status === 404) { errcode = 404; info = '404:' + info; }
             }
-            responseMsg = Msg.info(errcode, info);
+            if (error.opflag) {
+                responseMsg = error;
+            } else responseMsg = Msg.info(errcode, info);
             console.log(error);
         }
     }

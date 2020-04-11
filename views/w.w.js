@@ -1,5 +1,4 @@
 const { formatSize, urlSpCharEncode } = require('../utils/msgutils');
-const { getmime } = require('../utils/nodeutils');
 exports.render = render;
 //@info proxy部分提至main.js,自动根据cookie觉得是否代理.
 function render(responseMsg, event, G_CONFIG) {
@@ -45,17 +44,18 @@ function render(responseMsg, event, G_CONFIG) {
             } else if (type === 'video') {
                 html += `<link class="dplayer-css" rel="stylesheet" href="//cdn.bootcss.com/dplayer/1.25.0/DPlayer.min.css">
                 <script src="//cdn.bootcss.com/dplayer/1.25.0/DPlayer.min.js"></script>
-                <div class="border rounded" id="dplayer"></div>
+                <div id="dplayer"></div>
                 <script>const dp = new DPlayer({container: document.getElementById('dplayer'),lang:'zh-cn',video: {url: '${url}',pic: '',type: 'auto'}});</script>`;
             } else if (type === 'audio') {
                 html += `<audio src="${url}" controls autoplay style="width: 75%;" class="rounded mx-auto d-block"></audio>`;
-            } else if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'mpp', 'rtf', 'vsd', 'vsdx'].includes(getmime(file['mime']))) {
-                html += `<iframe src="https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(url)}" class="border rounded" style="height: 1700px;width: 100%;">This browser does not support iframe</iframe>`;
+            } else if (['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'mpp', 'rtf', 'vsd', 'vsdx'].includes(file.name.slice(file.name.lastIndexOf('.') + 1))) {
+                html += `<ul><li><a href="https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(url)}">使用 office apps 预览</a></li>`;
+                html += `<li><a href="http://api.idocv.com/view/url?url=${encodeURIComponent(url)}">使用 I Doc View 预览</a></li></ul>`;
             } else if (file['mime'].endsWith('pdf')) {
                 html += `<div id="pdf-preview"></div><script src="https://cdn.bootcss.com/pdfobject/2.1.1/pdfobject.min.js"></script><script>PDFObject.embed("${url}", "#pdf-preview");</script><style>.pdfobject{height:1600px!important;}</style>`;
             } else if (type === 'text' || (file['size'] < 1024)) {
-                html += `<div id="code-preview">loading...</div>`;
-                html += `<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script><script>fetch('${url}').then(response => response.text()).then(data => {document.getElementById('code-preview').innerHTML ='<pre><code>'+marked(data)+'</code></pre>';hljs.highlightBlock(document.getElementById('code-preview'));}).catch(err => document.getElementById('code-preview').innerHTML="Oh, error:" + err);</script>`;
+                html += `<div class="border"><pre><code id="code-preview">loading...</code></pre></div>`;
+                html += `<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script><script>fetch('${url}').then(response => response.text()).then(data => {document.getElementById('code-preview').textContent =data;hljs.highlightBlock(document.getElementById('code-preview'));}).catch(err => document.getElementById('code-preview').innerHTML="Oh, error:" + err);</script>`;
             } else {
                 html += `<div>此格式不支持预览 :-(</div>`;
             }
@@ -92,12 +92,27 @@ function render(responseMsg, event, G_CONFIG) {
     }
     //readme
     html += `<div class="card mt-3"><div class="card-header">README.md</div><div class="card-body markdown-body" id="readMe">${G_CONFIG.site_readme}</div></div>`;
-
+    //     html += `
+    // <script src='//unpkg.zhimg.com/valine/dist/Valine.min.js'></script>
+    // <div id="vcomments" class="mt-3"></div>
+    // <script>
+    //     new Valine({
+    //         el: '#vcomments',
+    //         appId: 'Bh93jkqeJWvTCoF3qWzT9nUH-MdYXbMMI',
+    //         appKey: 'hGoSrlB0k9gc88kXr5RmzXay',
+    //         notify:false, 
+    //         verify:false, 
+    //         avatar:'mp', 
+    //         placeholder: 'just go go'
+    //     })
+    // </script>
+    // <style>#vcomments .info{display:none;}</style>
+    // `
     //footer
-    html += `<div class="text-right"><span class="text-muted">Powered by <a href="https://github.com/ukuq/onepoint">OnePoint</a></span><span class="text-muted ml-2">Processing time: <a href="javascript:void">${new Date() - event.start_time}ms</a></span></div>`;
+    html += `<div class="text-right"><span class="text-muted">Powered by <a href="https://github.com/ukuq/onepoint">OnePoint</a></span><span class="text-muted ml-2">Processing time: <a href="javascript:void">${new Date() - event.start_time}ms${responseMsg.cache ? '(cache)' : ''}</a></span></div>`;
     html += `</div><script src="https://cdn.bootcss.com/marked/0.7.0/marked.js"></script>${G_CONFIG.site_script}`;
     if (readmeFlag) html += `<script src="https://cdn.bootcss.com/axios/0.19.0/axios.min.js"></script><script>axios.get('./README.md').then(data => document.getElementById('readMe').innerHTML =marked(data)).catch(err => document.getElementById('readMe').innerHTML="Oh, error:" + err);</script>`;
-    else html+=`<script>document.getElementById('readMe').innerHTML =marked(document.getElementById('readMe').textContent)</script>`
+    else html += `<script>document.getElementById('readMe').innerHTML =marked(document.getElementById('readMe').textContent)</script>`
     html += `</body></html>`;
     return html;
 }

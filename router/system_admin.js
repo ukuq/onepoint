@@ -40,9 +40,8 @@ exports.func = async (spConfig, cache, event) => {
         }
     }
     if (!event.isadmin) { return Msg.html(401, 'only admin can use this api'); }
-    //if (event.query.sp !== undefined) return Msg.html_json(200, oneCache.root_sp);
-    if (t = /\/ajax\/([^/]+)/.exec(p2)) {
-        return ajax_funcs[t[1]]();
+    if (t = /\/ajax\/([^/]+)(.*)/.exec(p2)) {
+        return ajax_funcs[t[1]](t[2]);
     }
     return Msg.html(200, vue_html, { 'Content-Type': 'text/html' });
 }
@@ -69,16 +68,40 @@ ajax_funcs['dashboard'] = () => {
 }
 
 //@flag 此处需要隐去密码相关信息
-ajax_funcs['setting'] = () => {
-    return Msg.html_json(200, {
-        G_CONFIG, DRIVE_MAP
-    });
+ajax_funcs['setting'] = (p) => {
+    let config = onepoint.config;
+    if (p === '/site') {
+        let g_config = config.G_CONFIG;
+        let r = {};
+        for (let k in g_config) {
+            if (k.startsWith('site_')) {
+                r[k] = g_config[k];
+            }
+        }
+        return Msg.html_json(200, { G_CONFIG: r });
+    } else if (p === '/drives') {
+        let drive_map = config.DRIVE_MAP;
+        let r = [];
+        for (let k in drive_map) {
+            let drive = {};
+            drive.path = k;
+            drive.funcName = drive_map[k].funcName;
+            drive.password = drive_map[k].password;
+            drive.spConfig = Object.assign({}, drive_map[k].spConfig);
+            if (drive_map[k].funcName === 'onedrive_graph') {
+                drive.spConfig.refresh_token = drive.spConfig.refresh_token.slice(0, 30) + "...There's always something I could not tell you!";
+            }
+            r.push(drive);
+        }
+        return Msg.html_json(200, { DRIVE_MAP: r });
+    }
+    if (_event.body.password !== onepoint.config.G_CONFIG.admin_password) return Msg.info(403, '管理员密码错误');
+    return Msg.html_json(200, onepoint.config);
 }
 
 ajax_funcs['cache'] = () => {
-    let cache = _event.query.raw === undefined ? oneCache.exportDataArr() : oneCache;
-    return Msg.html_json(200, cache);
-    //return Msg.html_json(200,oneCache.search());
+    //return Msg.html_json(200, cache);
+    return Msg.html_json(200, oneCache.search());
 }
 
 ajax_funcs['event'] = () => {
@@ -95,7 +118,28 @@ ajax_funcs['share'] = () => {
 }
 
 ajax_funcs['save'] = async () => {
-    onepoint.updateConfig(_event.body);//body is a object
+    let config = onepoint.config;
+    let newConfig = _event.body;
+
+    if (newConfig.G_CONFIG) {
+        if (newConfig.G_CONFIG.admin_password || newConfig.G_CONFIG.admin_username) {
+            if (newConfig.G_CONFIG.admin_password_old !== config.G_CONFIG.admin_password) {
+                return Msg.info(403, '密码错误,保存失败');
+            } else {
+                delete newConfig.G_CONFIG.admin_password_old;
+            }
+        }
+        config.G_CONFIG = Object.assign(config.G_CONFIG, newConfig.G_CONFIG);
+    }
+    if (newConfig.DRIVE_MAP) {
+        for (let k in config.DRIVE_MAP) {
+            if (newConfig.DRIVE_MAP[k] && !newConfig.DRIVE_MAP[k].isNew) {
+                newConfig.DRIVE_MAP[k] = config.DRIVE_MAP[k];
+            }
+        }
+        config.DRIVE_MAP = newConfig.DRIVE_MAP;
+    }
+    onepoint.updateConfig(config);//body is an object
     let f = onepoint.adapter_funcs.writeConfig;
     if (f) {
         if (await f(onepoint.config)) return Msg.info(200, '保存成功');
@@ -111,24 +155,22 @@ const vue_html = `
     <meta charset=utf-8>
     <meta http-equiv=X-UA-Compatible content="IE=edge">
     <meta name=viewport content="width=device-width,initial-scale=1">
-    <link rel=icon href=https://cdn.onesrc.cn/uploads/images/onepoint_30.png>
-    <title>ONEPOINT</title>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200322/dist/css/app.16834194.css rel=preload as=style>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200322/dist/css/chunk-vendors.5cbff696.css rel=preload as=style>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200322/dist/js/app.18ab85b8.js rel=preload as=script>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200322/dist/js/chunk-vendors.6d33914d.js rel=preload as=script>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200322/dist/css/chunk-vendors.5cbff696.css rel=stylesheet>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200322/dist/css/app.16834194.css rel=stylesheet>
+    <link rel=icon href=https://cdn.onesrc.cn/uploads/images/onepoint_30.pngo> <title>ONEPOINT</title>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200411/dist/css/app.16834194.css rel=preload as=style>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200411/dist/css/chunk-vendors.afd65583.css rel=preload
+        as=style>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200411/dist/js/app.397e5da4.js rel=preload as=script>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200411/dist/js/chunk-vendors.a9d59e60.js rel=preload
+        as=script>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200411/dist/css/chunk-vendors.afd65583.css rel=stylesheet>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200411/dist/css/app.16834194.css rel=stylesheet>
 </head>
 
 <body><noscript><strong>We're sorry but vue1 doesn't work properly without JavaScript enabled. Please enable it to
             continue.</strong></noscript>
-  <script>
-    window.p_h0 = new RegExp('(.+)/admin').exec(window.location.href)[1];
-  </script>
+    <script>
+        window.p_h0 = new RegExp('(.+)/admin').exec(window.location.href)[1];
+    </script>
     <div id=app></div>
-    <script src=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200322/dist/js/chunk-vendors.6d33914d.js> </script>
-    <script src=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200322/dist/js/app.18ab85b8.js> </script>
-</body>
-
-</html>`
+    <script src=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200411/dist/js/chunk-vendors.a9d59e60.js> </script> <script
+        src=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200411/dist/js/app.397e5da4.js> </script> </body> </html>`

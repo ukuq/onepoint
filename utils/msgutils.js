@@ -4,7 +4,8 @@ let Msg = {
     info: Msg_info,
     json: Msg_json,
     html: Msg_html,
-    html_json: Msg_html_json
+    html_json: Msg_html_json,
+    error: Msg_error
 }
 
 function Msg_file(file, url) {
@@ -73,6 +74,21 @@ function Msg_html_json(statusCode, obj, headers) {
             html: JSON.stringify(obj)
         }
     }
+}
+
+
+function Msg_error(statusCode, info, headers) {
+    let m = {
+        type: 2,
+        statusCode: statusCode,
+        headers: headers,
+        data: {
+            info: info || statusCode
+        },
+        opflag: true
+    };
+    let e = new Error(m.data.info);
+    return Object.assign(e, m);
 }
 
 function urlSpCharEncode(s) {
