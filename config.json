@@ -15,7 +15,9 @@
         ],
         "initTime": "2020-03-03T09:48:13.758Z",
         "admin_password_date_hash": "c289ffe12a30c94530b7fc4e532e2f42",
-        "access_origins":["http://localhost:8080"]
+        "access_origins": [
+            "http://localhost:8080"
+        ]
     },
     "DRIVE_MAP": {
         "/demo_sharepoint/": {
@@ -72,12 +74,23 @@
                     "http://www.w3school.com.cn/i/movie.mp4"
                 ]
             }
+        },
+        "/demo_onedrive/e3_dev/": {
+            "funcName": "onedrive_graph",
+            "spConfig": {
+                "refresh_token": "0.ASsA4MtvVrdAqkqD0jc53uBz4rvUx8O4WlhKk6PdJDNo_qMrAIM.AQABAAAAAAAm-06blBE1TpVMil8KPQ415K0xRPcGi8e9mTs_PzcO5i1wmyTT7sgpXI56Hx_Y1FRQFr2RMT5KbdDZLmh75p3LJGFjkMhyDncYtMqiA5q5VbPZb-7kAAYxU7kE2_mmg2wqn15EgB6LuYOJ5Lg1aPuNCbIOql141PWevIFR4rceqZcQkREVh6jwuSbXrQXHG6qIMCY6wpXo-erjqppnoOelpi6cUU1ODYbEHFOxX3xsAOU1Krn-gtK_Qd53MNxzZZex29Mq1rhrt5Yu-Ci6X4n75qoeBSheDQ1fmATWB2RiW39EtMzpWr7kUEMyG9MwMCdBnuleUZb7KhjUUpWELt_088tZ4Hm9SMaCV3kZ1gcqRpif1-SZTHqr28YqEqraL4c2L2dKLAhvul1gs6qYZXyc5NuKtmbI2bfD0Mq8Xr9G_fxFz9AFFEzStBit_O_FX4DjXdDmoXXDWRekEPNgcjdzPHs-zRud4pHMQ21w9A8yMO-4WRuGFboH5h_WA4MmZwp2H7LHbmLSHZPL1fZP_f0b2kaDE40Z8m2g4NDaUXIIbVjQ37qsvD9xDerKh4qS1itO_kJazDtclyv_gHchMuvbmI2rKYrru4LyIaOQAFZtZIVqe0JovcVzDmoszpKbVBpVaMfyK3CpzLSSvESVAD73DnZbbiUL7miUSh98ilEsO0USoU72EUG-FjFHbGKXiEQqaQjhEbrjV60kjXhQVtXsI6Kyeka6Ud049cUrcMz8ICAA",
+                "oauth": 0,
+                "oauth_opt": {
+                    "client_id": "c3c7d4bb-5ab8-4a58-93a3-dd243368fea3",
+                    "client_secret": "=CV6PNSyDW_6wN3dbX/QpYWnA?CF41PO"
+                }
+            }
         }
     },
-    "DOMAIN_MAP":{
-        "::ffff:127.0.0.1":{
-            "ph":"",
-            "p0":""
+    "DOMAIN_MAP": {
+        "::ffff:127.0.0.1": {
+            "ph": "",
+            "p0": ""
         }
     }
 }

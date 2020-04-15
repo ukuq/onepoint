@@ -155,15 +155,15 @@ const vue_html = `
     <meta charset=utf-8>
     <meta http-equiv=X-UA-Compatible content="IE=edge">
     <meta name=viewport content="width=device-width,initial-scale=1">
-    <link rel=icon href=https://cdn.onesrc.cn/uploads/images/onepoint_30.pngo> <title>ONEPOINT</title>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200411/dist/css/app.16834194.css rel=preload as=style>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200411/dist/css/chunk-vendors.afd65583.css rel=preload
+    <link rel=icon href=https://cdn.onesrc.cn/uploads/images/onepoint_30.png> <title>ONEPOINT</title>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/css/app.9757bd80.css rel=preload as=style>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/css/chunk-vendors.afd65583.css rel=preload
         as=style>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200411/dist/js/app.397e5da4.js rel=preload as=script>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200411/dist/js/chunk-vendors.a9d59e60.js rel=preload
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/js/app.c4fa25b8.js rel=preload as=script>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/js/chunk-vendors.f476e83d.js rel=preload
         as=script>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200411/dist/css/chunk-vendors.afd65583.css rel=stylesheet>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200411/dist/css/app.16834194.css rel=stylesheet>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/css/chunk-vendors.afd65583.css rel=stylesheet>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/css/app.9757bd80.css rel=stylesheet>
 </head>
 
 <body><noscript><strong>We're sorry but vue1 doesn't work properly without JavaScript enabled. Please enable it to
@@ -172,5 +172,6 @@ const vue_html = `
         window.p_h0 = new RegExp('(.+)/admin').exec(window.location.href)[1];
     </script>
     <div id=app></div>
-    <script src=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200411/dist/js/chunk-vendors.a9d59e60.js> </script> <script
-        src=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200411/dist/js/app.397e5da4.js> </script> </body> </html>`
+    <script src=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/js/chunk-vendors.f476e83d.js> </script> <script
+        src=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/js/app.c4fa25b8.js> </script> </body> </html>
+`

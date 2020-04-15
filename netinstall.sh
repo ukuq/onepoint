@@ -1,6 +1,4 @@
-#!/bin/bash
-
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+#/bin/bash
 
 echo "+============================================================+"
 echo "|                    OnePoint Netinstaller                   |"
@@ -11,40 +9,32 @@ echo "|                                          https://onesrc.cn |"
 echo "+============================================================+"
 echo ""
 
-echo -e "\n|  OnePoint is installing ... "
+echo -e "OnePoint is installing ... "
 
-# deps
-if [ -n "$(command -v apt-get)" ]
-then
-  apt-get install -y curl wget unzip
-  curl -sL https://deb.nodesource.com/setup_12.x | bash - >/dev/null 2>&1
-  apt-get install -y nodejs
-elif [ -n "$(command -v yum)" ]
-then
-  yum install -y curl wget unzip
-  curl --silent --location https://rpm.nodesource.com/setup_12.x | bash - >/dev/null 2>&1
-  yum install -y nodejs
-fi
-
-
-echo -e "|\n|  Download OnePoint Package ... "
-wget -O onepoint-master.zip https://github.com/ukuq/onepoint/archive/master.zip
-
-unzip -q -o onepoint-master.zip -d ./
-
-mkdir -p /www/wwwroot/
-mv onepoint-master /www/wwwroot/onepoint
-rm -f onepoint-master.zip
-
-cd /www/wwwroot/onepoint
-echo -e "|\n|  Install Dependents ... "
-npm install
-npm install pm2 -g
-
-pm2 start /bin/index_node.js --name onepoint
-
-if [ $? -eq 0 ]; then
-    echo -e "|\n|  Success: OnePoint has been installed\n"
+VERSION=v12.16.1
+if [ $(uname -m) = aarch64 ];then
+  pkg upgrade -y
+  pkg install nodejs-lts -y
 else
-    echo "failed"
+  DISTRO=linux-x64
+  echo -e "Install nodejs VERSION=$VERSION DISTRO=$DISTRO"
+  sudo mkdir -p /usr/local/lib/nodejs
+  #wget https://nodejs.org/dist/$VERSION/node-$VERSION-$DISTRO.tar.xz
+  wget https://npm.taobao.org/mirrors/node/$VERSION/node-$VERSION-$DISTRO.tar.xz
+  sudo tar -xJvf node-$VERSION-$DISTRO.tar.xz -C /usr/local/lib/nodejs 
+  sudo ln -sf /usr/local/lib/nodejs/node-$VERSION-$DISTRO/bin/node  /usr/local/bin/
+  sudo ln -sf /usr/local/lib/nodejs/node-$VERSION-$DISTRO/bin/npm  /usr/local/bin/
 fi
+node --version
+npm --version
+if [ $? -ne 0 ];then 
+  exit $? 
+fi
+
+echo -e "Fast Install ... "
+mkdir onepoint
+cd onepoint
+npm install onepoint --registry  https://registry.npm.taobao.org/
+echo -e "config.json:"`pwd`/node_modules/onepoint/config.json
+npm install pm2 -g --registry  https://registry.npm.taobao.org/
+pm2 start ./node_modules/onepoint/bin/index_node.js --name onepoint
