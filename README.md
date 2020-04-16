@@ -38,6 +38,19 @@ https://github.com/ukuq/onepoint
 
 `onepoint`
 
+### nowsh 部署
+
+受限于 nowsh 对文件数量的限制，实际部署时使用的是 npm 包，而不是 github 文件。
+nowsh 部署所需要的文件都放到了 ./test/nowsh 目录下，部署时只需要在该文件夹下运行 now 命令即可。
+
+参考命令
+~~~
+npm install -g now@16.7.3
+npm login
+cd onepoint/test/nowsh
+now
+~~~
+
 ## Demo
 
 以下链接由 github action 自动部署

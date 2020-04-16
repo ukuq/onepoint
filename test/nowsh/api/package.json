@@ -1,0 +1,14 @@
+{
+  "name": "onepoint-now",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index_now.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ukuq",
+  "license": "MIT",
+  "dependencies": {
+    "onepoint": "^1.3.4"
+  }
+}

@@ -1,15 +1,18 @@
 {
     "name": "onepoint",
     "version": 2,
+    "env": {
+        "point_env": "now"
+    },
     "functions": {
-        "api/bin/index_now.js": {
+        "api/index_now.js": {
             "maxDuration": 10
         }
     },
     "routes": [
         {
             "src": "/.*",
-            "dest": "api/bin/index_now.js"
+            "dest": "api/index_now.js"
         }
     ]
 }
