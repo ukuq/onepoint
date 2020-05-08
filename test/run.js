@@ -1,2 +1,2 @@
 require('../test/proxy');
-require('../bin/index_node')();
+require('../bin/index_node');

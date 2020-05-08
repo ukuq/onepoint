@@ -70,12 +70,6 @@ statusCode, headers, body 为 http 相关信息。
 
 入参为一个配置对象，返回保存结果。成功返回 true，失败为 false。（支持Promise）
 
-## x-type 处理（可选）
-
-为了增强文件的下载功能，特利用 `responseMsg.headers['x-type']` 提供了 `stream` 类型的数据，如果 x-type 为字符串 stream，则说明 `responseMsg.body` 不是字符串，而是一个 stream 对象。
-
-该参数项主要用于本机文件下载或者通过本机代理下载的功能。
-
 ## 调用步骤
 
 ### 初始化

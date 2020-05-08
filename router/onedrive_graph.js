@@ -109,7 +109,7 @@ async function upload(filePath, fileSystemInfo) {
 	if (_cache[k] && new Date(_cache[k].expirationDateTime) > new Date()) return Msg.json(200, _cache[k]);
 	let res = await onedrive.msUploadSession(filePath, fileSystemInfo);
 	_cache[k] = res;
-	return Msg.json(200, res);
+	return Msg.json(200, res);//@flag 以后改成type3,前端需要配合
 }
 
 exports.func = async (spConfig, cache, event) => {
@@ -140,6 +140,6 @@ exports.func = async (spConfig, cache, event) => {
 		case 'find':
 			return await find(cmdData.text);
 		default:
-			return Msg.info(400, "No such cmd");
+			return Msg.info(400, Msg.constants.No_such_command);
 	}
 }

@@ -7,7 +7,7 @@ const _cookie = require('cookie');
 const querystring = require('querystring');
 
 const drive_funcs = {};//云盘模块
-['linux_scf', 'onedrive_graph', 'onedrive_sharepoint', 'gdrive_goindex', 'system_admin', 'system_phony', 'system_webdav'].forEach((e) => {
+['linux_scf', 'onedrive_graph', 'onedrive_sharepoint', 'gdrive_goindex', 'system_admin', 'system_phony', 'system_webdav', 'gdrive_v3', 'system_fs','system_coding'].forEach((e) => {
     drive_funcs[e] = require(`../router/${e}`);
 });
 const render_funcs = {};//渲染模块,目前建议使用w.w
@@ -116,6 +116,7 @@ function endMsg(statusCode, headers, body, isBase64Encoded) {
         return _cookie.serialize(e.n, e.v, e.o);
     }));
     console.log('end_time:' + new Date().toLocaleString(), 'utf-8');
+    if (typeof body.pipe === 'function') body.toString = () => { return '[stream object]' };
     return {
         'isBase64Encoded': isBase64Encoded || false,
         'statusCode': statusCode,
@@ -141,6 +142,7 @@ function endMsg(statusCode, headers, body, isBase64Encoded) {
 async function handleEvent(event) {
     event['start_time'] = new Date();
     event['set_cookie'] = [];
+    if (typeof event.body.pipe === 'function') event.body.toJSON = () => { return '[stream object]' };
     console.log('start_time:' + event.start_time.toLocaleString(), 'utf-8');
 
     onepoint.event = event;
@@ -205,6 +207,7 @@ async function handleEvent(event) {
         event.noRender = event.query.json !== undefined;
     }
     if (!driveInfo) {
+        if (!oneCache.driveCache[drivePath]) oneCache.driveCache[drivePath] = {};
         driveInfo = {
             funcName: 'system_phony', spConfig: {}
         };
@@ -261,7 +264,7 @@ async function handleEvent(event) {
                 }
                 if (error.response.status === 404) { errcode = 404; info = '404:' + info; }
             }
-            if (error.opflag) {
+            if (error.type === 2) {
                 responseMsg = error;
             } else responseMsg = Msg.info(errcode, info);
             console.log(error);
@@ -318,9 +321,8 @@ async function handleEvent(event) {
 };
 
 
-function genEvent(method, url, headers, body, adapter, sourceIp = '0.0.0.0', p0 = '', query, cookie) {
-    if (!body) body = {};
-    else if (typeof body === 'string') {
+function genEvent(method, url, headers, body = {}, adapter, sourceIp = '0.0.0.0', p0 = '', query, cookie) {
+    if (typeof body === 'string') {
         if (headers['content-type']) {
             if (headers['content-type'].includes('application/x-www-form-urlencoded')) {
                 body = querystring.parse(body);

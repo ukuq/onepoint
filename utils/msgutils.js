@@ -5,10 +5,21 @@ let Msg = {
     json: Msg_json,
     html: Msg_html,
     html_json: Msg_html_json,
-    error: Msg_error
+    error: Msg_error,
+    down: Msg_download,
+    constants: {
+        'Incomplete_folder_path': 'Incomplete folder path',
+        'No_such_command':'No such command',
+        'Just_for_mounting':'Just for mounting |-_-',
+        'Download_not_allowed':'Download not allowed',
+        'File_already_exists':'File already exists',
+        'Content_Range_is_invalid':'Content-Range is invalid',
+        'Offset_is_invalid':'Offset is invalid',
+        'Range_is_invalid':'Range is invalid'
+    }
 }
 
-function Msg_file(file, url) {
+function Msg_file(file, url = '?download') {
     return {
         type: 0, //0_file 固定值
         statusCode: 200,//200 固定值
@@ -84,11 +95,19 @@ function Msg_error(statusCode, info, headers) {
         headers: headers,
         data: {
             info: info || statusCode
-        },
-        opflag: true
+        }
     };
     let e = new Error(m.data.info);
     return Object.assign(e, m);
+}
+
+const { axios } = require('./nodeutils');
+async function Msg_download(req) {
+    // if (authorization) headers.authorization = this.authorization;
+    // if (range) headers.range = this.range;
+    //@flag 以后支持导出下载链接
+    let res = await axios({ url: req.url, headers: req.headers, method: req.method || 'get', responseType: 'stream' });
+    return Msg.html(res.status, res.data, res.headers);
 }
 
 function urlSpCharEncode(s) {

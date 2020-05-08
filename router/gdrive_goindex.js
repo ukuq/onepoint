@@ -8,7 +8,7 @@ async function ls(path) {
     let data = (await axios.post(mconfig.cfurl + path, { "password": mconfig.password })).data;
     if (!data) return Msg.info(404);
     if (!data.files) {//文件
-        if (data['size'] === undefined) throw new Error("请规范化文件夹路径");
+        if (data['size'] === undefined) throw Msg.info(403, Msg.constants.Incomplete_folder_path);
         let fileinfo = {
             type: 0,
             name: data['name'],
@@ -46,6 +46,6 @@ exports.func = async (spConfig, cache, event) => {
         case 'ls':
             return await ls(p2);
         default:
-            return Msg.info(400, "No such cmd");
+            return Msg.info(400, Msg.constants.No_such_command);
     }
 }

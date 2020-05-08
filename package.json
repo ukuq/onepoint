@@ -4,6 +4,7 @@
   "description": "a tiny file index and manage program",
   "main": "bin/main.js",
   "scripts": {
+    "start": "node bin/index_node.js",
     "test": "node test/run.js"
   },
   "repository": {

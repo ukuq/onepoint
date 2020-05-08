@@ -5,7 +5,7 @@ let list;
 exports.ls = ls;
 async function ls(p2) {
     let p = /^\/([^/]+)?$/.exec(p2);
-    if (!p) return Msg.info(404, 'Nothing:Just For Mount |-_-');
+    if (!p) return Msg.info(404, Msg.constants.Just_for_mounting);
     if (!p[1]) {//folder
         return Msg.list(list.map((e) => { return genFileInfo(e); }));
     }
@@ -20,7 +20,7 @@ exports.func = async (spConfig, cache, event) => {
         case 'ls':
             return await ls(p2);
         default:
-            return Msg.info(400, "No such cmd");
+            return Msg.info(400, Msg.constants.No_such_command);
     }
 }
 

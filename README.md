@@ -35,8 +35,12 @@ https://github.com/ukuq/onepoint
 ## 快速部署
 
 `npm install -g onepoint`
-
 `onepoint`
+
+or
+
+`git clone https://github.com/ukuq/onepoint.git`
+`cd onepoint && npm start`
 
 ### nowsh 部署
 

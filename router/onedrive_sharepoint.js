@@ -48,6 +48,6 @@ exports.func = async (spConfig, cache, event) => {
         case 'ls':
             return await ls(p2);
         default:
-            return Msg.info(400, "No such cmd");
+            return Msg.info(400, Msg.constants.No_such_command);
     }
 }
