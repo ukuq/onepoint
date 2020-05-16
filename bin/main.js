@@ -318,10 +318,9 @@ async function handleEvent(event) {
     if (driveInfo.hidden && p1!="" && p2 == '/'){
         let i;
         for (i in responseMsg.data.list){
-        console.log(responseMsg.data.list[i].name);
-        if (responseMsg.data.list[i].name == driveInfo.hidden){
-            break
-        }
+            if (responseMsg.data.list[i].name == driveInfo.hidden){
+                break
+            }
         }
     responseMsg.data.list.splice(i,1);
     }
