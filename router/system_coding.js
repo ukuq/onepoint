@@ -25,7 +25,7 @@ async function ls(path, page) {
                 name: file.name,
                 size: file.size,
                 mime: getmime(file.name),
-                time: file.updated_at
+                time: new Date(Number(file.updated_at)).toISOString()
             }, file.url);
         } else throw Msg.error(404);
     } else {
@@ -34,7 +34,7 @@ async function ls(path, page) {
                 type: e.url ? 0 : 1,
                 id: e.id,
                 name: e.name,
-                time: e.updated_at,
+                time: new Date(Number(e.updated_at)).toISOString(),
                 size: e.size,
                 mime: e.url ? getmime(e.name) : "",
                 url: e.url

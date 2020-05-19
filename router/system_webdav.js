@@ -84,6 +84,7 @@ class WebDav {
                 'Authorization': this.auth
             }
         }
+        if(this.baseURL.endsWith('/'))r.url=`${this.baseURL}${path.slice(1)}`;
         if (range) r.headers.Range = range;
         return r;
     }

@@ -1,7 +1,7 @@
 {
     "G_CONFIG": {
         "admin_username": "admin",
-        "admin_password": "admin123456",
+        "admin_password": "admin",
         "render_name": "w.w",
         "site_name": "OnePoint Demo",
         "site_title": "OnePoint Demo",
@@ -9,7 +9,7 @@
         "site_keywords": "OnePoint",
         "site_description": "OnePoint description",
         "site_script": "",
-        "site_readme": "## 200508测试版\n\n增加 googledrive、本地文件支持",
+        "site_readme": "## 200519测试版\n\n增加本地webdav工具\n\n增加隐藏文件夹功能\n\n优化w.w主题显示",
         "proxy": [
             "https://proxy.onesrc.workers.dev/"
         ],
@@ -140,14 +140,6 @@
                 ]
             },
             "desc": "假装是云盘 示例"
-        },
-        "/Coding/": {
-            "funcName": "system_coding",
-            "spConfig": {
-                "url": "https://ukuq.coding.net/api/user/ukuq/project/onepoint/folder/",
-                "token": "db1807e9ebd75fd9ee843bb9bee34b8a6a437689"
-            },
-            "desc": "coding盘示例"
         }
     },
     "DOMAIN_MAP": {

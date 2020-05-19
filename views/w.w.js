@@ -10,7 +10,8 @@ function render(responseMsg, event, G_CONFIG) {
     let readmeFlag = false;
     let html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="shortcut icon" href="${G_CONFIG.site_icon}"><title>${G_CONFIG.site_title}</title></head><body><nav class="navbar sticky-top navbar-dark bg-dark navbar-expand-lg"><div class="container"><a target="_self" href="https://github.com/ukuq/onepoint" class="navbar-brand"><img src="${G_CONFIG.site_icon}" alt="logo" class="d-inline-block align-top" style="width: 30px;">${G_CONFIG.site_name}</a></div></nav><div class="container mt-3">`;
+    <link rel="shortcut icon" href="${G_CONFIG.site_icon}"><title>${G_CONFIG.site_title}</title><style>a#down-btn-a {color: #6c757d;}a:hover,a#down-btn-a:hover{color:red;text-decoration: none;}</style>
+    </head><body><nav class="navbar sticky-top navbar-dark bg-dark navbar-expand-lg"><div class="container"><a target="_self" href="https://github.com/ukuq/onepoint" class="navbar-brand"><img src="${G_CONFIG.site_icon}" alt="logo" class="d-inline-block align-top" style="width: 30px;">${G_CONFIG.site_name}</a></div></nav><div class="container mt-3">`;
 
     //导航栏
     html += `<nav class="" aria-label="breadcrumb"><ol class="breadcrumb">`;
@@ -37,10 +38,10 @@ function render(responseMsg, event, G_CONFIG) {
             let file = data.file;
             let url = data.url;
             let type = file['mime'].slice(0, file['mime'].indexOf('/'));
-            html += `</select><div class="input-group-append"><button class="btn btn-outline-secondary" id="proxy-submit" type="button">Proxy</button><a type="button" class="btn btn-outline-secondary" href="${url}">Download</a><button type="button" class="btn btn-outline-secondary" id="share-btn">Share</button></div></div>`;
+            html += `</select><div class="input-group-append"><button class="btn btn-outline-secondary" id="proxy-submit" type="button">Proxy</button><button type="button" class="btn btn-outline-secondary"><a href="${url}" id="down-btn-a">Down</a></button><button type="button" class="btn btn-outline-secondary" id="share-btn">Share</button></div></div>`;
             html += `<div class="border rounded my-3 p-3">`;
             if (type === 'image') {
-                html += `<img src="${url}" class="rounded mx-auto d-block">`;
+                html += `<img src="${url}" class="rounded mx-auto d-block" max-width="100%">`;
             } else if (type === 'video') {
                 html += `<link class="dplayer-css" rel="stylesheet" href="//cdn.bootcss.com/dplayer/1.25.0/DPlayer.min.css">
                 <script src="//cdn.bootcss.com/dplayer/1.25.0/DPlayer.min.js"></script>
@@ -62,7 +63,7 @@ function render(responseMsg, event, G_CONFIG) {
             html += `</div><script src="https://cdn.bootcss.com/js-cookie/2.2.1/js.cookie.min.js"></script><script>if(Cookies.get('proxy')){let s = document.getElementById('proxy-opt').options;let c = Cookies.get('proxy');for(let i=0;i< s.length;i++){if(s[i].value===c)s[i].selected = "selected";}};document.getElementById('proxy-submit').onclick = function(){Cookies.set('proxy',document.getElementById('proxy-opt').value,{ expires: 7 });window.location.reload();};document.querySelector('#share-btn').addEventListener('click',(event)=>{copyTextContent(null,window.location.href.slice(0,window.location.href.indexOf('?')));let target=event.target;let tt=target.textContent;target.innerHTML='已复制';setTimeout(()=>target.innerHTML=tt,500)});function copyTextContent(source,text){let result=false;let target=document.createElement('pre');target.style.opacity='0';target.textContent=text||source.textContent;document.body.appendChild(target);try{let range=document.createRange();range.selectNode(target);window.getSelection().removeAllRanges();window.getSelection().addRange(range);document.execCommand('copy');window.getSelection().removeAllRanges();result=true}catch(e){}document.body.removeChild(target);return result}</script>`;
             break;
         case 1://list
-            html += `<div class="border rounded mt-3 table-responsive"><table class="table table-hover mb-0"><thead class="thead-light"><tr><th scope="col" style="width: 60%;">Name</th><th scope="col">Time</th><th scope="col" class="text-right">Size</th></tr></thead><tbody>`;
+            html += `<style>@media (max-width: 768px) {thead>tr>th:nth-child(2),tbody>tr>td:nth-child(2),thead>tr>th:nth-child(3),tbody>tr>td:nth-child(3) {display: none;}}</style><div class="border rounded mt-3 table-responsive"><table class="table table-hover mb-0"><thead class="thead-light"><tr><th scope="col">Name</th><th scope="col" style="width: 220px;">Time</th><th scope="col" class="text-right" style="width: 120px;">Size</th></tr></thead><tbody>`;
             if (data.prev) {
                 html += `<tr><td><a href="${data.prev}">Previous...</a></td><td></td><td></td></tr>`;
             } else if (p_12 !== '/') {
@@ -91,7 +92,7 @@ function render(responseMsg, event, G_CONFIG) {
             throw new Error("no such response type");
     }
     //readme
-    html += `<div class="card mt-3"><div class="card-header">README.md</div><div class="card-body markdown-body" id="readMe">${G_CONFIG.site_readme}</div></div>`;
+    html += `<div class="card mt-3"><div class="card-header">README.md</div><div class="card-body markdown-body" id="readMe">${event.readme}</div></div>`;
     //     html += `
     // <script src='//unpkg.zhimg.com/valine/dist/Valine.min.js'></script>
     // <div id="vcomments" class="mt-3"></div>
@@ -113,6 +114,7 @@ function render(responseMsg, event, G_CONFIG) {
     html += `</div><script src="https://cdn.bootcss.com/marked/0.7.0/marked.js"></script>${G_CONFIG.site_script}`;
     if (readmeFlag) html += `<script src="https://cdn.bootcss.com/axios/0.19.0/axios.min.js"></script><script>axios.get('./README.md').then(data => document.getElementById('readMe').innerHTML =marked(data)).catch(err => document.getElementById('readMe').innerHTML="Oh, error:" + err);</script>`;
     else html += `<script>document.getElementById('readMe').innerHTML =marked(document.getElementById('readMe').textContent)</script>`
+    html+=`<script>function formatDate(str) {let oDate = new Date(str);if ('Invalid Date' == oDate) return oDate;let oYear = oDate.getFullYear(),oMonth = oDate.getMonth() < 9 ? "0" + (oDate.getMonth() + 1) : (oDate.getMonth() + 1),oDay = oDate.getDate() < 10 ? "0" + oDate.getDate() : oDate.getDate(),oHour = oDate.getHours() < 10 ? "0" + oDate.getHours() : oDate.getHours(),oMinute = oDate.getMinutes() < 10 ? "0" + oDate.getMinutes() : oDate.getMinutes(),oSecond = oDate.getSeconds() < 10 ? "0" + oDate.getSeconds() : oDate.getSeconds(),oTime = oYear + '-' + oMonth + '-' + oDay + " " + oHour + ":" + oMinute + ":" + oSecond;return oTime;}document.querySelectorAll('tbody>tr>td:nth-child(2)').forEach(e=>{e.textContent=formatDate(e.textContent)});</script>`
     html += `</body></html>`;
     return html;
 }

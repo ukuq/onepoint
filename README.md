@@ -1,6 +1,6 @@
 # OnePoint
 
-一个轻量级、适应多种平台、适应多种网盘的在线文件目录及文件管理工具。
+一个轻量级、多平台、多种网盘的文件目录索引和管理工具。
 
 ## 项目地址
 
@@ -22,38 +22,33 @@ https://github.com/ukuq/onepoint
 
 ## 支持云盘
 
-- onedrive 教育版/企业版/个人版
-- onedrive 无全局管理员版
-- onedrive google drive
-
-## 部署方式
-
-- scf 腾讯云云函数
-- now.sh now 托管平台
-- linux 服务器部署
+- onedrive 国际版/世纪互联版/无全局管理员版
+- google drive v3API/goindex兼容接口
+- coding 团队网盘
+- 本机文件系统
+- webdav(dev)
+- 自定义链接
 
 ## 快速部署
 
-`npm install -g onepoint`
-`onepoint`
+### github 测试版
 
-or
-
-`git clone https://github.com/ukuq/onepoint.git`
-`cd onepoint && npm start`
-
-### nowsh 部署
-
-受限于 nowsh 对文件数量的限制，实际部署时使用的是 npm 包，而不是 github 文件。
-nowsh 部署所需要的文件都放到了 ./test/nowsh 目录下，部署时只需要在该文件夹下运行 now 命令即可。
-
-参考命令
 ~~~
-npm install -g now@16.7.3
-npm login
-cd onepoint/test/nowsh
-now
+git clone https://github.com/ukuq/onepoint.git && cd onepoint && npm install & npm start
 ~~~
+
+### npm 稳定版
+
+~~~
+npm install -g onepoint && onepoint
+~~~
+
+PS: 建议使用 pm2 作为守护进程
+
+### 其他方式
+
+- [now.sh](./test/nowsh/README.md)
+- [scf]()
 
 ## Demo
 
@@ -65,7 +60,74 @@ https://onepoint.ukuq.now.sh
 
 ## 配置与安装
 
-个人建议，先使用默认的配置安装一遍，如果没有问题，修改 config.json 后再次安装。
+### 核心配置项说明:
+
+~~~
+"/demo_linux/": {
+    "funcName": "system_fs",    //模块名
+    "spConfig": {               //模块相关配置
+        "root": ""
+    },
+    "password": "123",          //访问该云盘所需要的密码
+    "desc":"read me!"           //云盘 readme
+    "hidden": [                 //该云盘下需要隐藏的文件或文件夹, 格式为 /xx/xx/xx
+        "/Intel","/eve/bs"
+    ]
+}
+~~~
+
+### 密码功能
+
+两级密码, 云盘密码 和 目录密码. 
+
+云盘密码负责该云盘的访问权, 未通过校验拒绝所有请求。该项通过 password 字段实现。
+
+目录密码负责特定文件夹, 未通过校验则拒绝显示子文件。该项通过添加 .password=123456 文件实现。
+
+### 隐藏文件
+
+拒绝访问指定路径前缀的文件(404), 隐藏指定路径的文件。
+
+该项通过 hidden 字段实现。
+
+### readme
+
+文件列表中 README.md 文件 > 云盘 desc 字段 > 全局 site_readme 字段
+
+按照上述优先级显示 readme。
+
+### 下载代理
+
+通过指定网站代理下载, 请求格式为 http://example.com/url=<编码后的下载直链>
+
+该项在全局 proxy 字段设置, 字段格式为 http://example.com/
+
+### 跨域设置
+
+可用于前后端分离部署，以及自定义使用 api
+
+该项在全局 access_origins 字段设置, 字段格式为 http://example.com
+
+### 反向代理
+
+~~~
+"DOMAIN_MAP": {
+    "::ffff:127.0.0.1": {       //根据ip修改ph和p0
+        "ph": "",
+        "p0": ""
+    }
+}
+~~~
+
+### 文件管理
+
+地址: http://example.com/admin/
+
+首页页面卡负责文件预览, 默认使用系统缓存. 若检测到管理员 cookie, 则自动停用云盘密码, 目录密码, 目录强制分页, 目录文件隐藏功能.
+
+管理页面卡负责文件的管理, 部分模块可能不支持文件管理. 该页面发出的所有请求都不会使用使用系统缓存, 且系统会根据部分文件操作处理更新缓存. 
+
+默认清空下, 下载链接缓存 5min, 文件列表缓存 1day, 如果需要刷新,可通过管理页面卡完成.
 
 ### 相关文档
 

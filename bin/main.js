@@ -7,7 +7,7 @@ const _cookie = require('cookie');
 const querystring = require('querystring');
 
 const drive_funcs = {};//云盘模块
-['linux_scf', 'onedrive_graph', 'onedrive_sharepoint', 'gdrive_goindex', 'system_admin', 'system_phony', 'system_webdav', 'gdrive_v3', 'system_fs','system_coding'].forEach((e) => {
+['linux_scf', 'onedrive_graph', 'onedrive_sharepoint', 'gdrive_goindex', 'system_admin', 'system_phony', 'system_webdav', 'gdrive_v3', 'system_fs', 'system_coding'].forEach((e) => {
     drive_funcs[e] = require(`../router/${e}`);
 });
 const render_funcs = {};//渲染模块,目前建议使用w.w
@@ -66,6 +66,7 @@ function initialize(config_json) {
             k += '/';
         }
     }
+    G_CONFIG.admin_base64 = "basic " + Buffer.from(G_CONFIG.admin_username + ":" + G_CONFIG.admin_password).toString('base64');
 }
 
 /**
@@ -156,6 +157,7 @@ async function handleEvent(event) {
     }
 
     if (event['cookie']['ADMINTOKEN'] === G_CONFIG.admin_password_date_hash) event.isadmin = true;
+    else if (event.headers.authorization === G_CONFIG.admin_base64) event.isadmin = true;
 
 
     console.log(JSON.stringify(event));
@@ -242,6 +244,13 @@ async function handleEvent(event) {
         } else responseMsg = Msg.info(401, 'drivepass:请输入云盘密码');
     }
 
+    //过滤隐藏文件夹及其子文件的请求
+    if (!responseMsg && Array.isArray(driveInfo.hidden) && !event.isadmin) {
+        if (driveInfo.hidden.find((e) => {
+            return p2.startsWith(e);
+        }) !== undefined) responseMsg = Msg.info(404);
+    }
+
     if (!responseMsg && event.isNormal && event.cmd === 'ls') {
         responseMsg = oneCache.getMsg(p_12, event.sp_page);
         if (responseMsg) responseMsg.cache = true;
@@ -262,7 +271,7 @@ async function handleEvent(event) {
                     else info = error.response.data.message;
                     info = info || error.response.data.pipe ? error.message : JSON.stringify(error.response.data);
                 }
-                if (error.response.status === 404) { errcode = 404; info = '404:' + info; }
+                if (error.response.status === 404) { errcode = 404; info = Msg.constants.S404_not_found; }
             }
             if (error.type === 2) {
                 responseMsg = error;
@@ -271,18 +280,30 @@ async function handleEvent(event) {
         }
     }
 
-    //处理目录级密码
+    //可配合nplayer使用, 受限于http，不能认证，此接口不对外开放。
+    if (false && onepoint.event.method === 'PROPFIND') {
+        //if(!event.isadmin)responseMsg = Msg.info(401);
+        if (responseMsg.type === 0) responseMsg = Msg.list([responseMsg.data.file], event.splitPath.p0 + event.splitPath.p_12.slice(0, event.splitPath.p_12.lastIndexOf('/') + 1));
+        if (responseMsg.type === 1) responseMsg = Msg.html(207, getSimpleWebdavXml(responseMsg.data.list, event.splitPath.p0 + event.splitPath.p_12));
+        else responseMsg = Msg.html(responseMsg.statusCode, getSimpleWebdavInfo(responseMsg.info));
+    }
+
+    //处理目录级密码 以及 父文件夹中隐藏文件过滤
     if (responseMsg.type === 1 && event.isNormal) {//文件列表 非管理员api
         let pass;//目录级加密
         if (!event.isadmin) {//管理员cookie忽略密码
+            if (!p2.endsWith('/')) p2 += '/';
+            let hiddens = Array.isArray(driveInfo.hidden) ? driveInfo.hidden.map(e => { if (e.startsWith(p2)) return e.slice(p2.length) }).filter(e => { return !!e }) : [];
             responseMsg.data.list = responseMsg.data.list.filter((e) => {
                 if (e.name.startsWith('.password')) {
                     pass = e.name.slice(10);
                     return false;
+                } else {
+                    return !hiddens.includes(e.name);
                 }
-                return true;
             });
         }
+        //@flag 需要整理合并
         if (pass) {
             let dirpass = event['body']['dirpass'];
             if (event['method'] === 'POST' && dirpass) {// post
@@ -316,6 +337,7 @@ async function handleEvent(event) {
     //处理文件下载
     if (responseMsg.type === 0 && event.query['preview'] === undefined) return endMsg(302, { 'Location': responseMsg.data.url }, "302:" + responseMsg.data.url);
     console.log(JSON.stringify(responseMsg));
+    event.readme = driveInfo.desc || G_CONFIG.site_readme;
     let res_body = render_funcs[G_CONFIG.render_name].render(responseMsg, event, G_CONFIG);
     return endMsg(responseMsg.statusCode, responseMsg.headers, res_body);
 };
@@ -342,4 +364,45 @@ function genEvent(method, url, headers, body = {}, adapter, sourceIp = '0.0.0.0'
         }
     }
     return event;
+}
+
+
+function getSimpleWebdavXml(list, ppath) {
+    let xml = '<?xml version="1.0" encoding="UTF-8" standalone="no"?><d:multistatus xmlns:d="DAV:">';
+    ppath = ppath.replace(/&/, '&amp;');
+    list.forEach(e => {
+        if (e.type == 0) {
+            xml += `<d:response>
+            <d:href>${ppath}${e.name.replace(/&/, '&amp;')}</d:href>
+            <d:propstat>
+                <d:prop>
+                    <d:getlastmodified>${new Date(e.time).toGMTString()}</d:getlastmodified>
+                    <d:getcontentlength>${e.size}</d:getcontentlength>
+                    <d:getcontenttype>${e.mime}</d:getcontenttype>
+                    <d:resourcetype/>
+                </d:prop>
+            </d:propstat>
+        </d:response>`
+        } else {
+            xml += `<d:response>
+            <d:href>${ppath}${e.name.replace(/&/, '&amp;')}/</d:href>
+            <d:propstat>
+                <d:prop>
+                    <d:getlastmodified>${new Date(e.time).toGMTString()}</d:getlastmodified>
+                    <d:getcontentlength>${e.size || 0}</d:getcontentlength>
+                    <d:getcontenttype>httpd/unix-directory</d:getcontenttype>
+                    <d:resourcetype>
+                        <d:collection/>
+                    </d:resourcetype>
+                </d:prop>
+            </d:propstat>
+            </d:response>`
+        }
+    });
+    xml += '</d:multistatus>';
+    return xml;
+}
+
+function getSimpleWebdavInfo(info) {
+    return `<?xml version="1.0" encoding="UTF-8" standalone="no"?><d:error xmlns:d="DAV:" xmlns:s="https://ukuq.github.io"><s:message>${info}</s:message></d:error>`;
 }

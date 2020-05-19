@@ -9,13 +9,14 @@ let Msg = {
     down: Msg_download,
     constants: {
         'Incomplete_folder_path': 'Incomplete folder path',
-        'No_such_command':'No such command',
-        'Just_for_mounting':'Just for mounting |-_-',
-        'Download_not_allowed':'Download not allowed',
-        'File_already_exists':'File already exists',
-        'Content_Range_is_invalid':'Content-Range is invalid',
-        'Offset_is_invalid':'Offset is invalid',
-        'Range_is_invalid':'Range is invalid'
+        'No_such_command': 'No such command',
+        'Just_for_mounting': 'Just for mounting |-_-',
+        'Download_not_allowed': 'Download not allowed',
+        'File_already_exists': 'File already exists',
+        'Content_Range_is_invalid': 'Content-Range is invalid',
+        'Offset_is_invalid': 'Offset is invalid',
+        'Range_is_invalid': 'Range is invalid',
+        'S404_not_found': '404 Not Found'
     }
 }
 
@@ -145,4 +146,16 @@ function formatSize(size) {
     size += [' B', ' KB', ' MB', ' GB'][count];
     return size;
 };
+function formatDate(str) {
+    let oDate = new Date(str);
+    if ('Invalid Date' == oDate) return oDate;
+    let oYear = oDate.getFullYear(),
+        oMonth = oDate.getMonth() < 9 ? "0" + (oDate.getMonth() + 1) : (oDate.getMonth() + 1),
+        oDay = oDate.getDate() < 10 ? "0" + oDate.getDate() : oDate.getDate(),
+        oHour = oDate.getHours() < 10 ? "0" + oDate.getHours() : oDate.getHours(),
+        oMinute = oDate.getMinutes() < 10 ? "0" + oDate.getMinutes() : oDate.getMinutes(),
+        oSecond = oDate.getSeconds() < 10 ? "0" + oDate.getSeconds() : oDate.getSeconds(),
+        oTime = oYear + '-' + oMonth + '-' + oDay + " " + oHour + ":" + oMinute + ":" + oSecond;
+    return oTime;
+}
 module.exports = { Msg, formatSize, urlSpCharEncode };
