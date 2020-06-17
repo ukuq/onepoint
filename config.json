@@ -26,30 +26,6 @@
         "x-scf-cos-region": "ap-hongkong"
     },
     "DRIVE_MAP": {
-        "/Private/jifeng/": {
-            "funcName": "onedrive_graph",
-            "spConfig": {
-                "refresh_token": "0.ASoAT_vDm9CcekmiV7S844ckE-KK9XKzNaBJv9-TwpNxGj8qAK8.AQABAAAAAAAm-06blBE1TpVMil8KPQ41GmcOx89pRDuSPkg8gv5_JoF6hxCs7SAiKsp6wEG7XfCvNlXNGMNNwovmNvX3bM59z_Qtuo2PCnawFXvG2HHk01cA1h-3TAMepIzCzYp3pBfprlrv1qU_ClQ3LIQwgve4bMOgjkJqR2iPxlSidZZPsTmp6GEJTnoH1HISpjLGjjzTX9jdsHD-aMGFwLR-Au2xT389KuEcC5K7vq0KWM_63ttIelOaHmaoKpqrfCrq-G50WjqVD0k9gyuaFXu49TxQ2lL71ZBoFZIbyC6NjTjj44of2DRrmifcfLUE6Zf_bKT9GkbrzOEQ9PG0eEZrX00cRjfDTi-HBqpzN1ap47SBGgu1vWATUAMgB6COitDXf_L7U2vuNplmVo5YLtywGtafgUOGKmfTxRT3lGqKb_D7_Y7olIl4S7KCpp2VntiUaAgu85T-SyqAiZ7KB4e56c_rSda-vAiwn9sEJhaR5hHpgy6u5uFrAY-I7zRvChC_a9P9oVRkeDeWKGcZxQLdb5CotLXt8srcMbYToN2XAbmuaDI2psQBR7p9-W4lvRpuFGohypSRgpzSTlUlVP-mS_Xqtb3tjGNsN00FPwhMiPZWAhnbK_g7hofcyH1mcPjDRbbb9tjkk8lTXbknwa8ZIr2kT0Zbb0rHnKwx2oGdBERcozs_1JYoydyKQVfBBxjLxayCKtNdYUb0Y7zXRhxv_K8SIAA",
-                "oauth": 0
-            }
-        },
-        "/Private/Coding/": {
-            "funcName": "system_coding",
-            "spConfig": {
-                "url": "https://ukuq.coding.net/api/user/ukuq/project/onepoint/folder/",
-                "token": "db1807e9ebd75fd9ee843bb9bee34b8a6a437689"
-            },
-            "desc": "coding盘示例"
-        },
-        "/Private/Jianguo/": {
-            "funcName": "system_webdav",
-            "spConfig": {
-                "url": "https://dav.jianguoyun.com/dav/",
-                "username": "ukuq@qq.com",
-                "password": "akcebqk9nwchw49c"
-            },
-            "desc": "coding盘示例"
-        },
         "/GoogleDrive/goindex/": {
             "funcName": "gdrive_goindex",
             "spConfig": {

@@ -34,11 +34,3 @@ jobs:
         npm install
         scf deploy -f
         cd ..
-    - name: install nowsh CLI and deploy
-      env: 
-        TOKEN: ${{ secrets.NOWSH_TOKEN }} # secrets 提供
-      run: |
-        sudo npm i -g now@16.7.3
-        cd ./onepoint/test/nowsh
-        now --token $TOKEN
-        cd ../../../
