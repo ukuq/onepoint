@@ -1,5 +1,5 @@
 const { fs, getmime, path } = require("../utils/nodeutils");
-const { Msg } = require('../utils/msgutils');
+const { Msg, urlSpCharEncode } = require('../utils/msgutils');
 
 exports.ls = ls;
 function ls(p2) {
@@ -106,6 +106,7 @@ exports.func = async (spConfig, cache, event) => {
         case 'upload':
             //@experiment
             event.noRender = true;
+            if (!event.isadmin) return Msg.info(403, Msg.constants.Permission_denied);
             if (fs.existsSync(p2)) return Msg.info(403, Msg.constants.File_already_exists);
             let p2_tmp = p2 + '___onepoint_tmp_file___';
             if (event.method === 'PUT') {
@@ -125,23 +126,18 @@ exports.func = async (spConfig, cache, event) => {
                             fs.renameSync(p2_tmp, p2);
                             resolve(Msg.info(201));
                         } else {
-                            resolve(Msg.html_json(202, { "expirationDateTime": "2099-12-12T00:00:00.000Z", "nextExpectedRanges": [stat.size + "-"], "uploadUrl": event.splitPath.ph + event.url }));
+                            resolve(Msg.html_json(202, { "expirationDateTime": "2099-12-12T00:00:00.000Z", "nextExpectedRanges": [stat.size + "-"], "uploadUrl": event.splitPath.ph + event.splitPath.p0 + urlSpCharEncode(event.splitPath.p_12) + '?upload' }));
                         }
                     });
                     event.body.pipe(w);
                 })
             } else {
-                let fun = Msg.html_json;
                 let offset = 0;
-                if (event.splitPath.p_12.startsWith('/api')) {
-                    event.url = event.splitPath.p0 + event.cmdData.path + '?upload';
-                    fun = Msg.json//@flag 同OneDrive upload
-                }
                 if (fs.existsSync(p2_tmp)) {
                     let stat = fs.statSync(p2_tmp);
                     offset = stat.size;
                 }
-                return fun(200, { "expirationDateTime": "2099-12-12T00:00:00.000Z", "nextExpectedRanges": [offset + "-"], "uploadUrl": event.splitPath.ph + event.url });
+                return Msg.html_json(200, { "expirationDateTime": "2099-12-12T00:00:00.000Z", "nextExpectedRanges": [offset + "-"], "uploadUrl": event.splitPath.ph + event.splitPath.p0 + urlSpCharEncode(event.splitPath.p_12.startsWith('/api') ? event.cmdData.path : event.splitPath.p_12) + '?upload' });
             }
         default:
             return Msg.info(400, Msg.constants.No_such_command);

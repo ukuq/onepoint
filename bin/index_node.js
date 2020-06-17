@@ -45,7 +45,7 @@ async function readConfig() {
 
 async function writeConfig(config) {
     return new Promise((resolve) => {
-        fs.writeFile(path.resolve(__dirname, '../config.json'), JSON.stringify(config), (err) => {
+        fs.writeFile(path.resolve(__dirname, '../config.json'), JSON.stringify(config, null, 2), (err) => {
             if (err) resolve(false);
             else resolve(true);
         })

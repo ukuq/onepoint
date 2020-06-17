@@ -13,8 +13,6 @@
         "proxy": [
             "https://proxy.onesrc.workers.dev/"
         ],
-        "initTime": "2020-03-03T09:48:13.758Z",
-        "admin_password_date_hash": "c289ffe12a30c94530b7fc4e532e2f42",
         "access_origins": [
             "http://localhost:8080"
         ]
@@ -60,8 +58,7 @@
                 "shareUrl": "https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/Es6CMetI4fJCr4GqWZ3uvA0BEnzJxxb4CU-iQr04VYomLQ?e=C9K35U",
                 "root": "/image"
             },
-            "password": "123",
-            "password_date_hash": "ae6e334f62fb5d989398deed87568c94"
+            "password": "123"
         },
         "/demo_phony/": {
             "funcName": "system_phony",

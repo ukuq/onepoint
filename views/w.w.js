@@ -93,28 +93,30 @@ function render(responseMsg, event, G_CONFIG) {
     }
     //readme
     html += `<div class="card mt-3"><div class="card-header">README.md</div><div class="card-body markdown-body" id="readMe">${event.readme}</div></div>`;
-    //     html += `
-    // <script src='//unpkg.zhimg.com/valine/dist/Valine.min.js'></script>
-    // <div id="vcomments" class="mt-3"></div>
-    // <script>
-    //     new Valine({
-    //         el: '#vcomments',
-    //         appId: 'Bh93jkqeJWvTCoF3qWzT9nUH-MdYXbMMI',
-    //         appKey: 'hGoSrlB0k9gc88kXr5RmzXay',
-    //         notify:false, 
-    //         verify:false, 
-    //         avatar:'mp', 
-    //         placeholder: 'just go go'
-    //     })
-    // </script>
-    // <style>#vcomments .info{display:none;}</style>
-    // `
+    if (G_CONFIG['x-valine-appKey']) {
+        html += `
+    <script src='//unpkg.zhimg.com/valine/dist/Valine.min.js'></script>
+    <div id="vcomments" class="mt-3"></div>
+    <script>
+        new Valine({
+            el: '#vcomments',
+            appId: '${G_CONFIG['x-valine-appId']}',
+            appKey: '${G_CONFIG['x-valine-appKey']}',
+            notify:false, 
+            verify:false, 
+            avatar:'mp', 
+            placeholder: 'just go go'
+        })
+    </script>
+    <style>#vcomments .vpower.txt-right{display:none;}</style>
+    `
+    }
     //footer
     html += `<div class="text-right"><span class="text-muted">Powered by <a href="https://github.com/ukuq/onepoint">OnePoint</a></span><span class="text-muted ml-2">Processing time: <a href="javascript:void">${new Date() - event.start_time}ms${responseMsg.cache ? '(cache)' : ''}</a></span></div>`;
     html += `</div><script src="https://cdn.bootcss.com/marked/0.7.0/marked.js"></script>${G_CONFIG.site_script}`;
     if (readmeFlag) html += `<script src="https://cdn.bootcss.com/axios/0.19.0/axios.min.js"></script><script>axios.get('./README.md').then(data => document.getElementById('readMe').innerHTML =marked(data)).catch(err => document.getElementById('readMe').innerHTML="Oh, error:" + err);</script>`;
-    else html += `<script>document.getElementById('readMe').innerHTML =marked(document.getElementById('readMe').textContent)</script>`
-    html+=`<script>function formatDate(str) {let oDate = new Date(str);if ('Invalid Date' == oDate) return oDate;let oYear = oDate.getFullYear(),oMonth = oDate.getMonth() < 9 ? "0" + (oDate.getMonth() + 1) : (oDate.getMonth() + 1),oDay = oDate.getDate() < 10 ? "0" + oDate.getDate() : oDate.getDate(),oHour = oDate.getHours() < 10 ? "0" + oDate.getHours() : oDate.getHours(),oMinute = oDate.getMinutes() < 10 ? "0" + oDate.getMinutes() : oDate.getMinutes(),oSecond = oDate.getSeconds() < 10 ? "0" + oDate.getSeconds() : oDate.getSeconds(),oTime = oYear + '-' + oMonth + '-' + oDay + " " + oHour + ":" + oMinute + ":" + oSecond;return oTime;}document.querySelectorAll('tbody>tr>td:nth-child(2)').forEach(e=>{e.textContent=formatDate(e.textContent)});</script>`
+    else html += `<script>if(${!event.readme})document.getElementById('readMe').parentNode.style.display="none";else document.getElementById('readMe').innerHTML = marked(document.getElementById('readMe').textContent);</script>`
+    html += `<script>function formatDate(str) {let oDate = new Date(str);if ('Invalid Date' == oDate) return oDate;let oYear = oDate.getFullYear(),oMonth = oDate.getMonth() < 9 ? "0" + (oDate.getMonth() + 1) : (oDate.getMonth() + 1),oDay = oDate.getDate() < 10 ? "0" + oDate.getDate() : oDate.getDate(),oHour = oDate.getHours() < 10 ? "0" + oDate.getHours() : oDate.getHours(),oMinute = oDate.getMinutes() < 10 ? "0" + oDate.getMinutes() : oDate.getMinutes(),oSecond = oDate.getSeconds() < 10 ? "0" + oDate.getSeconds() : oDate.getSeconds(),oTime = oYear + '-' + oMonth + '-' + oDay + " " + oHour + ":" + oMinute + ":" + oSecond;return oTime;}document.querySelectorAll('tbody>tr>td:nth-child(2)').forEach(e=>{e.textContent=formatDate(e.textContent)});</script>`
     html += `</body></html>`;
     return html;
 }

@@ -2,7 +2,6 @@ let Msg = {
     file: Msg_file,
     list: Msg_list,
     info: Msg_info,
-    json: Msg_json,
     html: Msg_html,
     html_json: Msg_html_json,
     error: Msg_error,
@@ -16,7 +15,8 @@ let Msg = {
         'Content_Range_is_invalid': 'Content-Range is invalid',
         'Offset_is_invalid': 'Offset is invalid',
         'Range_is_invalid': 'Range is invalid',
-        'S404_not_found': '404 Not Found'
+        'S404_not_found': '404 Not Found',
+        'Permission_denied':'Permission denied'
     }
 }
 
@@ -48,19 +48,6 @@ function Msg_info(statusCode, info, headers) {
         headers: headers,
         data: {
             info: info || statusCode
-        }
-    };
-    return m;
-}
-
-function Msg_json(statusCode, obj, headers) {
-    let m = {
-        type: 2, //2_info 固定值
-        statusCode: statusCode,//enum: 200 301 401 403 404 500
-        headers: headers,
-        data: {
-            info: 'json msg',
-            json: obj
         }
     };
     return m;

@@ -9,38 +9,46 @@
         "site_keywords": "OnePoint",
         "site_description": "OnePoint description",
         "site_script": "",
-        "site_readme": "## 200519测试版\n\n增加本地webdav工具\n\n增加隐藏文件夹功能\n\n优化w.w主题显示",
+        "site_readme": "onepoint v1.3.5-200617\n\n完善评论功能\n\n增加 scf 保存功能",
         "proxy": [
             "https://proxy.onesrc.workers.dev/"
         ],
-        "initTime": "2020-03-03T09:48:13.758Z",
-        "admin_password_date_hash": "c289ffe12a30c94530b7fc4e532e2f42",
         "access_origins": [
             "http://localhost:8080",
-            "https://ukuq.github.io"
-        ]
+            "https://ukuq.github.io",
+            "https://www.onesrc.cn"
+        ],
+        "x-valine-appId": "Bh93jkqeJWvTCoF3qWzT9nUH-MdYXbMMI",
+        "x-valine-appKey": "hGoSrlB0k9gc88kXr5RmzXay",
+        "x-scf-cos-secretId": "",
+        "x-scf-cos-secretKey": "",
+        "x-scf-cos-bucket": "",
+        "x-scf-cos-region": "ap-hongkong"
     },
     "DRIVE_MAP": {
-        "/FileSystem/normal": {
-            "funcName": "linux_scf",
+        "/Private/jifeng/": {
+            "funcName": "onedrive_graph",
             "spConfig": {
-                "root": ""
-            },
-            "desc": "linux_scf仅用于文件列表展示,不提供下载上传功能.如果需要,请使用system_fs模块"
+                "refresh_token": "0.ASoAT_vDm9CcekmiV7S844ckE-KK9XKzNaBJv9-TwpNxGj8qAK8.AQABAAAAAAAm-06blBE1TpVMil8KPQ41GmcOx89pRDuSPkg8gv5_JoF6hxCs7SAiKsp6wEG7XfCvNlXNGMNNwovmNvX3bM59z_Qtuo2PCnawFXvG2HHk01cA1h-3TAMepIzCzYp3pBfprlrv1qU_ClQ3LIQwgve4bMOgjkJqR2iPxlSidZZPsTmp6GEJTnoH1HISpjLGjjzTX9jdsHD-aMGFwLR-Au2xT389KuEcC5K7vq0KWM_63ttIelOaHmaoKpqrfCrq-G50WjqVD0k9gyuaFXu49TxQ2lL71ZBoFZIbyC6NjTjj44of2DRrmifcfLUE6Zf_bKT9GkbrzOEQ9PG0eEZrX00cRjfDTi-HBqpzN1ap47SBGgu1vWATUAMgB6COitDXf_L7U2vuNplmVo5YLtywGtafgUOGKmfTxRT3lGqKb_D7_Y7olIl4S7KCpp2VntiUaAgu85T-SyqAiZ7KB4e56c_rSda-vAiwn9sEJhaR5hHpgy6u5uFrAY-I7zRvChC_a9P9oVRkeDeWKGcZxQLdb5CotLXt8srcMbYToN2XAbmuaDI2psQBR7p9-W4lvRpuFGohypSRgpzSTlUlVP-mS_Xqtb3tjGNsN00FPwhMiPZWAhnbK_g7hofcyH1mcPjDRbbb9tjkk8lTXbknwa8ZIr2kT0Zbb0rHnKwx2oGdBERcozs_1JYoydyKQVfBBxjLxayCKtNdYUb0Y7zXRhxv_K8SIAA",
+                "oauth": 0
+            }
         },
-        "/FileSystem/termux": {
-            "funcName": "linux_scf",
+        "/Private/Coding/": {
+            "funcName": "system_coding",
             "spConfig": {
-                "root": "/data/data/com.termux"
+                "url": "https://ukuq.coding.net/api/user/ukuq/project/onepoint/folder/",
+                "token": "db1807e9ebd75fd9ee843bb9bee34b8a6a437689"
             },
-            "desc": "termux为安卓软件termux专用目录"
+            "desc": "coding盘示例"
         },
-        "/FileSystem/android": {
-            "funcName": "linux_scf",
+        "/Private/Jianguo/": {
+            "funcName": "system_webdav",
             "spConfig": {
-                "root": "/storage"
+                "url": "https://dav.jianguoyun.com/dav/",
+                "username": "ukuq@qq.com",
+                "password": "akcebqk9nwchw49c"
             },
-            "desc": "storage用于展示安卓机文件,配合system_fs模块可以支持文件下载和上传,方便电脑和手机的无线文件传输"
+            "desc": "coding盘示例"
         },
         "/GoogleDrive/goindex/": {
             "funcName": "gdrive_goindex",
@@ -119,7 +127,28 @@
             },
             "desc": "linux_scf已弃用,内部实际由system_fs实现"
         },
-        "/Phony/password_is_123": {
+        "/FileSystem/normal/": {
+            "funcName": "linux_scf",
+            "spConfig": {
+                "root": ""
+            },
+            "desc": "linux_scf仅用于文件列表展示,不提供下载上传功能.如果需要,请使用system_fs模块"
+        },
+        "/FileSystem/termux/": {
+            "funcName": "linux_scf",
+            "spConfig": {
+                "root": "/data/data/com.termux"
+            },
+            "desc": "termux为安卓软件termux专用目录"
+        },
+        "/FileSystem/android/": {
+            "funcName": "linux_scf",
+            "spConfig": {
+                "root": "/storage"
+            },
+            "desc": "storage用于展示安卓机文件,配合system_fs模块可以支持文件下载和上传,方便电脑和手机的无线文件传输"
+        },
+        "/Phony/password_is_123/": {
             "funcName": "onedrive_sharepoint",
             "spConfig": {
                 "shareUrl": "https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/Es6CMetI4fJCr4GqWZ3uvA0BEnzJxxb4CU-iQr04VYomLQ?e=C9K35U",
@@ -128,7 +157,7 @@
             "password": "123",
             "desc": "云盘密码示例"
         },
-        "/Phony/simple": {
+        "/Phony/simple/": {
             "funcName": "system_phony",
             "spConfig": {
                 "list": [
@@ -139,7 +168,7 @@
                     "http://www.w3school.com.cn/i/movie.mp4"
                 ]
             },
-            "desc": "假装是云盘 示例"
+            "desc": "假装是云盘 示例 123"
         }
     },
     "DOMAIN_MAP": {

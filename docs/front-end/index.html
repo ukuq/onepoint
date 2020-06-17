@@ -19,13 +19,17 @@
 <body><noscript><strong>We're sorry but vue1 doesn't work properly without JavaScript enabled. Please enable it to
             continue.</strong></noscript>
     <script>
+        let u = new URL(window.location.href).search;
+        if (u.startsWith('?http')) window.p_h0 = u.slice(1);
         while (!window.p_h0) {
             window.p_h0 = prompt(
                 `请提供baseurl(p_h0)，例如 https://127.0.0.1(仅支持https)\n此外，你需要提前将本页域名添加至G_CONFIG.access_origins\n域名：${window.location.origin}`
-                );
-            if (!window.p_h0.startsWith('https://')) {
-                alert("格式有误，仅支持https域名")
-                window.p_h0 = "";
+            );
+            if (window.p_h0.startsWith('http://')) {
+                alert("http域名部分功能受限,使用时请注意此项");
+            } else if (!window.p_h0.startsWith('https://')) {
+                alert("baseurl输入有误");
+                window.p_h0 = '';
             }
         }
     </script>

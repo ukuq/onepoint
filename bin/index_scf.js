@@ -2,16 +2,20 @@ const querystring = require('querystring');
 const fs = require('fs');
 const path = require('path');
 const { op } = require('./main');
-op.initialize({ readConfig, writeConfig });
+
 let _config = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../config.json'), 'utf8'));
+
+if(_config.G_CONFIG['x-scf-cos-secretKey'])op.initialize({ readConfig, writeConfig });//支持保存功能
+else op.initialize({ readConfig });//只读,未提供保存功能
 
 //@usage 如果需要使用保存功能,需要借用腾讯的cos,地区建议和云函数所在地区一致,内网之间流量免费
 var COS = require('cos-nodejs-sdk-v5');
+
 const cosConfig = {
-    SecretId: '',
-    SecretKey: '',
-    Bucket: '',
-    Region: 'ap-hongkong'
+    SecretId: _config.G_CONFIG['x-scf-cos-secretId'],
+    SecretKey: _config.G_CONFIG['x-scf-cos-secretKey'],
+    Bucket: _config.G_CONFIG['x-scf-cos-bucket'],
+    Region: _config.G_CONFIG['x-scf-cos-region']
 }
 
 var cos = new COS({
@@ -37,7 +41,7 @@ exports.main_handler = async (event, context, callback) => {
 }
 
 async function readConfig() {
-    if (!cosConfig.SecretId) return _config;
+    if (!cosConfig.SecretKey) return _config;
     return new Promise((resolve) => {
         cos.getObject({
             Bucket: cosConfig.Bucket,

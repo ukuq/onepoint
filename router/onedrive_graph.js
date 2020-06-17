@@ -106,10 +106,10 @@ async function touch(path, filename, content) {
 exports.upload = upload;
 async function upload(filePath, fileSystemInfo) {
 	let k = filePath + JSON.stringify(fileSystemInfo);
-	if (_cache[k] && new Date(_cache[k].expirationDateTime) > new Date()) return Msg.json(200, _cache[k]);
+	if (_cache[k] && new Date(_cache[k].expirationDateTime) > new Date()) return Msg.html_json(200, _cache[k]);
 	let res = await onedrive.msUploadSession(filePath, fileSystemInfo);
 	_cache[k] = res;
-	return Msg.json(200, res);//@flag 以后改成type3,前端需要配合
+	return Msg.html_json(200, res);
 }
 
 exports.func = async (spConfig, cache, event) => {

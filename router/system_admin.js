@@ -1,5 +1,5 @@
 const { Msg } = require('../utils/msgutils');
-const { getmd5 } = require('../utils/nodeutils');
+const { getmd5, fs, path } = require('../utils/nodeutils');
 let G_CONFIG, DRIVE_MAP, oneCache, onepoint;
 let _event;
 const ajax_funcs = [];
@@ -17,7 +17,7 @@ exports.func = async (spConfig, cache, event) => {
     if (p2.startsWith("/public/")) {
         switch (p2.slice(7)) {
             case '/site':
-                return Msg.html_json(200, { site_name: G_CONFIG.site_name, site_readme: G_CONFIG.site_readme, proxy_cookie: event.cookie.proxy, proxy: G_CONFIG.proxy });
+                return Msg.html_json(200, { site_name: G_CONFIG.site_name, site_readme: G_CONFIG.site_readme, proxy_cookie: event.cookie.proxy, proxy: G_CONFIG.proxy, version: require('../package.json').version });
             case '/proxy':
                 event['set_cookie'].push({ n: 'proxy', v: event.query.proxy || "", o: { path: event.splitPath.p0 + '/' } });
                 return Msg.html(200, "proxy via: " + event.query.proxy);
@@ -26,7 +26,7 @@ exports.func = async (spConfig, cache, event) => {
             case '/login':
                 //@flag 考虑以后加上验证码
                 if (event.isadmin || event['method'] === 'POST' && event['body']['password'] === G_CONFIG.admin_password && event['body']['username'] === G_CONFIG.admin_username) {
-                    event['set_cookie'].push({ n: 'ADMINTOKEN', v: G_CONFIG.admin_password_date_hash, o: { path: event.splitPath.p0 + '/' } });
+                    event['set_cookie'].push({ n: 'ADMINTOKEN', v: onepoint.hashes.admin_password_date_hash, o: { path: event.splitPath.p0 + '/' } });
                     return Msg.info(200, "success");
                 }
                 else return Msg.info(403, "账号或密码错误");
@@ -131,7 +131,11 @@ ajax_funcs['save'] = async () => {
         }
         config.G_CONFIG = Object.assign(config.G_CONFIG, newConfig.G_CONFIG);
     }
-    if (newConfig.DRIVE_MAP) {
+    //@flag 这里先这样设置
+    if (newConfig.DOMAIN_MAP) {
+        config.DOMAIN_MAP = newConfig.DOMAIN_MAP;
+        config.DRIVE_MAP = newConfig.DRIVE_MAP;
+    }else if (newConfig.DRIVE_MAP) {
         for (let k in config.DRIVE_MAP) {
             if (newConfig.DRIVE_MAP[k] && !newConfig.DRIVE_MAP[k].isNew) {
                 newConfig.DRIVE_MAP[k] = config.DRIVE_MAP[k];
@@ -147,31 +151,4 @@ ajax_funcs['save'] = async () => {
     } else return Msg.info(200, '不支持保存操作,但配置已写入系统');
 }
 
-const vue_html = `
-<!DOCTYPE html>
-<html lang=en>
-
-<head>
-    <meta charset=utf-8>
-    <meta http-equiv=X-UA-Compatible content="IE=edge">
-    <meta name=viewport content="width=device-width,initial-scale=1">
-    <link rel=icon href=https://cdn.onesrc.cn/uploads/images/onepoint_30.png> <title>ONEPOINT</title>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/css/app.9757bd80.css rel=preload as=style>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/css/chunk-vendors.afd65583.css rel=preload
-        as=style>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/js/app.c4fa25b8.js rel=preload as=script>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/js/chunk-vendors.f476e83d.js rel=preload
-        as=script>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/css/chunk-vendors.afd65583.css rel=stylesheet>
-    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/css/app.9757bd80.css rel=stylesheet>
-</head>
-
-<body><noscript><strong>We're sorry but vue1 doesn't work properly without JavaScript enabled. Please enable it to
-            continue.</strong></noscript>
-    <script>
-        window.p_h0 = new RegExp('(.+)/admin').exec(window.location.href)[1];
-    </script>
-    <div id=app></div>
-    <script src=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/js/chunk-vendors.f476e83d.js> </script> <script
-        src=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/js/app.c4fa25b8.js> </script> </body> </html>
-`
+const vue_html = fs.readFileSync(path.resolve(__dirname, '../views/admin/index.html')).toString();

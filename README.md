@@ -34,13 +34,20 @@ https://github.com/ukuq/onepoint
 ### github 测试版
 
 ~~~
-git clone https://github.com/ukuq/onepoint.git && cd onepoint && npm install & npm start
+git clone https://github.com/ukuq/onepoint.git
+cd onepoint && npm install
+
+npm start
+# pm2 bin/index_node.js
 ~~~
 
 ### npm 稳定版
 
 ~~~
-npm install -g onepoint && onepoint
+npm install onepoint
+
+node node_modules/onepoint/bin/index_node.js
+# pm2 start node_modules/onepoint/bin/index_node.js
 ~~~
 
 PS: 建议使用 pm2 作为守护进程
@@ -108,6 +115,16 @@ https://onepoint.ukuq.now.sh
 
 该项在全局 access_origins 字段设置, 字段格式为 http://example.com
 
+#### 前后端分离示例
+
+https://onesrc.cn/static/onepoint?http://example.com
+
+例如:
+
+https://onesrc.cn/static/onepoint?https://point.onesrc.cn
+
+https://ukuq.github.io/front-end?https://point.onesrc.cn
+
 ### 反向代理
 
 ~~~
@@ -118,6 +135,20 @@ https://onepoint.ukuq.now.sh
     }
 }
 ~~~
+
+### 扩展项x
+
+#### scf 保存功能
+
+依赖腾讯云对象存储 cos 实现保存配置, 在 G_CONFIG 下配置, 涉及参数 secretId, secretKey, bucket, region
+
+仅 scf 平台有效, 格式为x-scf-cos-xxxx
+
+#### 评论功能
+
+开源项目 valine 实现评论功能, 涉及参数 appId, appKey
+
+仅 w.w 主题有效, 格式为 x-valine-xxxx
 
 ### 文件管理
 
