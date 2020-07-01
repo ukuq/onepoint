@@ -1,10 +1,12 @@
 const { formatSize, urlSpCharEncode } = require('../utils/msgutils');
 exports.render = render;
 //@info proxy部分提至main.js,自动根据cookie觉得是否代理.
+//考虑到文件名或路径中包含% ? # 等 字符是小概率事件, 故将 urlSpCharEncode 的调用移到前端完成
+//为提高渲染速度,同样将formatSize formatDate 移动到前端
 function render(responseMsg, event, G_CONFIG) {
     let splitPath = event.splitPath;
-    let p_h0 = urlSpCharEncode(splitPath.ph + splitPath.p0);
-    let p_12 = urlSpCharEncode(splitPath.p_12);
+    let p_h0 = splitPath.ph + splitPath.p0;
+    let p_12 = splitPath.p_12;
     let p_h012 = p_h0 + p_12;
     let data = responseMsg.data;
     let readmeFlag = false;
@@ -14,7 +16,7 @@ function render(responseMsg, event, G_CONFIG) {
     </head><body><nav class="navbar sticky-top navbar-dark bg-dark navbar-expand-lg"><div class="container"><a target="_self" href="https://github.com/ukuq/onepoint" class="navbar-brand"><img src="${G_CONFIG.site_icon}" alt="logo" class="d-inline-block align-top" style="width: 30px;">${G_CONFIG.site_name}</a></div></nav><div class="container mt-3">`;
 
     //导航栏
-    html += `<nav class="" aria-label="breadcrumb"><ol class="breadcrumb">`;
+    html += `<nav id="navbar-href" aria-label="breadcrumb"><ol class="breadcrumb">`;
     let tmpIncPath = p_h0 + '/';
     html += `<li class="breadcrumb-item"><a href="${tmpIncPath}">Home</a></li>`;
     p_12.split('/').forEach((e, i, t) => {
@@ -56,7 +58,11 @@ function render(responseMsg, event, G_CONFIG) {
                 html += `<div id="pdf-preview"></div><script src="https://cdn.bootcss.com/pdfobject/2.1.1/pdfobject.min.js"></script><script>PDFObject.embed("${url}", "#pdf-preview");</script><style>.pdfobject{height:1600px!important;}</style>`;
             } else if (type === 'text' || (file['size'] < 1024)) {
                 html += `<div class="border"><pre><code id="code-preview">loading...</code></pre></div>`;
-                html += `<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script><script>fetch('${url}').then(response => response.text()).then(data => {document.getElementById('code-preview').textContent =data;hljs.highlightBlock(document.getElementById('code-preview'));}).catch(err => document.getElementById('code-preview').innerHTML="Oh, error:" + err);</script>`;
+                html += `<script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script><script>
+                
+                fetch('${url}').then(response => { if (response.ok) { return response.text() } else throw new Error('response error'); }).then(data => { document.getElementById('code-preview').textContent = data; hljs.highlightBlock(document.getElementById('code-preview')); }).catch(err => document.getElementById('code-preview').innerHTML = "Oh, " + err);
+
+                </script>`;
             } else {
                 html += `<div>此格式不支持预览 :-(</div>`;
             }
@@ -71,10 +77,10 @@ function render(responseMsg, event, G_CONFIG) {
             }
             data.list.forEach(e => {
                 if (e.type === 1 || e.type === 3) {//文件夹 
-                    html += `<tr><td><a href="${p_h012}${urlSpCharEncode(e.name)}/">${e.name}/</a></td><td>${e.time}</td><td class="text-right">${formatSize(e.size)}</td></tr>`;
+                    html += `<tr><td><a href="${p_h012+e.name}/">${e.name}/</a></td><td>${e.time}</td><td class="text-right">${e.size}</td></tr>`;
                 } else if (e.type === 0) {//文件
                     if (e.name === 'README.md') { readmeFlag = true };
-                    html += `<tr><td><a href="${p_h012}${urlSpCharEncode(e.name)}?preview">${e.name}</a></td><td>${e.time}</td><td class="text-right">${formatSize(e.size)}</td></tr>`;
+                    html += `<tr><td><a href="${p_h012+e.name}?preview" class="file">${e.name}</a></td><td>${e.time}</td><td class="text-right">${e.size}</td></tr>`;
                 }
             });
             if (data.next) html += `<tr><td><a href="${data.next}">Next...</a></td><td></td><td></td></tr>`;
@@ -93,30 +99,27 @@ function render(responseMsg, event, G_CONFIG) {
     }
     //readme
     html += `<div class="card mt-3"><div class="card-header">README.md</div><div class="card-body markdown-body" id="readMe">${event.readme}</div></div>`;
-    if (G_CONFIG['x-valine-appKey']) {
-        html += `
-    <script src='//unpkg.zhimg.com/valine/dist/Valine.min.js'></script>
-    <div id="vcomments" class="mt-3"></div>
-    <script>
-        new Valine({
-            el: '#vcomments',
-            appId: '${G_CONFIG['x-valine-appId']}',
-            appKey: '${G_CONFIG['x-valine-appKey']}',
-            notify:false, 
-            verify:false, 
-            avatar:'mp', 
-            placeholder: 'just go go'
-        })
-    </script>
-    <style>#vcomments .vpower.txt-right{display:none;}</style>
-    `
+    //限制一下, 仅对2xx 401 显示
+    if (false && G_CONFIG['x-valine-appKey'] && responseMsg.statusCode <= 401) {
+        html += `<script src='//unpkg.zhimg.com/valine/dist/Valine.min.js'></script><div id="vcomments" class="mt-3"></div><script>new Valine({el: '#vcomments',appId: '${G_CONFIG['x-valine-appId']}',appKey: '${G_CONFIG['x-valine-appKey']}',notify:false,verify:false,avatar:'mp',placeholder: 'just go go'})</script><style>#vcomments .vpower.txt-right{display:none;}</style>`
     }
     //footer
-    html += `<div class="text-right"><span class="text-muted">Powered by <a href="https://github.com/ukuq/onepoint">OnePoint</a></span><span class="text-muted ml-2">Processing time: <a href="javascript:void">${new Date() - event.start_time}ms${responseMsg.cache ? '(cache)' : ''}</a></span></div>`;
+    html += `<div class="text-right"><span class="text-muted">Powered by <a href="https://github.com/ukuq/onepoint">OnePoint</a></span><span class="text-muted ml-2">Processing time: <a href="javascript:void">${new Date() - event.start_time}ms${responseMsg.isCache ? '(hit)' : ''}</a></span></div>`;
     html += `</div><script src="https://cdn.bootcss.com/marked/0.7.0/marked.js"></script>${G_CONFIG.site_script}`;
-    if (readmeFlag) html += `<script src="https://cdn.bootcss.com/axios/0.19.0/axios.min.js"></script><script>axios.get('./README.md').then(data => document.getElementById('readMe').innerHTML =marked(data)).catch(err => document.getElementById('readMe').innerHTML="Oh, error:" + err);</script>`;
+    if (readmeFlag) html += `<script>fetch('./README.md').then(response => { if (response.ok) { return response.text() } else throw new Error('response error'); }).then(data => document.getElementById('readMe').innerHTML =marked(data)).catch(err => document.getElementById('readMe').innerHTML = "Oh, " + err);</script>`;
     else html += `<script>if(${!event.readme})document.getElementById('readMe').parentNode.style.display="none";else document.getElementById('readMe').innerHTML = marked(document.getElementById('readMe').textContent);</script>`
-    html += `<script>function formatDate(str) {let oDate = new Date(str);if ('Invalid Date' == oDate) return oDate;let oYear = oDate.getFullYear(),oMonth = oDate.getMonth() < 9 ? "0" + (oDate.getMonth() + 1) : (oDate.getMonth() + 1),oDay = oDate.getDate() < 10 ? "0" + oDate.getDate() : oDate.getDate(),oHour = oDate.getHours() < 10 ? "0" + oDate.getHours() : oDate.getHours(),oMinute = oDate.getMinutes() < 10 ? "0" + oDate.getMinutes() : oDate.getMinutes(),oSecond = oDate.getSeconds() < 10 ? "0" + oDate.getSeconds() : oDate.getSeconds(),oTime = oYear + '-' + oMonth + '-' + oDay + " " + oHour + ":" + oMinute + ":" + oSecond;return oTime;}document.querySelectorAll('tbody>tr>td:nth-child(2)').forEach(e=>{e.textContent=formatDate(e.textContent)});</script>`
+    html += `<script>
+    function urlSpCharEncode(s) {return !s ? s : s.replace(/%/g, '%25').replace(/#/g, '%23');}
+    function formatSize(size) {if (size === "" || size ==="NaN") return "";size=Number(size); let count = 0;while (size >= 1024) {size /= 1024;count++;}size = size.toFixed(2);size += [' B', ' KB', ' MB', ' GB', ' TB'][count];return size;}
+    function formatDate(str) {let oDate = new Date(str);if ('Invalid Date' == oDate) return "";let oYear = oDate.getFullYear(),oMonth = oDate.getMonth() < 9 ? "0" + (oDate.getMonth() + 1) : (oDate.getMonth() + 1),oDay = oDate.getDate() < 10 ? "0" + oDate.getDate() : oDate.getDate(),oHour = oDate.getHours() < 10 ? "0" + oDate.getHours() : oDate.getHours(),oMinute = oDate.getMinutes() < 10 ? "0" + oDate.getMinutes() : oDate.getMinutes(),oSecond = oDate.getSeconds() < 10 ? "0" + oDate.getSeconds() : oDate.getSeconds(),oTime = oYear + '-' + oMonth + '-' + oDay + " " + oHour + ":" + oMinute + ":" + oSecond;return oTime;}
+    (function(){
+        document.getElementById('navbar-href').querySelectorAll('a').forEach(e=>{e.href=urlSpCharEncode(e.getAttribute('href'))});
+        document.querySelectorAll('tbody>tr>td:nth-child(1)>a:not(.file)').forEach(e=>{e.href=urlSpCharEncode(e.getAttribute('href'))});
+        document.querySelectorAll('tbody>tr>td:nth-child(1)>a.file').forEach(e=>{e.href=urlSpCharEncode(e.getAttribute('href').slice(0,-8))+'?preview'});
+        document.querySelectorAll('tbody>tr>td:nth-child(2)').forEach(e=>{e.textContent=formatDate(e.textContent)});
+        document.querySelectorAll('tbody>tr>td:nth-child(3)').forEach(e=>{e.textContent=formatSize(e.textContent)});
+    })();
+    </script>`
     html += `</body></html>`;
     return html;
 }

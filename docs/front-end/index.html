@@ -21,6 +21,7 @@
     <script>
         let u = new URL(window.location.href).search;
         if (u.startsWith('?http')) window.p_h0 = u.slice(1);
+        //window.p_h0="如果使用前后端分离, 可将此页面放到前端,并将此处改为后端域名路径即可";
         while (!window.p_h0) {
             window.p_h0 = prompt(
                 `请提供baseurl(p_h0)，例如 https://127.0.0.1(仅支持https)\n此外，你需要提前将本页域名添加至G_CONFIG.access_origins\n域名：${window.location.origin}`

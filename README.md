@@ -2,6 +2,17 @@
 
 一个轻量级、多平台、多种网盘的文件目录索引和管理工具。
 
+
+## 最近更新
+
+### 200701
+
+新增 context模块调用参数, 提供了保存配置的api
+新增 onedrive_graph 每隔 30 天自动更新一次 refresh token
+
+优化 缓存结构
+优化 w.w主题, 数据格式化放到前端由js实现
+
 ## 项目地址
 
 https://github.com/ukuq/onepoint
@@ -71,8 +82,8 @@ https://onepoint.ukuq.now.sh
 
 ~~~
 "/demo_linux/": {
-    "funcName": "system_fs",    //模块名
-    "spConfig": {               //模块相关配置
+    "funcName": "system_fs",    //模块名(必填)
+    "spConfig": {               //模块相关配置(必填)
         "root": ""
     },
     "password": "123",          //访问该云盘所需要的密码
@@ -115,15 +126,21 @@ https://onepoint.ukuq.now.sh
 
 该项在全局 access_origins 字段设置, 字段格式为 http://example.com
 
+### 前后端分离
+
+#### 自定义前端部署:
+
+将 docs/front-end/index.html 放置前端,按提示修改 window.p_h0 变量
+
 #### 前后端分离示例
 
-https://onesrc.cn/static/onepoint?http://example.com
+https://ukuq.github.io/onepoint/front-end?<后端域名路径>
 
 例如:
 
-https://onesrc.cn/static/onepoint?https://point.onesrc.cn
+https://onesrc.cn/static/onepoint?https://service-0nvsu1bi-1255607810.ap-hongkong.apigateway.myqcloud.com/release/onepoint
 
-https://ukuq.github.io/front-end?https://point.onesrc.cn
+https://ukuq.github.io/onepoint/front-end?https://service-0nvsu1bi-1255607810.ap-hongkong.apigateway.myqcloud.com/release/onepoint
 
 ### 反向代理
 

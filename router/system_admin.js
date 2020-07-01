@@ -135,20 +135,18 @@ ajax_funcs['save'] = async () => {
     if (newConfig.DOMAIN_MAP) {
         config.DOMAIN_MAP = newConfig.DOMAIN_MAP;
         config.DRIVE_MAP = newConfig.DRIVE_MAP;
-    }else if (newConfig.DRIVE_MAP) {
+    } else if (newConfig.DRIVE_MAP) {
         for (let k in config.DRIVE_MAP) {
-            if (newConfig.DRIVE_MAP[k] && !newConfig.DRIVE_MAP[k].isNew) {
-                newConfig.DRIVE_MAP[k] = config.DRIVE_MAP[k];
+            if (newConfig.DRIVE_MAP[k]) {
+                if (!newConfig.DRIVE_MAP[k].isNew) newConfig.DRIVE_MAP[k] = config.DRIVE_MAP[k];
+                else delete newConfig.DRIVE_MAP[k].isNew;
             }
         }
         config.DRIVE_MAP = newConfig.DRIVE_MAP;
     }
     onepoint.updateConfig(config);//body is an object
-    let f = onepoint.adapter_funcs.writeConfig;
-    if (f) {
-        if (await f(onepoint.config)) return Msg.info(200, '保存成功');
-        else return Msg.info(200, '保存失败,但配置已写入系统');
-    } else return Msg.info(200, '不支持保存操作,但配置已写入系统');
+    if (await onepoint.saveConfig()) return Msg.info(200, 'success');
+    else return Msg.info(500, 'fail');
 }
 
 const vue_html = fs.readFileSync(path.resolve(__dirname, '../views/admin/index.html')).toString();
