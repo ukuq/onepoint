@@ -31,6 +31,14 @@ class OnePoint {
         console.log('--------------');
     }
 
+    async saveConfig() {
+        if (!this.config) throw Msg.error(500, Msg.constants.System_not_initialized);
+        let w = this.adapter_funcs.writeConfig;
+        if (!w) throw Msg.error(403, Msg.constants.No_such_command);
+        if (await w(this.config)) return true;
+        else return false;
+    }
+
     async handleEvent(event) {
         //惰性加载配置
         if (!this.config) this.updateConfig(await this.adapter_funcs.readConfig());
@@ -94,7 +102,7 @@ class OnePoint {
                 if (cmdData.path) {
                     p_12 = cmdData.path;
                     drivePath = oneCache.getDrivePath(p_12);
-                    event.sp_page = cmdData.sp_page || 0;
+                    event.sp_page = cmdData.sp_page;
                 } else if (cmdData.srcPath && cmdData.desPath) {
                     p_12 = cmdData.srcPath;
                     drivePath = oneCache.getDrivePath(p_12);
@@ -105,7 +113,7 @@ class OnePoint {
         } else {
             oneCache.addEventLog(event, 0);
             event.cmd = event.query.download === undefined ? 'ls' : 'download';
-            event.sp_page = event.query.sp_page || 0;
+            event.sp_page = event.query.sp_page;
             drivePath = oneCache.getDrivePath(p_12);
             event.isNormal = true;
             event.noRender = event.query.json !== undefined;
@@ -158,14 +166,20 @@ class OnePoint {
         //普通模式查询cache
         if (!responseMsg && event.isNormal && event.cmd === 'ls') {
             responseMsg = oneCache.getMsg(p_12, event.sp_page);
-            if (responseMsg) responseMsg.cache = true;
         }
 
         if (!responseMsg) {
             try {
-                responseMsg = await drive_funcs[driveInfo.funcName].func(driveInfo.spConfig, oneCache.driveCache[drivePath], event);
+                responseMsg = await drive_funcs[driveInfo.funcName].func(driveInfo.spConfig, oneCache.driveCache[drivePath], event, this);
                 console.log('response from drives: type=' + responseMsg.type + ' status=' + responseMsg.statusCode);
-                responseMsg.sp_page = event.sp_page;
+                //如果不用分页则用 -1 表示, 分页则用 sp_page 标识,且 sp_page 默认值为 0
+                if (responseMsg.type === 1) {
+                    if (!p2.endsWith('/')) p2 += '/';//不规范的目录请求
+                    responseMsg.sp_page = (event.sp_page || responseMsg.data.nextToken) ? (event.sp_page || 0) : -1;
+                    if (responseMsg.data.nextToken) responseMsg.data.next = '?sp_page=' + responseMsg.data.nextToken;
+                } else if (responseMsg.type === 3) {//处理直接 html返回, type3只可能存在于这一阶段
+                    return this.endMsg(responseMsg.statusCode, responseMsg.headers, responseMsg.data.html);
+                }
                 if (responseMsg.statusCode < 300) oneCache.addMsg(p_12, responseMsg, event.cmd, event.cmdData ? event.cmdData.desPath : '');
             } catch (error) {
                 if (error.type === 2) {
@@ -188,11 +202,11 @@ class OnePoint {
             if (responseMsg.type === 0) responseMsg = Msg.list([responseMsg.data.file], event.splitPath.p0 + event.splitPath.p_12.slice(0, event.splitPath.p_12.lastIndexOf('/') + 1));
             if (responseMsg.type === 1) responseMsg = Msg.html(207, getSimpleWebdavXml(responseMsg.data.list, event.splitPath.p0 + event.splitPath.p_12));
             else responseMsg = Msg.html(responseMsg.statusCode, getSimpleWebdavInfo(responseMsg.info));
+            return this.endMsg(responseMsg.statusCode, responseMsg.headers, responseMsg.data.html);
         }
 
         //处理目录级密码 父文件夹中隐藏文件过滤 分页
         if (responseMsg.type === 1 && event.isNormal) {//文件列表 非管理员api
-            if (!p2.endsWith('/')) p2 += '/';
             if (!event.isadmin) {//管理员cookie忽略密码
                 let pass;//目录级加密
                 let hiddens = Array.isArray(driveInfo.hidden) ? driveInfo.hidden.map(e => { if (e.startsWith(p2)) return e.slice(p2.length) }).filter(e => { return !!e }) : [];
@@ -218,9 +232,8 @@ class OnePoint {
                 }
             }
 
-
             let pageSize = 50;//分页功能
-            if (responseMsg.type === 1 && event.sp_page === 0 && !responseMsg.data.nextToken && responseMsg.data.list.length > pageSize) {
+            if (responseMsg.sp_page === -1 && responseMsg.data.list.length > pageSize) {
                 let content_len = responseMsg.data.list.length;
                 let page = Number(event.query['page']) || 1;
                 responseMsg.data.list = responseMsg.data.list.slice((page - 1) * pageSize, page * pageSize);
@@ -228,10 +241,7 @@ class OnePoint {
                 if (content_len > page * pageSize) responseMsg.data.next = '?page=' + (page + 1);
             }
         }
-        if (responseMsg.data.nextToken) responseMsg.data.next = '?sp_page=' + responseMsg.data.nextToken;
 
-        //处理直接 html返回
-        if (responseMsg.type === 3) return this.endMsg(responseMsg.statusCode, responseMsg.headers, responseMsg.data.html);
         //处理cookie设置的代理,代理程序参考 https://www.onesrc.cn/p/using-cloudflare-to-write-a-download-assistant.html
         if (responseMsg.type === 0 && event.cookie.proxy) responseMsg.data.url = event.cookie.proxy + '?url=' + encodeURIComponent(responseMsg.data.url);
         //处理api部分
@@ -338,7 +348,7 @@ exports.op = {
         onepoint.initialize(adapter_funcs);
     },
     genEvent(method, url, headers, body = {}, adapter, sourceIp = '0.0.0.0', p0 = '', query, cookie) {
-        onepoint.genEvent(method, url, headers, body, adapter, sourceIp, p0, query, cookie)
+        return onepoint.genEvent(method, url, headers, body, adapter, sourceIp, p0, query, cookie)
     },
     async handleEvent(event) {
         return await onepoint.handleEvent(event);
@@ -351,11 +361,11 @@ exports.op = {
 
 function getSimpleWebdavXml(list, ppath) {
     let xml = '<?xml version="1.0" encoding="UTF-8" standalone="no"?><d:multistatus xmlns:d="DAV:">';
-    ppath = ppath.replace(/&/, '&amp;');
+    ppath = ppath.replace(/&/g, '&amp;');
     list.forEach(e => {
         if (e.type == 0) {
             xml += `<d:response>
-            <d:href>${ppath}${e.name.replace(/&/, '&amp;')}</d:href>
+            <d:href>${ppath}${e.name.replace(/&/g, '&amp;')}</d:href>
             <d:propstat>
                 <d:prop>
                     <d:getlastmodified>${new Date(e.time).toGMTString()}</d:getlastmodified>
@@ -367,7 +377,7 @@ function getSimpleWebdavXml(list, ppath) {
         </d:response>`
         } else {
             xml += `<d:response>
-            <d:href>${ppath}${e.name.replace(/&/, '&amp;')}/</d:href>
+            <d:href>${ppath}${e.name.replace(/&/g, '&amp;')}/</d:href>
             <d:propstat>
                 <d:prop>
                     <d:getlastmodified>${new Date(e.time).toGMTString()}</d:getlastmodified>

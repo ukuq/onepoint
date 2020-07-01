@@ -1,5 +1,6 @@
 const { fs, getmime, path } = require("../utils/nodeutils");
 const { Msg, urlSpCharEncode } = require('../utils/msgutils');
+const process = require('process');
 
 exports.ls = ls;
 function ls(p2) {
@@ -32,7 +33,8 @@ function ls(p2) {
                                 };
                                 if (st.isDirectory()) {
                                     nodeData.type = 1;
-                                    nodeData.mime = ''
+                                    nodeData.mime = '';
+                                    if (process.platform.startsWith('win')) nodeData.size = NaN;
                                 }
                                 list.push(nodeData);
                             }

@@ -16,7 +16,8 @@ let Msg = {
         'Offset_is_invalid': 'Offset is invalid',
         'Range_is_invalid': 'Range is invalid',
         'S404_not_found': '404 Not Found',
-        'Permission_denied':'Permission denied'
+        'Permission_denied': 'Permission denied',
+        'System_not_initialized': 'The system is not initialized'
     }
 }
 
@@ -99,28 +100,7 @@ async function Msg_download(req) {
 }
 
 function urlSpCharEncode(s) {
-    if (!s) return s;
-    let res = '';
-    for (let len = s.length, i = 0; i < len; i++) {
-        let ch = s[i];
-        switch (ch) {
-            case '%':
-                res += '%25';
-                break;
-            case '?':
-                res += '%3f';
-                break;
-            case '#':
-                res += '%23';
-                break;
-            case ' ':
-                res += '%20';
-                break;
-            default:
-                res += ch;
-        }
-    }
-    return res;
+    return !s ? s : s.replace(/%/g, '%25').replace(/#/g, '%23');
 }
 function formatSize(size) {
     if (typeof size !== "number") size = NaN;
@@ -130,7 +110,7 @@ function formatSize(size) {
         count++;
     }
     size = size.toFixed(2);
-    size += [' B', ' KB', ' MB', ' GB'][count];
+    size += [' B', ' KB', ' MB', ' GB', ' TB'][count];
     return size;
 };
 function formatDate(str) {

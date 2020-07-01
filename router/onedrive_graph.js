@@ -112,11 +112,21 @@ async function upload(filePath, fileSystemInfo) {
 	return Msg.html_json(200, res);
 }
 
-exports.func = async (spConfig, cache, event) => {
+exports.func = async (spConfig, cache, event, context) => {
 	_cache = cache;
 	mconfig = spConfig;
 	onedrive = new OneDrive(spConfig['refresh_token'], spConfig['oauth'], spConfig['oauth_opt']);
-	await onedrive.init();
+	await onedrive.init((data) => {
+		if ((spConfig['expires_date'] || 0) < Date.now()) {
+			console.log(spConfig);
+			spConfig['expires_date'] = Date.now() + 3600000 * 24 * 30;
+			spConfig['refresh_token'] = data['refresh_token'];
+			console.log(spConfig);
+			context.saveConfig().catch((err) => {
+				console.log(err.message);
+			});
+		}
+	});
 	let root = spConfig.root || '';
 	let p2 = root + event.p2;
 	let cmdData = event.cmdData;
