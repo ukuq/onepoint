@@ -35,8 +35,12 @@ class OnePoint {
         if (!this.config) throw Msg.error(500, Msg.constants.System_not_initialized);
         let w = this.adapter_funcs.writeConfig;
         if (!w) throw Msg.error(403, Msg.constants.No_such_command);
-        if (await w(this.config)) return true;
-        else return false;
+        try{
+            return await w(this.config);
+        }catch(e){
+            console.log(e);
+            throw Msg.error(500,e.message);
+        }
     }
 
     async handleEvent(event) {
@@ -284,7 +288,7 @@ class OnePoint {
         this.config = config;
         let G_CONFIG = config['G_CONFIG'];
         let DRIVE_MAP = config['DRIVE_MAP'];
-        console.log(DRIVE_MAP);
+       // console.log(DRIVE_MAP);
         this.refreshCache();
         console.log("initialize success");
         //@info 此处用于兼容配置文件, 以后可能会剔除 @flag
