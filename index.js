@@ -1,6 +1,5 @@
 const process = require('process');
 const { main_handler: main_scf } = require('./bin/index_scf');
-const azure = require('./bin/index_azure');
 
 module.exports = require('./bin/main');
 module.exports.main_handler = async (event, context, callback) => {

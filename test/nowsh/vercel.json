@@ -1,9 +1,5 @@
 {
-    "name": "onepoint",
     "version": 2,
-    "env": {
-        "point_env": "now"
-    },
     "functions": {
         "api/index_now.js": {
             "maxDuration": 10
