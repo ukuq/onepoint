@@ -77,10 +77,10 @@ function render(responseMsg, event, G_CONFIG) {
             }
             data.list.forEach(e => {
                 if (e.type === 1 || e.type === 3) {//文件夹 
-                    html += `<tr><td><a href="${p_h012+e.name}/">${e.name}/</a></td><td>${e.time}</td><td class="text-right">${e.size}</td></tr>`;
+                    html += `<tr><td><a href="${p_h012 + e.name}/">${e.name}/</a></td><td>${e.time}</td><td class="text-right">${e.size}</td></tr>`;
                 } else if (e.type === 0) {//文件
                     if (e.name === 'README.md') { readmeFlag = true };
-                    html += `<tr><td><a href="${p_h012+e.name}?preview" class="file">${e.name}</a></td><td>${e.time}</td><td class="text-right">${e.size}</td></tr>`;
+                    html += `<tr><td><a href="${p_h012 + e.name}?preview" class="file">${e.name}</a></td><td>${e.time}</td><td class="text-right">${e.size}</td></tr>`;
                 }
             });
             if (data.next) html += `<tr><td><a href="${data.next}">Next...</a></td><td></td><td></td></tr>`;
@@ -100,7 +100,7 @@ function render(responseMsg, event, G_CONFIG) {
     //readme
     html += `<div class="card mt-3"><div class="card-header">README.md</div><div class="card-body markdown-body" id="readMe">${event.readme}</div></div>`;
     //限制一下, 仅对2xx 401 显示
-    if (false && G_CONFIG['x-valine-appKey'] && responseMsg.statusCode <= 401) {
+    if (G_CONFIG['x-valine-enabled'] && responseMsg.statusCode <= 401) {
         html += `<script src='//unpkg.zhimg.com/valine/dist/Valine.min.js'></script><div id="vcomments" class="mt-3"></div><script>new Valine({el: '#vcomments',appId: '${G_CONFIG['x-valine-appId']}',appKey: '${G_CONFIG['x-valine-appKey']}',notify:false,verify:false,avatar:'mp',placeholder: 'just go go'})</script><style>#vcomments .vpower.txt-right{display:none;}</style>`
     }
     //footer

@@ -14,7 +14,7 @@
 为了方便处理，核心模块提供了事件生成函数 genEvent。该函数中 query 参数之前的为必须项。如未提供query 及之后参数，genEvent 将会根据已有信息自动生成这些缺失的参数。
 
 ~~~javascript
-function genEvent(method, url, headers, body, adapter, sourceIp = '0.0.0.0', p0 = '', query, cookie)
+function genEvent(method, url, headers, body, sourceIp = '0.0.0.0', p0 = '', query, cookie)
 ~~~
 
 method：http 相关，统一使用大写字母表示，如 GET。
@@ -24,8 +24,6 @@ url：http 相关，统一使用原始 url，不对%xx进行反转义。
 headers：http 相关，头部属性统一使用小写字符加连字符的形式，如：accept-language。
 
 body：http相关信息，原始 body 字符串，或者是根据 **content-type** 属性转化成的对象，两种形式都可以。
-
-adapter：适配器名称，字符串类型。
 
 sourceIp：访问源 IP，字符串类型，如 111.222.111.222。@info ipv6类型待定。
 
@@ -39,7 +37,7 @@ cookie：http 相关，如未提供，则从 headers 中解析。对象类型。
 
 ~~~javascript
 let event = {
-    method, url, headers, body, adapter, sourceIp, query, cookie,
+    method, url, headers, body, sourceIp, query, cookie,
     splitPath: {
         ph, p0, p_12
     }
@@ -76,7 +74,7 @@ statusCode, headers, body 为 http 相关信息。
 
 ~~~javascript
 const { op } = require('./main');
-op.initialize({ readConfig, writeConfig });
+op.initialize({name: "name", readConfig, writeConfig });
 ~~~
 
 readConfig 为必须项，writeConfig 可选，如果未提供，则不具有保存功能。

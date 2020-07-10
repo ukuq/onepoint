@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -6,9 +5,8 @@ const { op } = require('./main');
 const process = require('process');
 let port = process.env.PORT || 8020;
 let server;
-op.initialize({ readConfig, writeConfig });
-const CONFIG_FILE_PATH = "/etc/onepoint_config.json";
-if(!fs.existsSync("/etc"))fs.mkdirSync("/etc");
+op.initialize({ name: "node", readConfig, writeConfig });
+const CONFIG_FILE_PATH = fs.existsSync("/etc") ? "/etc/onepoint_config.json" : path.resolve(__dirname, '../config.json');
 module.exports = () => {
     if (server) server.close();
     server = http.createServer((req, res) => {
@@ -42,15 +40,15 @@ module.exports();
 console.log('OnePoint is running at http://localhost:' + port);
 
 async function readConfig() {
-    let p = (fs.existsSync(CONFIG_FILE_PATH))?CONFIG_FILE_PATH:path.resolve(__dirname, '../config.json');
+    let p = (fs.existsSync(CONFIG_FILE_PATH)) ? CONFIG_FILE_PATH : path.resolve(__dirname, '../config.json');
     return JSON.parse(fs.readFileSync(p, 'utf8'));
 }
 
 async function writeConfig(config) {
-    return new Promise((resolve,reject) => {
+    return new Promise((resolve, reject) => {
         fs.writeFile(CONFIG_FILE_PATH, JSON.stringify(config, null, 2), (err) => {
             if (err) reject(err);
-            else resolve(true);
+            else resolve();
         })
     });
 }

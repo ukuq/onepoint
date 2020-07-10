@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { op } = require('./main');
-op.initialize({ readConfig });
+op.initialize({ name: "now.sh", readConfig });
 
 module.exports = async (req, res) => {
     try {

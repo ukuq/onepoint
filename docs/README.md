@@ -86,7 +86,7 @@ https://onepoint.ukuq.now.sh
 ## Thanks
 
 [oneindex](https://github.com/donwa/oneindex)
-[oneindex_scf](https://github.com/qkqpttgf/OneDrive_SCF)
+[OneManager](https://github.com/qkqpttgf/OneManager-php)
 
 ## License
 

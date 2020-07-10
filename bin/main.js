@@ -11,7 +11,7 @@ const drive_funcs = {};//云盘模块
     drive_funcs[e] = require(`../router/${e}`);
 });
 const render_funcs = {};//渲染模块,目前建议使用w.w
-['w.w', 'simple', 'oneindex_like', 'xysk_like'].forEach((e) => {
+['w.w', 'none',].forEach((e) => {
     render_funcs[e] = require(`../views/${e}`);
 });
 
@@ -21,31 +21,27 @@ const render_funcs = {};//渲染模块,目前建议使用w.w
  */
 
 class OnePoint {
-    initialize(adapter_funcs) {
-        this.adapter_funcs = adapter_funcs;
+    initialize(adapter) {
+        this.adapter = adapter;
         this.oneCache = new OneCache();//cache管理模块
-        console.log('------initialize with:');
-        for (let k in adapter_funcs) {
+        console.log(adapter.name+'------initialize with:');
+        for (let k in adapter) {
             console.log(k);
         }
         console.log('--------------');
     }
 
+    //200710为了能够抛出错误信息, 这里改用保存成功时无返回结果,失败时抛出错误信息
     async saveConfig() {
         if (!this.config) throw Msg.error(500, Msg.constants.System_not_initialized);
-        let w = this.adapter_funcs.writeConfig;
+        let w = this.adapter.writeConfig;
         if (!w) throw Msg.error(403, Msg.constants.No_such_command);
-        try{
-            return await w(this.config);
-        }catch(e){
-            console.log(e);
-            throw Msg.error(500,e.message);
-        }
+        else await w(this.config);
     }
 
     async handleEvent(event) {
         //惰性加载配置
-        if (!this.config) this.updateConfig(await this.adapter_funcs.readConfig());
+        if (!this.config) this.updateConfig(await this.adapter.readConfig());
 
         let G_CONFIG = this.config['G_CONFIG'];
         let oneCache = this.oneCache;
@@ -261,7 +257,7 @@ class OnePoint {
     /**
      * event 事件生成
      */
-    genEvent(method, url, headers, body = {}, adapter, sourceIp = '0.0.0.0', p0 = '', query, cookie) {
+    genEvent(method, url, headers, body = {},sourceIp = '0.0.0.0', p0 = '', query, cookie) {
         if (method === 'POST' && typeof body === 'string') {
             if (headers['content-type']) {
                 if (headers['content-type'].includes('application/x-www-form-urlencoded')) {
@@ -272,7 +268,7 @@ class OnePoint {
             }
         }
         let event = {
-            method, url, headers, body, adapter, sourceIp,
+            method, url, headers, body, sourceIp,
             query: query || querystring.parse(_url.parse(url).query),
             cookie: cookie || (headers['cookie'] ? _cookie.parse(headers['cookie']) : {}),
             splitPath: {
@@ -288,7 +284,7 @@ class OnePoint {
         this.config = config;
         let G_CONFIG = config['G_CONFIG'];
         let DRIVE_MAP = config['DRIVE_MAP'];
-       // console.log(DRIVE_MAP);
+        // console.log(DRIVE_MAP);
         this.refreshCache();
         console.log("initialize success");
         //@info 此处用于兼容配置文件, 以后可能会剔除 @flag
@@ -348,17 +344,17 @@ class OnePoint {
 var onepoint = new OnePoint();
 //封装一层,避免私有量被访问
 exports.op = {
-    initialize(adapter_funcs) {
-        onepoint.initialize(adapter_funcs);
+    initialize(adapter) {
+        onepoint.initialize(adapter);
     },
-    genEvent(method, url, headers, body = {}, adapter, sourceIp = '0.0.0.0', p0 = '', query, cookie) {
-        return onepoint.genEvent(method, url, headers, body, adapter, sourceIp, p0, query, cookie)
+    genEvent(method, url, headers, body = {}, sourceIp = '0.0.0.0', p0 = '', query, cookie) {
+        return onepoint.genEvent(method, url, headers, body, sourceIp, p0, query, cookie)
     },
     async handleEvent(event) {
         return await onepoint.handleEvent(event);
     },
-    async handleRaw(method, url, headers, body, adapter, sourceIp, p0, query, cookie) {
-        return await onepoint.handleEvent(onepoint.genEvent(method, url, headers, body, adapter, sourceIp, p0, query, cookie));
+    async handleRaw(method, url, headers, body, sourceIp, p0, query, cookie) {
+        return await onepoint.handleEvent(onepoint.genEvent(method, url, headers, body, sourceIp, p0, query, cookie));
     }
 };
 

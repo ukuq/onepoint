@@ -5,8 +5,8 @@ const { op } = require('./main');
 
 let _config = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../config.json'), 'utf8'));
 
-if(_config.G_CONFIG['x-scf-cos-secretKey'])op.initialize({ readConfig, writeConfig });//支持保存功能
-else op.initialize({ readConfig });//只读,未提供保存功能
+if (_config.G_CONFIG['x-scf-cos-enabled']) op.initialize({ name: "scf", readConfig, writeConfig });//支持保存功能
+else op.initialize({ name: "scf", readConfig });//只读,未提供保存功能
 
 //@usage 如果需要使用保存功能,需要借用腾讯的cos,地区建议和云函数所在地区一致,内网之间流量免费
 var COS = require('cos-nodejs-sdk-v5');
@@ -41,31 +41,29 @@ exports.main_handler = async (event, context, callback) => {
 }
 
 async function readConfig() {
-    if (!cosConfig.SecretKey) return _config;
-    return new Promise((resolve) => {
+    if (!_config.G_CONFIG['x-scf-cos-enabled']) return _config;
+    return new Promise((resolve, reject) => {
         cos.getObject({
             Bucket: cosConfig.Bucket,
             Region: cosConfig.Region,
             Key: 'onepoint-config.json',
         }, function (err, data) {
-            if (err) {
-                console.log(err);
-                resolve(_config);//通常不会加载失败;
-            } else resolve(JSON.parse(String(data.Body)));
+            if (err) reject(err);
+            else resolve(JSON.parse(String(data.Body)));
         });
     });
 }
 
 async function writeConfig(config) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         cos.putObject({
             Bucket: cosConfig.Bucket,
-            Region: 'ap-hongkong',
+            Region: cosConfig.Region,
             Key: 'onepoint-config.json',
             Body: JSON.stringify(config),
         }, function (err) {
-            if (err) resolve(false);
-            else resolve(true);
+            if (err) reject(err);
+            else resolve();
         });
     });
 }

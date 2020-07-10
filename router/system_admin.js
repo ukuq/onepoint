@@ -41,7 +41,7 @@ exports.func = async (spConfig, cache, event) => {
     }
     if (!event.isadmin) { return Msg.html(401, 'only admin can use this api'); }
     if (t = /\/ajax\/([^/]+)(.*)/.exec(p2)) {
-        return ajax_funcs[t[1]](t[2]);
+        return await ajax_funcs[t[1]](t[2]);
     }
     return Msg.html(200, vue_html, { 'Content-Type': 'text/html' });
 }
@@ -145,8 +145,8 @@ ajax_funcs['save'] = async () => {
         config.DRIVE_MAP = newConfig.DRIVE_MAP;
     }
     onepoint.updateConfig(config);//body is an object
-    if (await onepoint.saveConfig()) return Msg.info(200, 'success');
-    else return Msg.info(500, 'fail');
+    await onepoint.saveConfig();
+    return Msg.info(200, 'success');
 }
 
 const vue_html = fs.readFileSync(path.resolve(__dirname, '../views/admin/index.html')).toString();
