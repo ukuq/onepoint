@@ -188,7 +188,7 @@ https://ukuq.github.io/onepoint/front-end?https://service-0nvsu1bi-1255607810.ap
 ## Thanks
 
 [oneindex](https://github.com/donwa/oneindex)
-[oneindex_scf](https://github.com/qkqpttgf/OneDrive_SCF)
+[OneManager](https://github.com/qkqpttgf/OneManager-php)
 
 ## License
 

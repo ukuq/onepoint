@@ -23,7 +23,7 @@ module.exports = () => {
         }
         async function handleReq(body) {
             try {
-                let r = await op.handleRaw(req.method, req.url, req.headers, body, "node", req.connection.remoteAddress);
+                let r = await op.handleRaw(req.method, req.url, req.headers, body, req.connection.remoteAddress);
                 res.writeHead(r.statusCode, r.headers);
                 if (typeof r.body.pipe === 'function') r.body.pipe(res);
                 else res.end(r.body);

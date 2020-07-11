@@ -5,7 +5,7 @@ op.initialize({ name: "now.sh", readConfig });
 
 module.exports = async (req, res) => {
     try {
-        let r = await op.handleRaw(req.method, req.url, req.headers, req.body, "now", req.headers['x-real-ip'], '', req.query, req.cookies);
+        let r = await op.handleRaw(req.method, req.url, req.headers, req.body, req.headers['x-real-ip'], '', req.query, req.cookies);
         res.writeHead(r.statusCode, r.headers);
         res.write(r.body);
         res.end();

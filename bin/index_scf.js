@@ -27,7 +27,7 @@ exports.main_handler = async (event, context, callback) => {
 
     let url = event['path'] + '?' + querystring.stringify(event['queryString']);
 
-    let _event = op.genEvent(event['httpMethod'], url, event.headers, event.body, "scf", event['requestContext']['sourceIp'], '', event['queryString']);
+    let _event = op.genEvent(event['httpMethod'], url, event.headers, event.body, event['requestContext']['sourceIp'], '', event['queryString']);
 
     //处理域名和路径,分离得到 p0 p12
     let requestContext_path = event['requestContext']['path'];
