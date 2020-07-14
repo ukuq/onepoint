@@ -1,7 +1,12 @@
 const fs = require('fs');
 const path = require('path');
-const { op } = require('./main');
-op.initialize({ name: "now.sh", readConfig });
+const { op } = require('onepoint');
+const axios = require("axios");
+
+let _config = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../config.json'), 'utf8'));
+
+if (_config.G_CONFIG['x-nowsh-token']) op.initialize({ name: "now.sh", readConfig, writeConfig });//支持保存功能
+else op.initialize({ name: "now.sh", readConfig });//只读,未提供保存功能
 
 module.exports = async (req, res) => {
     try {
@@ -19,4 +24,8 @@ module.exports = async (req, res) => {
 
 async function readConfig() {
     return JSON.parse(fs.readFileSync(path.resolve(__dirname, '../config.json'), 'utf8'));
+}
+
+async function writeConfig(config) {
+    await axios.default.post("https://point.onesrc.cn/github/nowsh-deploy", { token: config.G_CONFIG['x-nowsh-token'], conifg_json: JSON.stringify(config, null, 2) });
 }

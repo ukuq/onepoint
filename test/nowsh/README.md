@@ -1,16 +1,27 @@
-# This folder is a demo for now.sh deploy.
+## nowsh 部署指南
 
-https://now.sh/
+now.sh 现已更名为 vercel, 以下仍以 now.sh 指代该平台.
 
-# if you want deploy onepoint on now.sh, you should do such things:
+now.sh 对 js 的文件数目做出了限制 (免费版不得多于 12 个), 所以部署 nowsh 时, 实际上使用的是 npm 包, 而不是 github 数据. 如果想要部署 github 上的文件, 请自行打包, 以减少文件数.
 
-1. run `npm i -g now@16.7.3`, install the now.sh cli.
-2. run `now login`, login your now.sh account.
-3. copy this nowsh folder and change directory to nowsh.
-4. edit the api/config.json file for yourself.
-4. run `now`, deploy onepoint.
+## 部署命令参考:
 
-- In nowsh, onepoint is deploy via npm package not github, maybe it's not the latest but it's stable.
-- In nowsh, the conepoint config file is api/config.json.
-- In nowsh, we don't hava the permission to write file, the config.json is read-only.
-- In nowsh, if you want to save your config, you need to change the config.json in you local host, and deploy it again.
+~~~shell
+cp bin/index_now.js test/nowsh/api/ #为统一管理适配器文件, 要求所有适配器均放到 bin 文件夹
+cp config.json test/nowsh/api/ #这里需要存放配置文件
+mv test/nowsh test/onepoint #重命名, 文件夹名即为 nowsh 项目名
+cd test/onepoint #准备部署
+
+npm i -g vercel #安装cli
+vercel --token ${{ token }} --confirm #token 获取 https://vercel.com/account/tokens
+~~~
+
+## 文件结构图
+~~~shell
+.
+├── api
+│   ├── config.json
+│   ├── index_now.js
+│   └── package.json
+└── vercel.json
+~~~
