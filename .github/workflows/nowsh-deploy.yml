@@ -25,8 +25,11 @@ jobs:
       - run: |
           npm i -g vercel
           cp bin/index_now.js test/nowsh/api/
-          echo ${{ github.event.inputs.config_json }} > test/nowsh/api/config.json
+          echo $CONFIG_JSON > test/nowsh/api/config.json
           mv test/nowsh test/onepoint
           cd test/onepoint
-          vercel --token ${{ github.event.inputs.token }} --confirm
+          vercel --token $NOW_TOKEN --confirm
           echo "deploy success"
+    env: 
+      NOW_TOKEN: ${{ github.event.inputs.token }}
+      CONFIG_JSON: ${{ github.event.inputs.config_json }}

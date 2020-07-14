@@ -3,7 +3,8 @@ const path = require('path');
 const { op } = require('onepoint');
 const axios = require("axios");
 
-let _config = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../config.json'), 'utf8'));
+// 部署now时, 配置文件和本文件为同目录
+let _config = JSON.parse(fs.readFileSync(path.resolve(__dirname, './config.json'), 'utf8'));
 
 if (_config.G_CONFIG['x-nowsh-token']) op.initialize({ name: "now.sh", readConfig, writeConfig });//支持保存功能
 else op.initialize({ name: "now.sh", readConfig });//只读,未提供保存功能
@@ -23,7 +24,7 @@ module.exports = async (req, res) => {
 }
 
 async function readConfig() {
-    return JSON.parse(fs.readFileSync(path.resolve(__dirname, '../config.json'), 'utf8'));
+    return JSON.parse(fs.readFileSync(path.resolve(__dirname, './config.json'), 'utf8'));
 }
 
 async function writeConfig(config) {
