@@ -41,5 +41,5 @@ jobs:
         cd ./onepoint
         npm install
         scf deploy -f
-        光盘..
+        cd..
  
