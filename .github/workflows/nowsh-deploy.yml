@@ -33,3 +33,4 @@ jobs:
     env: 
       NOW_TOKEN: ${{ github.event.inputs.token }}
       CONFIG_JSON: ${{ github.event.inputs.config_json }}
+
