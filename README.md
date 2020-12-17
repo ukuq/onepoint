@@ -1,6 +1,6 @@
 # OnePoint
 
-一个基于 SCF 和 SharePoint 的映射网盘
+一个基于 SCF 和 SharePoint 的映射网盘 (onedrive)
 
 ## 特色功能
 
@@ -32,12 +32,6 @@ https://service-8pduizwk-1255607810.ap-hongkong.apigateway.myqcloud.com/release/
 
 SharePoint分享获得链接，利用该链接获取临时cookie，此cookie在有效期内可访问SharePoint的API 获取文件列表信息，再用html修饰整理后返回给用户。
 
-## 妥协之处
-
-url 针对中文字符友好，但不支持 #? 等 url 中会引起歧义的符号，以后也不会支持。
-
-不支持从云盘中读取文件作为 readme，多次请求速度太慢
-
 ## 有待实现
 
 前端排序
@@ -52,4 +46,4 @@ instantclick
 
 ## License
 
-GPLv3
+LGPLv3.0
