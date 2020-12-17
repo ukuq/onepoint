@@ -1,5 +1,5 @@
 const url = require('url');
-const cookie = require('../local_modules/cookie');
+const cookie = require('cookie');
 const { main_func } = require('./main');
 
 module.exports = async (req, res) => {
@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
         splitPath: {
             ph: '//' + req.headers.host,
             p0: '',
-            p_12: url.parse(req.url).pathname
+            p_12: decodeURIComponent(url.parse(req.url).pathname)
         }
     };
     try {

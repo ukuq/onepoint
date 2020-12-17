@@ -2,6 +2,7 @@
 
 exports.render = { r200_list, r200_file, rxxx_info, r401_auth };
 
+@Deprecated
 /**
  * onepoint ukuq
  * time:191120
@@ -106,7 +107,7 @@ function get_html_head(p_h0, p_12, G_CONFIG) {
 
 
 function get_html_readMe(readMe) {
-    if (readMe.type === 0) return "";
+    return "";
     let html = `<div class="mdui-container-fluid" style="margin-bottom: 30px;"><div class="nexmoe-item list-wrapper"><div>README<br><br><br></div>`;
     let readText = "## Powered by [OnePoint](https://github.com/ukuq/onepoint)\n\n";
     if (readMe.type === 1) {

@@ -1,32 +1,31 @@
-const { Msg_info, Msg_301, Msg_html } = require('../bin/util').tool_funcs;
-const fs = require('fs');
-const path = require('path');
-const cookie = require('../local_modules/cookie');
+const { Msg } = require('../utils/msgutils');
+const { cookie } = require('../utils/nodeutils');
 let G_CONFIG, DRIVE_MAP, DRIVE_MAP_KEY;
+
 exports.func = async (spConfig, cache, event) => {
     let { p0, p1, p2, ph } = event.splitPath;
     G_CONFIG = spConfig['G_CONFIG'];
     DRIVE_MAP = spConfig['DRIVE_MAP'];
-    DRIVE_MAP_KEY = spConfig['DRIVE_MAP_KEY'];
+    DRIVE_MAP_KEY = Object.keys(DRIVE_MAP).sort((e1, e2) => { return e1 - e2 });
     let res_headers = { 'Content-Type': 'text/html' };
     let isadmin = event['cookie']['ADMINTOKEN'] === G_CONFIG.admin_password_date_hash;
     if (event['method'] === 'POST') {//管理员登录 ,只允许密码
         console.log("admin password:" + event['body']['password']);
-        if (event['body']['password'] !== G_CONFIG.admin_password) return Msg_info(401, '管理员密码错误');
+        if (event['body']['password'] !== G_CONFIG.admin_password) return Msg.info(401, '管理员密码错误');
         res_headers['set-cookie'] = cookie.serialize('ADMINTOKEN', G_CONFIG.admin_password_date_hash, { path: p0 + '/', maxAge: 3600 });
     } else if (!isadmin) {
-        return Msg_info(401, '请输入管理员密码');
+        return Msg.info(401, '请输入管理员密码');
     }
     if (p2 === '/cache') {
-        return Msg_html(200, `<head><script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        return Msg.html(200, `<head><script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
         <link href="//cdn.bootcss.com/highlight.js/9.10.0/styles/xcode.min.css" rel="stylesheet"></head>
         <body style="font-size: 15px;"><pre><code>${JSON.stringify(DRIVE_MAP, null, 2)}</code></pre><script>hljs.highlightBlock(document.body);</script></body>`, res_headers);
     } else if (p2 === '/event') {
-        return Msg_html(200, `<head><script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
+        return Msg.html(200, `<head><script src="https://cdn.bootcss.com/highlight.js/9.15.10/highlight.min.js"></script>
             <link href="//cdn.bootcss.com/highlight.js/9.10.0/styles/xcode.min.css" rel="stylesheet"></head>
             <body style="font-size: 15px;"><pre><code>${JSON.stringify(event, null, 2)}</code></pre><script>hljs.highlightBlock(document.body);</script></body>`, res_headers);
     }
-    return Msg_html(200, r200_admin(ph + p0), res_headers);
+    return Msg.html(200, r200_admin(ph + p0), res_headers);
 }
 
 function r200_admin(p_h0) {
