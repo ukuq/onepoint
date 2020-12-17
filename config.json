@@ -1,0 +1,49 @@
+{
+    "G_CONFIG": {
+        "enablePreview": true,
+        "admin_password": "admin",
+        "render_name": "xysk_like",
+        "site_title": "onePoint Demo",
+        "site_icon": "https://ukuq.github.io/onepoint/favicon.png",
+        "site_keywords": "onePoint",
+        "site_description": "onePoint description",
+        "site_script": ""
+    },
+    "DRIVE_MAP": {
+        "/ms_od_sharepoint/": {
+            "funcName": "ms_od_sharepoint",
+            "spConfig": {
+                "shareUrl": "https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/Es6CMetI4fJCr4GqWZ3uvA0BEnzJxxb4CU-iQr04VYomLQ?e=C9K35U",
+                "postRawDir": "/image"
+            },
+            "password": "mmx"
+        },
+        "/": {
+            "funcName": "oth_sys_none"
+        },
+        "/linux/": {
+            "funcName": "oth_linux_scf"
+        },
+        "/goo_gd_goindex/": {
+            "funcName": "goo_gd_goindex",
+            "spConfig": {
+                "password": "index",
+                "cfurl": "goindex.onesrc.workers.dev"
+            }
+        },
+        "/ms_od_graph/": {
+            "funcName": "ms_od_graph",
+            "spConfig": {
+                "refresh_token": "OAQABAAAAAACQN9QBRU3jT6bcBQLZNUj7qYv3YSeiMsEu9BaICGzevCs5Fh8UDBFaDp0DdAA_vse2HYPIjcTS27BJb_Vh_FBj6gXv7Xf37SpLyiw6I8GMofyMUM7PpjbJdIuaA7QRunZKijQxEGSDnLPj-GoVrlnMlsyxRgYptnNuciTxRLiwzO67B-_TxAdU5RTyhLSVhSOORYmTDfrZolR5KtIVvqMztUAs1-kMUZAXOEiqBBHO_arzD3Z35yAocoXsiBi1-NdNGz9agVYLzOhnV3xzwIp_3FLkQbXom4tJpLQCtsR-g_1izairu2JALzYq0rDDhL1w225YJi0yS93Fq96tfwJDtgshe8et0q9YMIRxwaW5eK1mDJBQkmJGgm39AGjRmNW2SNiZPdgqIapi6cJzVqnB-a-ctp6mW4p4o_p8kgMhFJGSdAOR_RT6J0zsBt1dbVyvO_xaeh0jkPi6v0N_Frku3uYWPvpSEjQ3e-F8GWmN3Wr9QGNHLwAVVNRL3urvLKXmRZ-yVZfE1xlqys4loqBrg50kcUOWeWhG-60PaO1hTQgxL28mnNc02QZHGBP3Y_72HsTJZWRneVFh-L6N7kwaktoIV6yxC7ocnW6rHpWPW5efujc9U-ZYaTwUaevYC7SOVdA-LnnTw-ydGtNLghM5jTaQR8k6-mgo0v7gi32yzoNDHhFQeKJptBlyb9vdzviFfJMtkZj3-uQy1kHtDAs6cfwOPUlENnRhIpWvxqFxYfkBKvhtWBOm4C_MJdDuHc9SojLkOByI5lwrFU7FAmI-IAA",
+                "oauth": 0,
+                "img_path": "/images/"
+            }
+        }
+    },
+    "DOMAIN_MAP": {
+        "110.11.110.11": {
+            "domain": "www.example.com",
+            "path": "/point"
+        }
+    }
+}
