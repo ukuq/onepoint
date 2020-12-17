@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="https://cdn.onesrc.cn/uploads/images/onepoint.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Load required Bootstrap and BootstrapVue CSS -->
+    <link type="text/css" rel="stylesheet" href="https://unpkg.zhimg.com/bootstrap@4.4.1/dist/css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet"
+        href="https://unpkg.zhimg.com/bootstrap-vue@2.4.1/dist/bootstrap-vue.min.css" />
+
+    <script src="https://unpkg.zhimg.com/axios@0.19.1/dist/axios.min.js"></script>
+
+    <!-- Load Vue followed by BootstrapVue -->
+    <script src="https://unpkg.zhimg.com/vue@2.6.11/dist/vue.min.js"></script>
+    <script src="https://unpkg.zhimg.com/bootstrap-vue@2.4.1/dist/bootstrap-vue.min.js"></script>
+
+    <!-- Load the following for BootstrapVueIcons support -->
+    <script src="https://unpkg.zhimg.com/bootstrap-vue@2.4.1/dist/bootstrap-vue-icons.min.js"></script>
+</head>
+
+<body>
+    <div id="app" class="container border rounded p-3 my-3">
+        <div class="card">
+            <div class="card-header">
+                README
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">OnePoint配置工具</h5>
+                <p class="card-text">本页是OnePoint项目附属工具，用于生成config.json配置文件。</p>
+                <p class="card-text">建议配合下面的页面使用</p>
+                <p class="card-text"><a href="https://github.com/ukuq/onepoint">https://github.com/ukuq/onepoint</a>
+                </p>
+                <p class="card-text"><a
+                        href="https://www.onesrc.cn/p/details-of-onepoint-configjson-configuration.html">https://www.onesrc.cn/p/details-of-onepoint-configjson-configuration.html</a>
+                </p>
+            </div>
+        </div>
+
+        <b-card no-body class="mt-3">
+            <b-tabs pills card>
+                <b-tab title="应用设置" active>
+                    <b-form-group label="管理员账号">
+                        <b-form-input v-model.trim="config.G_CONFIG.admin_username"></b-form-input>
+                    </b-form-group>
+                    <b-form-group label="管理员密码">
+                        <b-form-input v-model.trim="config.G_CONFIG.admin_password"></b-form-input>
+                    </b-form-group>
+                    <b-form-group label="主题类型">
+                        <b-form-select v-model="config.G_CONFIG.render_name"
+                            :options="['w.w','simple', 'oneindex_like', 'xysk_like']"></b-form-select>
+                    </b-form-group>
+                </b-tab>
+
+                <b-tab title="网站信息">
+                    <b-form-group label="网站名称">
+                        <b-form-input v-model="config.G_CONFIG.site_name"></b-form-input>
+                    </b-form-group>
+                    <b-form-group label="网站图标">
+                        <b-form-input v-model="config.G_CONFIG.site_icon" type="url"></b-form-input>
+                    </b-form-group>
+                    <b-form-group label="网站标题">
+                        <b-form-input v-model="config.G_CONFIG.site_title"></b-form-input>
+                    </b-form-group>
+                    <b-form-group label="网站关键字">
+                        <b-form-input v-model="config.G_CONFIG.site_keywords"></b-form-input>
+                    </b-form-group>
+
+                    <b-form-group label="网站描述">
+                        <b-form-textarea rows="3" max-rows="8" v-model="config.G_CONFIG.site_description">
+                        </b-form-textarea>
+                    </b-form-group>
+
+                    <b-form-group label="全站脚本">
+                        <b-form-textarea rows="3" max-rows="8" v-model="config.G_CONFIG.site_script"></b-form-textarea>
+                    </b-form-group>
+
+                    <b-form-group label="网站公告">
+                        <b-form-textarea rows="3" max-rows="8" v-model="config.G_CONFIG.site_readme"></b-form-textarea>
+                    </b-form-group>
+
+                    <b-form-group label="代理网站">
+                        <b-form-textarea rows="3" max-rows="8" v-model="config.G_CONFIG.proxy" disabled>
+                        </b-form-textarea>
+                    </b-form-group>
+                </b-tab>
+
+                <b-tab title="核心设置">
+
+                    <div class="d-flex">
+                        <b-form-group label="映射路径" class="col-4">
+                            <b-form-input v-model="tmp_config.path"></b-form-input>
+                        </b-form-group>
+                        <b-form-group label="云盘密码" class="col-4">
+                            <b-form-input v-model="tmp_config.password"></b-form-input>
+                        </b-form-group>
+                        <b-form-group label="模块类型" class="col-4">
+                            <b-form-select v-model="selected" :options="funcNames"></b-form-select>
+                        </b-form-group>
+                    </div>
+                    <hr>
+
+                    <div v-show="selected==='onedrive_graph'">
+                        <div class="d-flex">
+                            <b-form-group label="根路径(root)" class="col-4">
+                                <b-form-input v-model="tmp_config.onedrive_graph.root"></b-form-input>
+                            </b-form-group>
+                            <b-form-group label="认证类型(默认为0,世纪互联为1)" class="col-4">
+                                <b-form-input v-model.num="tmp_config.onedrive_graph.oauth"></b-form-input>
+                            </b-form-group>
+                            <b-form-group label="获取令牌" class="col-4">
+                                <a class="btn btn-secondary d-block" href="https://point.onesrc.cn/oauth2/"
+                                    target="blank">GetToken</a>
+                            </b-form-group>
+                        </div>
+                        <b-form-group label="认证令牌(refresh_token)" class="col-12">
+                            <b-form-textarea rows="3" max-rows="8" v-model="tmp_config.onedrive_graph.refresh_token">
+                            </b-form-textarea>
+                        </b-form-group>
+                    </div>
+
+
+                    <div v-show="selected==='onedrive_sharepoint'">
+                        <div class="d-flex">
+                            <b-form-group label="根路径" class="col-4">
+                                <b-form-input v-model="tmp_config.onedrive_sharepoint.root"></b-form-input>
+                            </b-form-group>
+                            <b-form-group label="分享链接" class="col-8">
+                                <b-form-input v-model="tmp_config.onedrive_sharepoint.shareUrl" type="url">
+                                </b-form-input>
+                            </b-form-group>
+                        </div>
+                    </div>
+
+                    <div v-show="selected==='gdrive_goindex'">
+                        <div class="d-flex">
+                            <b-form-group label="goindex密码" class="col-4">
+                                <b-form-input v-model.num="tmp_config.gdrive_goindex.password"></b-form-input>
+                            </b-form-group>
+                            <b-form-group label="cloudflare链接" class="col-8">
+                                <b-form-input v-model="tmp_config.gdrive_goindex.cfurl" type="url"></b-form-input>
+                            </b-form-group>
+                        </div>
+                    </div>
+                    <div v-show="selected==='linux_scf'">
+                        <div class="d-flex">
+                            <b-form-group label="根路径" class="col-4">
+                                <b-form-input v-model="tmp_config.linux_scf.root"></b-form-input>
+                            </b-form-group>
+                        </div>
+                    </div>
+                    <div v-show="selected==='system_phony'">
+                        <div class="d-flex">
+                            <b-form-group label="文件链接" class="col-12">
+                                <b-form-textarea rows="3" max-rows="8" v-model="tmp_config.system_phony.list" disabled>
+                                </b-form-textarea>
+                        </div>
+                        </b-form-group>
+                    </div>
+                    <hr>
+                    <b-button @click="addPath" :disabled="!selected || !tmp_config.path" variant="primary" class="mx-3">
+                        确认添加</b-button>
+
+
+                    <b-card no-body class="mt-3">
+                        <b-table-simple hover bordered responsive>
+                            <b-thead head-variant="light">
+                                <b-tr>
+                                    <b-th sticky-column variant="light">
+                                        <b-icon icon="gear"></b-icon>
+                                    </b-th>
+                                    <b-th>path</b-th>
+                                    <b-th>funcName</b-th>
+                                    <b-th>spConfig</b-th>
+                                    <b-th>password</b-th>
+                                </b-tr>
+                            </b-thead>
+                            <b-tbody>
+                                <b-tr v-for="a in drivePaths" :key="a">
+                                    <b-td sticky-column>
+                                        <b-icon icon="x" v-on:click="deletePath(a)" style="cursor:pointer;"></b-icon>
+                                    </b-td>
+                                    <b-td>{{ a }}</b-td>
+                                    <b-td>{{ config.DRIVE_MAP[a].funcName }}</b-td>
+                                    <b-td>{{ config.DRIVE_MAP[a].spConfig }}</b-td>
+                                    <b-td>{{ config.DRIVE_MAP[a].password }}</b-td>
+                                </b-tr>
+                            </b-tbody>
+                        </b-table-simple>
+                    </b-card>
+                </b-tab>
+
+
+                <b-tab title="生成结果">
+                    <b-form-textarea rows="25" v-model="configString">
+                    </b-form-textarea>
+                </b-tab>
+
+            </b-tabs>
+        </b-card>
+
+
+
+
+
+    </div>
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                loadFlag: true,
+                message: 'Hello Vue!',
+                funcNames: ['onedrive_graph', 'onedrive_sharepoint', 'gdrive_goindex', 'linux_scf',
+                    'system_phony'
+                ],
+                fields: ['funcName', 'spConfig', 'password'],
+                selected: '',
+                tmp_config: {
+                    path: "",
+                    onedrive_graph: {
+                        root: "",
+                        refresh_token: "",
+                        oauth: 0
+                    },
+                    onedrive_sharepoint: {
+                        root: "",
+                        shareUrl: ""
+                    },
+                    gdrive_goindex: {
+                        cfurl: "",
+                        password: ""
+                    },
+                    linux_scf: {
+                        root: ""
+                    },
+                    system_phony: {
+                        list: ""
+                    },
+                    password: ""
+                },
+                config: {
+                    "G_CONFIG": {
+                        "admin_username": "admin",
+                        "admin_password": "admin",
+                        "render_name": "w.w",
+                        "site_name": "OnePoint Demo",
+                        "site_title": "OnePoint Demo",
+                        "site_icon": "https://ukuq.github.io/onepoint/favicon.png",
+                        "site_keywords": "OnePoint",
+                        "site_description": "OnePoint description",
+                        "site_script": "",
+                        "site_readme": "Nothing here!",
+                        "proxy": [
+                            "https://proxy.onesrc.workers.dev/"
+                        ],
+                        "access_origins":["http://localhost:8080"]
+                    },
+                    "DRIVE_MAP": {
+                        "/demo_sharepoint/": {
+                            "funcName": "onedrive_sharepoint",
+                            "spConfig": {
+                                "shareUrl": "https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/Es6CMetI4fJCr4GqWZ3uvA0BEnzJxxb4CU-iQr04VYomLQ?e=C9K35U",
+                                "root": ""
+                            }
+                        },
+                        "/demo_linux/": {
+                            "funcName": "linux_scf",
+                            "spConfig": {
+                                "root": ""
+                            }
+                        },
+                        "/demo_goindex/": {
+                            "funcName": "gdrive_goindex",
+                            "spConfig": {
+                                "password": "index",
+                                "cfurl": "https://goindex.onesrc.workers.dev"
+                            }
+                        },
+                        "/demo_onedrive/": {
+                            "funcName": "onedrive_graph",
+                            "spConfig": {
+                                "refresh_token": "OAQABAAAAAACQN9QBRU3jT6bcBQLZNUj7qYv3YSeiMsEu9BaICGzevCs5Fh8UDBFaDp0DdAA_vse2HYPIjcTS27BJb_Vh_FBj6gXv7Xf37SpLyiw6I8GMofyMUM7PpjbJdIuaA7QRunZKijQxEGSDnLPj-GoVrlnMlsyxRgYptnNuciTxRLiwzO67B-_TxAdU5RTyhLSVhSOORYmTDfrZolR5KtIVvqMztUAs1-kMUZAXOEiqBBHO_arzD3Z35yAocoXsiBi1-NdNGz9agVYLzOhnV3xzwIp_3FLkQbXom4tJpLQCtsR-g_1izairu2JALzYq0rDDhL1w225YJi0yS93Fq96tfwJDtgshe8et0q9YMIRxwaW5eK1mDJBQkmJGgm39AGjRmNW2SNiZPdgqIapi6cJzVqnB-a-ctp6mW4p4o_p8kgMhFJGSdAOR_RT6J0zsBt1dbVyvO_xaeh0jkPi6v0N_Frku3uYWPvpSEjQ3e-F8GWmN3Wr9QGNHLwAVVNRL3urvLKXmRZ-yVZfE1xlqys4loqBrg50kcUOWeWhG-60PaO1hTQgxL28mnNc02QZHGBP3Y_72HsTJZWRneVFh-L6N7kwaktoIV6yxC7ocnW6rHpWPW5efujc9U-ZYaTwUaevYC7SOVdA-LnnTw-ydGtNLghM5jTaQR8k6-mgo0v7gi32yzoNDHhFQeKJptBlyb9vdzviFfJMtkZj3-uQy1kHtDAs6cfwOPUlENnRhIpWvxqFxYfkBKvhtWBOm4C_MJdDuHc9SojLkOByI5lwrFU7FAmI-IAA",
+                                "oauth": 0
+                            }
+                        },
+                        "/demo_password_123/": {
+                            "funcName": "onedrive_sharepoint",
+                            "spConfig": {
+                                "shareUrl": "https://lovelearn-my.sharepoint.com/:f:/g/personal/admin_share_onesrc_cc/Es6CMetI4fJCr4GqWZ3uvA0BEnzJxxb4CU-iQr04VYomLQ?e=C9K35U",
+                                "root": "/image"
+                            },
+                            "password": "123"
+                        },
+                        "/": {
+                            "funcName": "system_phony",
+                            "spConfig": {
+                                "admin": "请不要删除此项"
+                            }
+                        },
+                        "/demo_phony/": {
+                            "funcName": "system_phony",
+                            "spConfig": {
+                                "list": {
+                                    "/": ["https://ukuq.github.io/onepoint/log.md",
+                                        "https://ukuq.github.io/hello-word/README.md",
+                                        "https://ukuq.github.io/onepoint/favicon.png",
+                                        "http://www.w3school.com.cn/i/horse.ogg",
+                                        "http://www.w3school.com.cn/i/movie.mp4",
+                                        "http://www.w3school.com.cn/i/movie.ogg"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "DOMAIN_MAP": {
+                        "110.11.110.11": {
+                            "domain": "www.example.com",
+                            "path": "/point"
+                        }
+                    }
+                }
+            },
+            methods: {
+                deletePath: function (path) {
+                    if (path === '/') return;
+                    this.config.DRIVE_MAP[path] = undefined;
+                    delete this.config.DRIVE_MAP[path];
+                },
+                addPath: function () {
+                    let obj = {
+                        funcName: this.selected,
+                        spConfig: JSON.parse(JSON.stringify(this.tmp_config[this.selected])),
+                        password: this.tmp_config.password
+                    };
+                    this.$set(this.config.DRIVE_MAP, this.tmp_config.path, obj);
+                    console.log(JSON.stringify(obj));
+                }
+            },
+            computed: {
+                drivePaths: function () {
+                    return Object.keys(this.config.DRIVE_MAP).filter((e) => {
+                        return !!this.config.DRIVE_MAP[e];
+                    });
+                },
+                configString: function () {
+                    let tmp = JSON.parse(JSON.stringify(this.config));
+                    return JSON.stringify(tmp, null, 2);
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang=en>
+
+<head>
+    <meta charset=utf-8>
+    <meta http-equiv=X-UA-Compatible content="IE=edge">
+    <meta name=viewport content="width=device-width,initial-scale=1">
+    <link rel=icon href=https://cdn.onesrc.cn/uploads/images/onepoint_30.png> <title>ONEPOINT</title>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/css/app.9757bd80.css rel=preload as=style>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/css/chunk-vendors.afd65583.css rel=preload
+        as=style>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/js/app.c4fa25b8.js rel=preload as=script>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/js/chunk-vendors.f476e83d.js rel=preload
+        as=script>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/css/chunk-vendors.afd65583.css rel=stylesheet>
+    <link href=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/css/app.9757bd80.css rel=stylesheet>
+</head>
+
+<body><noscript><strong>We're sorry but vue1 doesn't work properly without JavaScript enabled. Please enable it to
+            continue.</strong></noscript>
+    <script>
+        let u = new URL(window.location.href).search;
+        if (u.startsWith('?http')) window.p_h0 = u.slice(1);
+        //window.p_h0="如果使用前后端分离, 可将此页面放到前端,并将此处改为后端域名路径即可";
+        while (!window.p_h0) {
+            window.p_h0 = prompt(
+                `请提供baseurl(p_h0)，例如 https://127.0.0.1(仅支持https)\n此外，你需要提前将本页域名添加至G_CONFIG.access_origins\n域名：${window.location.origin}`
+            );
+            if (window.p_h0.startsWith('http://')) {
+                alert("http域名部分功能受限,使用时请注意此项");
+            } else if (!window.p_h0.startsWith('https://')) {
+                alert("baseurl输入有误");
+                window.p_h0 = '';
+            }
+        }
+    </script>
+    <div id=app></div>
+    <script src=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/js/chunk-vendors.f476e83d.js> </script> <script
+        src=https://cdn.jsdelivr.net/gh/ukuq/point-vue@200415/dist/js/app.c4fa25b8.js> </script> </body> </html>

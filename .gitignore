@@ -1,6 +1,13 @@
 #experiment
+todo.md
 onepoint*
 tmp*
+lib/googledriveAPI.js
+
+#vscode
+.vscode
+.deployment
+
 # Logs
 logs
 *.log
