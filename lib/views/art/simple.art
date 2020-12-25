@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="{{ op.config.site_logo }}">
+    <title>{{ op.config.site_name }}</title>
+</head>
+
+<body>
+<div class="content">
+    <div>
+        {{ set path=request.baseURL }}
+        {{ set tPath=(request.path).split('/').filter(e=>e)}}
+        <span><a href="{{ path+='/' }}">Home</a></span>
+        {{ each tPath}}
+        <span>/</span>
+        <span><a href="{{ path+=($value+'/') }}">{{ $value }}</a></span>
+        {{ /each }}
+    </div>
+    {{ if response.isList}}
+    {{ each response.data.list }}
+    <div>
+        <a href="{{ $value.name }}{{ $value.type===0?'':'/'}}">{{ $value.name }}{{ $value.type===0?'':'/'}}</a>
+    </div>
+    {{ /each }}
+    {{ if response.data.nextToken }}
+    <div>
+        <a href="?page={{ response.data.nextToken }}">Next...</a>
+    </div>
+    {{ /if }}
+    {{ else if response.isFile}}
+    <div>
+        <pre><code>{{ JSON.stringify(response.data.file,null,2) }}</code></pre>
+    </div>
+
+    {{ else }}
+    <div>
+        <pre><code>{{ JSON.stringify(response.data,null,2) }}</code></pre>
+    </div>
+    {{ /if }}
+</div>
+</body>
+
+</html>

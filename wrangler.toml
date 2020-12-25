@@ -1,0 +1,8 @@
+name = "op-test"
+type = "webpack"
+account_id = "609a300a9f190352463e8d09f8b8401f"
+workers_dev = true
+webpack_config = "worker/cf-webpack.config.js"
+kv-namespaces = [
+    {binding="OPCONFIG", id="2f1217051548479c86b1495ec0539ebe", preview_id="2f1217051548479c86b1495ec0539ebe"}
+]

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/4.5.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/highlight.js/10.4.1/styles/xcode.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="{{ op.config.site_logo }}">
+    <title>{{ op.config.site_name }}</title>
+    <style>a#down-btn-a {
+        color: #6c757d;
+    }
+
+    a:hover, a#down-btn-a:hover {
+        color: red;
+        text-decoration: none;
+    }</style>
+</head>
+
+<body>
+
+<nav class="navbar sticky-top navbar-dark bg-dark navbar-expand-lg">
+    <div class="container">
+        <a target="_blank" href="" class="navbar-brand">
+            <img src="{{ op.config.site_logo }}" alt="logo" class="d-inline-block align-top" style="width: 32px;">
+            {{ op.config.site_name }}
+        </a>
+    </div>
+</nav>
+<div class="container mt-3">
+    <nav id="navbar-href" aria-label="breadcrumb">
+        {{ set path=request.baseURL }}
+        {{ set tPath=(request.path).split('/').filter(e=>e)}}
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path+='/' }}">Home</a></li>
+            {{ each tPath}}
+            {{ if $index===tPath.length-1 }}
+            <li class="breadcrumb-item active" aria-current="page">{{ $value }}</li>
+            {{else}}
+            <li class="breadcrumb-item"><a href="{{ path+=($value + '/') }}">{{ $value }}</a></li>
+            {{ /if }}
+            {{ /each }}
+        </ol>
+    </nav>
+
+
+    {{ if response.isList }}
+
+    {{ set readMeItem=response.data.list.find(e=>e.name==='README.md') }}
+
+    <style>@media (max-width: 768px) {
+        thead > tr > th:nth-child(2), tbody > tr > td:nth-child(2), thead > tr > th:nth-child(3), tbody > tr > td:nth-child(3) {
+            display: none;
+        }
+    }</style>
+    <div class="border rounded mt-3 table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="thead-light">
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col" style="width: 220px;">Time</th>
+                <th scope="col" class="text-right" style="width: 120px;">Size</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{ if response.data.prevToken }}
+            <tr>
+                <td><a href="?page={{ response.data.prevToken }}">Previous...</a></td>
+                <td></td>
+                <td></td>
+            </tr>
+            {{ else if request.path!=='/' }}
+            <tr>
+                <td><a href="../">..</a></td>
+                <td></td>
+                <td></td>
+            </tr>
+            {{ /if }}
+
+            {{ each response.data.list }}
+            <tr>
+                <td><a href="{{ $value.name + ($value.type===0?'?preview':'/')}}"
+                       class="{{ $value.type===0?'file':'folder'}}">{{ $value.name + ($value.type===0?'':'/')}}</a></td>
+                <td>{{ $value.time }}</td>
+                <td class="text-right">{{ $value.size }}</td>
+            </tr>
+            {{ /each }}
+
+            {{ if response.data.nextToken }}
+            <tr>
+                <td><a href="?page={{ response.data.nextToken }}">Next...</a></td>
+                <td></td>
+                <td></td>
+            </tr>
+            {{ /if }}
+            </tbody>
+        </table>
+        {{ if response.data.list.length===0 }}
+        <p style="text-align: center;" class="m-3">这里空空如也!</p>
+        {{ /if }}
+    </div>
+
+
+    {{ else if response.isFile }}
+
+    {{ set url=response.data.file.url }}
+    {{ set file=response.data.file }}
+    {{ set type=file['mime'].slice(0, file['mime'].indexOf('/')) }}
+
+    <div class="input-group">
+        <select class="custom-select" id="proxy-opt">
+            <option value="" selected>No Proxy (default)</option>
+            {{ each op.config.site_proxy }}
+            <option value="{{ $value }}">{{ $value }}</option>
+            {{ /each }}
+        </select>
+
+
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" id="proxy-submit" type="button">Proxy</button>
+            <button type="button" class="btn btn-outline-secondary"><a href="{{@ url }}" id="down-btn-a">Down</a>
+            </button>
+            <button type="button" class="btn btn-outline-secondary" id="share-btn">Share</button>
+        </div>
+    </div>
+
+    <div class="border rounded my-3 p-3">
+        {{ if type === 'image' }}
+        <img src="{{@ url }}" class="rounded mx-auto d-block img-fluid" max-width="100%">
+        {{ else if type === 'video' }}
+        <link class="dplayer-css" rel="stylesheet" href="https://cdn.bootcss.com/dplayer/1.9.1/DPlayer.min.css">
+        <script src="https://cdn.bootcss.com/dplayer/1.9.1/DPlayer.min.js"></script>
+        <div id="preview-dplayer"></div>
+        <script>const dp = new DPlayer({
+            container: document.getElementById('preview-dplayer'),
+            lang: 'zh-cn',
+            video: {url: '{{@ url  }}', pic: '', type: 'auto'}
+        });</script>
+        {{ else if type === 'audio' }}
+        <audio src="{{@ url }}" controls autoplay style="width: 75%;" class="rounded mx-auto d-block"></audio>
+        {{ else if ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'mpp', 'rtf', 'vsd',
+        'vsdx'].includes(file.name.slice(file.name.lastIndexOf('.')+1)) }}
+        <ul style="margin: 0;">
+            <li><a target="_blank"
+                   href="https://view.officeapps.live.com/op/view.aspx?src={{@ encodeURIComponent(url) }}">使用 office
+                apps
+                预览</a></li>
+            <li><a target="_blank" href="http://api.idocv.com/view/url?url={{@ encodeURIComponent(url) }}">使用 I Doc View
+                预览</a></li>
+        </ul>
+        {{ else if file.name.endsWith('pdf') }}
+        <div id="pdf-preview"></div>
+        <script src="https://cdn.bootcss.com/pdfobject/2.2.4/pdfobject.min.js"></script>
+        <script>PDFObject.embed("{{@ url  }}", "#pdf-preview");</script>
+        <style>.pdfobject {
+            height: 1600px !important;
+        }</style>
+
+        {{ else if type === 'text' || file['size'] < 4*1024 }}
+        <div class="border">
+            <pre><code id="code-preview">loading...</code></pre>
+        </div>
+        <script src="https://cdn.bootcss.com/highlight.js/10.4.1/highlight.min.js"></script>
+        <script>fetch('{{@ url  }}').then(response => {
+            if (response.ok) {
+                return response.text();
+            } else {
+                throw new Error('response error');
+            }
+        }).then(data => {
+            document.getElementById('code-preview').textContent = data;
+            hljs.highlightBlock(document.getElementById('code-preview'));
+        }).catch(err => document.getElementById('code-preview').innerHTML = "Oh, " + err); </script>
+
+        {{ else }}
+        <p style="text-align: center;" class="mb-0">此格式({{ file.mime }})不支持预览 :-(</p>
+        {{ /if }}
+    </div>
+
+
+    <script src="https://cdn.bootcss.com/js-cookie/2.2.1/js.cookie.min.js"></script>
+    <script>
+        if (Cookies.get('proxy')) {
+            let s = document.getElementById('proxy-opt').options;
+            let c = Cookies.get('proxy');
+            for (let i = 0; i < s.length; i++) {
+                if (s[i].value === c) {
+                    s[i].selected = "selected";
+                    break;
+                }
+            }
+        }
+        document.getElementById('proxy-submit').onclick = function () {
+            Cookies.set('proxy', document.getElementById('proxy-opt').value, {expires: 7});
+            window.location.reload();
+        };
+        document.querySelector('#share-btn').addEventListener('click', (event) => {
+            copyTextContent(null, window.location.href.slice(0, window.location.href.indexOf('?')));
+            let target = event.target;
+            let tt = target.textContent;
+            target.innerHTML = '已复制';
+            setTimeout(() => target.innerHTML = tt, 500);
+        });
+
+        function copyTextContent(source, text) {
+            let result = false;
+            let target = document.createElement('pre');
+            target.style.opacity = '0';
+            target.textContent = text || source.textContent;
+            document.body.appendChild(target);
+            try {
+                let range = document.createRange();
+                range.selectNode(target);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                window.getSelection().removeAllRanges();
+                result = true;
+            } catch (e) {
+            }
+            document.body.removeChild(target);
+            return result;
+        }</script>
+
+
+    {{ else }}
+
+    {{ if response.status === 401 }}
+    <div class="border rounded my-3 pt-3">
+        <form method="post" class="form-inline">
+            <div class="form-group mx-sm-3 mb-2">
+                <input type="password" name="password" class="form-control" placeholder="{{ response.msg }}">
+            </div>
+            <button type="submit" class="btn btn-primary mb-2">Submit</button>
+        </form>
+    </div>
+    {{ /if }}
+    <div class="border rounded my-3 p-3">
+        <div>{{ response.message }}</div>
+        <pre><code>{{ JSON.stringify(response.data,null,2) }}</code></pre>
+    </div>
+    {{ /if }}
+
+    <div class="card mt-3">
+        <div class="card-header">README.md</div>
+        <div class="card-body markdown-body" id="readMe">{{ op.config.site_mark}}</div>
+    </div>
+    {{@ op.config.site_html }}
+</div>
+
+<script src="https://cdn.bootcss.com/marked/1.2.7/marked.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/10.4.1/highlight.min.js"></script>
+<script>
+    if({{ !!readMeItem }})fetch('{{@ readMeItem && readMeItem.url || "README.md"  }}').then(response => {
+        if (response.ok) {
+            return response.text();
+        } else {
+            throw new Error('response error');
+        }
+    }).then(data => {
+        document.getElementById('readMe').innerHTML = marked(data);
+        hljs.highlightBlock(document.getElementById('code-preview'));
+    }).catch(err => document.getElementById('code-preview').innerHTML = "Oh, " + err)
+    else document.getElementById('readMe').innerHTML = marked(document.getElementById('readMe').textContent);
+
+    function formatSize(size) {
+        if (size === "" || size === "NaN") {
+            return "";
+        }
+        size = Number(size);
+        let count = 0;
+        while (size >= 1024) {
+            size /= 1024;
+            count++;
+        }
+        size = size.toFixed(2);
+        size += [' B', ' KB', ' MB', ' GB', ' TB'][count];
+        return size;
+    }
+
+    function formatDate(str) {
+        let oDate = new Date(str);
+        if ('Invalid Date' === oDate.toString()) {
+            return "";
+        }
+        let oYear = oDate.getFullYear(),
+            oMonth = oDate.getMonth() < 9 ? "0" + (oDate.getMonth() + 1) : (oDate.getMonth() + 1),
+            oDay = oDate.getDate() < 10 ? "0" + oDate.getDate() : oDate.getDate(),
+            oHour = oDate.getHours() < 10 ? "0" + oDate.getHours() : oDate.getHours(),
+            oMinute = oDate.getMinutes() < 10 ? "0" + oDate.getMinutes() : oDate.getMinutes(),
+            oSecond = oDate.getSeconds() < 10 ? "0" + oDate.getSeconds() : oDate.getSeconds(),
+            oTime = oYear + '-' + oMonth + '-' + oDay + " " + oHour + ":" + oMinute + ":" + oSecond;
+        return oTime;
+    }
+
+    function urlSpCharEncode(s) {
+        return !s ? s : s.replace(/%/g, '%25').replace(/#/g, '%23');
+    }
+
+    (function () {
+        document.getElementById('navbar-href').querySelectorAll('a').forEach(e => {
+            e.href = urlSpCharEncode(e.getAttribute('href'));
+        });
+        document.querySelectorAll('tbody>tr>td:nth-child(1)>a:not(.file)').forEach(e => {
+            e.href = urlSpCharEncode(e.getAttribute('href'));
+        });
+        document.querySelectorAll('tbody>tr>td:nth-child(1)>a.file').forEach(e => {
+            e.href = urlSpCharEncode(e.getAttribute('href').slice(0, -8)) + '?preview';
+        });
+        document.querySelectorAll('tbody>tr>td:nth-child(2)').forEach(e => {
+            e.textContent = formatDate(e.textContent);
+        });
+        document.querySelectorAll('tbody>tr>td:nth-child(3)').forEach(e => {
+            e.textContent = formatSize(e.textContent);
+        });
+    })();
+</script>
+</body>
+</html>
