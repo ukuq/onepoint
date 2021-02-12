@@ -4,11 +4,11 @@
 
 # 测试版,功能不稳定!
 
-## 最近更新
+ac cc pc 未测试
 
-### 201225
+文件管理未重新测试
 
-规范项目结构, 降低耦合
+一些细节还需要再梳理梳理
 
 ## 项目地址
 
@@ -26,14 +26,11 @@ https://github.com/ukuq/onepoint
 
 ## 支持云盘
 
-- onedrive 国际版/世纪互联版/无全局管理员版
-- 本机文件系统
-- coding 团队网盘(不支持分页)
-
-### 版本问题, 暂未适配
-
-- google drive v3API/goindex兼容接口
-- webdav(dev)
+- onedrive
+- googledrive
+- coding
+- teambition
+- node_fs
 
 ## 快速部署
 
