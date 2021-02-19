@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://cdn.bootcss.com/twitter-bootstrap/4.5.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/github-markdown-css/4.0.0/github-markdown.min.css" rel="stylesheet">
     <link rel="shortcut icon" href="{{ $V.site.logo }}">
     <title>{{ $V.site.name }}</title>
     <style>a#down-btn-a {
@@ -282,7 +283,7 @@
 
     <div class="card mt-3">
         <div class="card-header">README.md</div>
-        <div class="card-body markdown-body" id="op-readme">{{ $V.site.readme}}</div>
+        <div class="card-body markdown-body" id="op-readme">{{ $V.readme}}</div>
         <script src="https://cdn.bootcss.com/marked/1.2.7/marked.js"></script>
         <script>
             (function f() {

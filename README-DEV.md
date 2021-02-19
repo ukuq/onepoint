@@ -161,7 +161,7 @@ value == Array.\<string> 代表字符串数组
 | *AccessDenied                 | 非法操作，拒绝访问                                   |
 | ModuleError                   | msg: string                                          |
 | ConfigError                   | fields: Array.\<string>                              |
-|                               |                                                      |
+| NoConfiguration                 |                                                      |
 
 
 

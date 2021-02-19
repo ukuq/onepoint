@@ -3,7 +3,7 @@ name: MAIN_DEPLOY
 on:
   push:
     branches:
-      - master
+      - master1
     paths:
       - 'lib/*'
       - 'router/*'
@@ -24,12 +24,12 @@ jobs:
       with:
         node-version: '10.x'
     - name: read config.json from secrets
-      env: 
+      env:
         CONFIG_JSON: ${{ secrets.CONFIG_JSON }} # secrets 提供
       run:
         echo $CONFIG_JSON > ./onepoint/config2.json
     - name: install configure SCF CLI and deploy
-      env: 
+      env:
         APPID: ${{ secrets.TENCENTCLOUD_APP_ID }} # secrets 提供
         REGION: ap-hongkong
         SECRET_ID: ${{ secrets.TENCENTCLOUD_SECRET_ID }}
