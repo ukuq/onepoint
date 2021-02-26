@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link href="https://cdn.bootcss.com/twitter-bootstrap/4.5.3/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.bootcss.com/github-markdown-css/4.0.0/github-markdown.min.css" rel="stylesheet">
+    <link href="//cdn.bootcss.com/twitter-bootstrap/4.5.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//cdn.bootcss.com/github-markdown-css/4.0.0/github-markdown.min.css" rel="stylesheet">
     <link rel="shortcut icon" href="{{ $V.site.logo }}">
     <title>{{ $V.site.name }}</title>
     <style>a#down-btn-a {
@@ -15,8 +15,18 @@
         color: red;
         text-decoration: none;
     }
-    @media (max-width: 768px) {#op-list tr>th:nth-child(3),#op-list tr>td:nth-child(3) {display: none;}}
-    @media (max-width: 992px) {#op-list tr>th:nth-child(2),#op-list tr>td:nth-child(2) {display: none;}}
+
+    @media (max-width: 768px) {
+        #op-list tr > th:nth-child(3), #op-list tr > td:nth-child(3) {
+            display: none;
+        }
+    }
+
+    @media (max-width: 992px) {
+        #op-list tr > th:nth-child(2), #op-list tr > td:nth-child(2) {
+            display: none;
+        }
+    }
     </style>
 </head>
 
@@ -104,9 +114,7 @@
                         size /= 1024;
                         count++;
                     }
-                    size = size.toFixed(2);
-                    size += [' B', ' KB', ' MB', ' GB', ' TB'][count];
-                    return size;
+                    return size.toFixed(2) + [' B', ' KB', ' MB', ' GB', ' TB'][count];
                 }
 
                 function formatDate(str) {
@@ -119,18 +127,15 @@
                         oDay = oDate.getDate() < 10 ? "0" + oDate.getDate() : oDate.getDate(),
                         oHour = oDate.getHours() < 10 ? "0" + oDate.getHours() : oDate.getHours(),
                         oMinute = oDate.getMinutes() < 10 ? "0" + oDate.getMinutes() : oDate.getMinutes(),
-                        oSecond = oDate.getSeconds() < 10 ? "0" + oDate.getSeconds() : oDate.getSeconds(),
-                        oTime = oYear + '-' + oMonth + '-' + oDay + " " + oHour + ":" + oMinute + ":" + oSecond;
-                    return oTime;
+                        oSecond = oDate.getSeconds() < 10 ? "0" + oDate.getSeconds() : oDate.getSeconds();
+                    return oYear + '-' + oMonth + '-' + oDay + " " + oHour + ":" + oMinute + ":" + oSecond;
                 }
 
                 const pL = document.getElementById('op-list');
-                pL.querySelectorAll('tr>td:nth-child(2)').forEach(e => {
-                    e.textContent = formatDate(e.textContent);
-                });
-                pL.querySelectorAll('tr>td:nth-child(3)').forEach(e => {
-                    e.textContent = formatSize(e.textContent);
-                });
+                if (pL) {
+                    pL.querySelectorAll('tr>td:nth-child(2)').forEach(e => e.textContent = formatDate(e.textContent));
+                    pL.querySelectorAll('tr>td:nth-child(3)').forEach(e => e.textContent = formatSize(e.textContent));
+                }
             })();
         </script>
         {{ /if }}
@@ -158,16 +163,39 @@
 
     <div class="border rounded my-3 p-3" id="op-file">
         {{ if type === 'image' }}
-        <img src="{{ url }}" class="rounded mx-auto d-block img-fluid" max-width="100%">
+        <img src="{{ url }}" class="rounded mx-auto d-block img-fluid" max-width="100%" alt="图片加载失败">
         {{ else if type === 'video' }}
         <div id="op-preview-video"></div>
-        <link href="https://cdn.bootcss.com/dplayer/1.9.1/DPlayer.min.css" rel="stylesheet">
-        <script src="https://cdn.bootcss.com/dplayer/1.9.1/DPlayer.min.js"></script>
-        <script>const dp = new DPlayer({
-            element: document.getElementById('op-preview-video'),
-            lang: 'zh-cn',
-            video: {url: '{{ url }}', pic: '', type: 'auto'}
-        });</script>
+        <div class="input-group mt-2">
+            <input type="url" id="op-preview-video-subtitle" class="form-control"
+                   placeholder="subtitle-url: http://example.com/" value="{{ $V.file.name+'.webvtt' }}"
+                   aria-label="url">
+            <div class="input-group-append">
+                <button type="button" class="btn btn-outline-secondary"
+                        onclick="window.location = location.origin+location.pathname+(location.search||'?') + '&subtitle='+encodeURIComponent((document.querySelector('#op-preview-video-subtitle')||'').value || '')">
+                    尝试添加字幕
+                </button>
+            </div>
+        </div>
+        <script src="https://cdn.bootcss.com/dplayer/1.26.0/DPlayer.min.js"></script>
+        <script>
+            const dpConfig = {
+                element: document.getElementById('op-preview-video'),
+                video: {url: '{{ url }}', pic: '', type: 'auto'},
+            };
+            let t = new URL(location.href).searchParams.get('subtitle');
+            if (t) {
+                dpConfig.subtitle = {
+                    url: t,
+                    type: 'webvtt',
+                    fontSize: '25px',
+                    bottom: '10%',
+                    color: '#b7daff',
+                };
+                (document.querySelector('#op-preview-video-subtitle') || '').value = t;
+                (document.querySelector('#op-preview-video-subtitle') || '').setAttribute('placeHolder', 'using: ' + t);
+            }
+            window.dp = new DPlayer(dpConfig);</script>
         {{ else if type === 'audio' }}
         <audio src="{{ url }}" controls autoplay style="width: 75%;" class="rounded mx-auto d-block"></audio>
         {{ else if type === 'office' }}
@@ -269,7 +297,9 @@
     <div class="border rounded my-3 pt-3">
         <form method="post" class="form-inline">
             <div class="form-group mx-sm-3 mb-2">
-                <input type="password" name="password" class="form-control" placeholder="{{ $V.passwordHint }}">
+                <label>
+                    <input type="password" name="password" class="form-control" placeholder="{{ $V.passwordHint }}">
+                </label>
             </div>
             <button type="submit" class="btn btn-primary mb-2">Submit</button>
         </form>
