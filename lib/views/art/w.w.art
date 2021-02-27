@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="//cdn.bootcss.com/twitter-bootstrap/4.5.3/css/bootstrap.min.css" rel="stylesheet">
     <link href="//cdn.bootcss.com/github-markdown-css/4.0.0/github-markdown.min.css" rel="stylesheet">
-    <link rel="shortcut icon" href="{{ $V.site.logo }}">
+    <link rel="shortcut icon" href="{{@ $V.site.logo }}">
     <title>{{ $V.site.name }}</title>
     <style>a#down-btn-a {
         color: #6c757d;
@@ -35,7 +35,7 @@
 <nav class="navbar sticky-top navbar-dark bg-dark navbar-expand-lg">
     <div class="container">
         <a target="_blank" href="" class="navbar-brand">
-            <img src="{{ $V.site.logo }}" alt="logo" class="d-inline-block align-top" style="width: 32px;">
+            <img src="{{@ $V.site.logo }}" alt="logo" class="d-inline-block align-top" style="width: 32px;">
             {{ $V.site.name }}
         </a>
     </div>
@@ -46,11 +46,11 @@
         <ol class="breadcrumb">
             {{ each navs}}
             {{ if $index===0 }}
-            <li class="breadcrumb-item"><a href="{{ $value.href }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{@ $value.href }}">Home</a></li>
             {{ else if $index===navs.length-1 }}
             <li class="breadcrumb-item active" aria-current="page">{{ $value.name }}</li>
             {{else}}
-            <li class="breadcrumb-item"><a href="{{ $value.href }}">{{ $value.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{@ $value.href }}">{{ $value.name }}</a></li>
             {{ /if }}
             {{ /each }}
         </ol>
@@ -71,7 +71,7 @@
             <tbody>
             {{ if $V.hasPrev }}
             <tr>
-                <td><a href="{{ $V.prevHref }}">Previous...</a></td>
+                <td><a href="{{@ $V.prevHref }}">Previous...</a></td>
                 <td></td>
                 <td></td>
             </tr>
@@ -85,7 +85,7 @@
 
             {{ each $V.list }}
             <tr>
-                <td><a href="{{ $V.previewHref($value) }}"
+                <td><a href="{{@ $V.previewHref($value) }}"
                        class="{{ $value.type===0?'file':'folder'}}"
                 >{{ $value.name + ($value.type===0?'':'/')}}</a></td>
                 <td>{{ $value.time }}</td>
@@ -95,7 +95,7 @@
 
             {{ if $V.hasNext }}
             <tr>
-                <td><a href="{{ $V.nextHref }}">Next...</a></td>
+                <td><a href="{{@ $V.nextHref }}">Next...</a></td>
                 <td></td>
                 <td></td>
             </tr>
@@ -155,7 +155,7 @@
 
         <div class="input-group-append">
             <button class="btn btn-outline-secondary" id="proxy-submit" type="button">Proxy</button>
-            <button type="button" class="btn btn-outline-secondary"><a href="{{ url }}" id="down-btn-a">Down</a>
+            <button type="button" class="btn btn-outline-secondary"><a href="{{@ url }}" id="down-btn-a">Down</a>
             </button>
             <button type="button" class="btn btn-outline-secondary" id="op-share-btn">Share</button>
         </div>
@@ -163,7 +163,7 @@
 
     <div class="border rounded my-3 p-3" id="op-file">
         {{ if type === 'image' }}
-        <img src="{{ url }}" class="rounded mx-auto d-block img-fluid" max-width="100%" alt="图片加载失败">
+        <img src="{{@ url }}" class="rounded mx-auto d-block img-fluid" max-width="100%" alt="图片加载失败">
         {{ else if type === 'video' }}
         <div id="op-preview-video"></div>
         <div class="input-group mt-2">
@@ -172,7 +172,7 @@
                    aria-label="url">
             <div class="input-group-append">
                 <button type="button" class="btn btn-outline-secondary"
-                        onclick="window.location = location.origin+location.pathname+(location.search||'?') + '&subtitle='+encodeURIComponent((document.querySelector('#op-preview-video-subtitle')||'').value || '')">
+                        onclick="window.location = (location.search||'?').replace(/&?subtitle=[^&]*/,'') + '&subtitle='+encodeURIComponent((document.querySelector('#op-preview-video-subtitle')||'').value || '')">
                     尝试添加字幕
                 </button>
             </div>
@@ -181,7 +181,7 @@
         <script>
             const dpConfig = {
                 element: document.getElementById('op-preview-video'),
-                video: {url: '{{ url }}', pic: '', type: 'auto'},
+                video: {url: '{{@ url }}', pic: '', type: 'auto'},
             };
             let t = new URL(location.href).searchParams.get('subtitle');
             if (t) {
@@ -197,7 +197,7 @@
             }
             window.dp = new DPlayer(dpConfig);</script>
         {{ else if type === 'audio' }}
-        <audio src="{{ url }}" controls autoplay style="width: 75%;" class="rounded mx-auto d-block"></audio>
+        <audio src="{{@ url }}" controls autoplay style="width: 75%;" class="rounded mx-auto d-block"></audio>
         {{ else if type === 'office' }}
         <ul style="margin: 0;">
             <li><a target="_blank"
@@ -211,7 +211,7 @@
         {{ else if type==='pdf' }}
         <div id="op-preview-pdf"></div>
         <script src="https://cdn.bootcss.com/pdfobject/2.2.4/pdfobject.min.js"></script>
-        <script>PDFObject.embed('{{ url }}', "#op-preview-pdf");</script>
+        <script>PDFObject.embed('{{@ url }}', "#op-preview-pdf");</script>
         {{ else if type==='text' }}
         <pre><code id="op-preview-text">loading...</code></pre>
         <link href="https://cdn.bootcss.com/highlight.js/10.4.1/styles/xcode.min.css" rel="stylesheet">
@@ -220,7 +220,7 @@
             (function () {
                 const pT = document.getElementById('op-preview-text');
                 if (pT) {
-                    fetch('{{ url }}').then(response => {
+                    fetch('{{@ url }}').then(response => {
                         if (response.ok) {
                             return response.text();
                         } else {
@@ -319,7 +319,7 @@
             (function f() {
                 const pR = document.getElementById('op-readme');
                 pR.innerHTML = marked(pR.textContent);
-                const url = '{{ $V.readmeUrl }}';
+                const url = '{{@ $V.readmeUrl }}';
                 if (url) {
                     fetch(url).then(response => {
                         if (response.ok) {
