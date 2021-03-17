@@ -141,7 +141,7 @@
                     var i;
                     var arr = [];
                     for (i = 0; i < x.length; i++) {
-                        if (['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp'].includes(x[i].innerHTML.slice(x[i].innerHTML.lastIndexOf('.') + 1))) arr.push({ href: x[i].href, name: x[i].innerHTML });
+                        if (['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp'].includes(x[i].innerHTML.slice(x[i].innerHTML.lastIndexOf('.') + 1).toLowerCase())) arr.push({ href: x[i].href, name: x[i].innerHTML });
                     }
                     sessionStorage.pages=JSON.stringify(arr);
                 }
