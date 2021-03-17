@@ -136,6 +136,15 @@
                     pL.querySelectorAll('tr>td:nth-child(2)').forEach(e => e.textContent = formatDate(e.textContent));
                     pL.querySelectorAll('tr>td:nth-child(3)').forEach(e => e.textContent = formatSize(e.textContent));
                 }
+                if (document.getElementsByClassName("file").length > 0){
+                    var x = document.getElementsByClassName("file");
+                    var i;
+                    var arr = [];
+                    for (i = 0; i < x.length; i++) {
+                        arr.push({ href: x[i].href, name: x[i].innerHTML });
+                    }
+                    sessionStorage.pages=JSON.stringify(arr);
+                }
             })();
         </script>
         {{ /if }}
@@ -146,6 +155,12 @@
     {{ set type=$V.previewType }}
     {{ set url=$V.downloadUrl }}
     <div class="input-group">
+	{{ if type === 'image' }}
+        <div class="input-group-append">
+            <button type="button" class="btn btn-outline-secondary" style="display:none;border-radius: .25rem 0 0 .25rem;" id="last">Last</button>
+	    <button type="button" class="btn btn-outline-secondary" style="display:none;" id="next">Next</button>
+        </div>
+	{{ /if }}
         <select class="custom-select" id="proxy-opt">
             <option value="" selected>No Proxy (default)</option>
             {{ each $V.site.proxy }}
@@ -271,6 +286,39 @@
                     }
                     document.body.removeChild(target);
                     return result;
+                }
+            }
+
+            var now = document.getElementsByClassName("breadcrumb-item active")[0].innerHTML;
+            let arr = null;
+            if(sessionStorage.pages!==undefined)arr = JSON.parse(sessionStorage.pages);
+            if(arr && arr.length>0){
+                const last = document.getElementById("last");
+                const next = document.getElementById("next");
+
+                last.style.display="inline";
+                next.style.display="inline";
+
+                var last_href = null;
+                var next_href = null;
+
+                for (i = 0; i < arr.length; i++) {
+                    if(arr[i].name == now){
+                        if (i>0)last_href=arr[i-1].href
+                        if (i<arr.length-1)next_href = arr[i+1].href
+                    }
+                }
+                if(!last_href)last.innerHTML="First one";
+                if(!next_href)next.innerHTML="Last one";
+                if (last && last_href) {
+                    last.addEventListener('click', (event) => {
+                        location.href = last_href;
+                    });
+                }
+                if (next && next_href) {
+                    next.addEventListener('click', (event) => {
+                        location.href = next_href;
+                    });
                 }
             }
 
