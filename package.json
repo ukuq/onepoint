@@ -1,50 +1,50 @@
 {
-    "author": "ukuq",
-    "bugs": {
-        "url": "https://github.com/ukuq/onepoint/issues"
-    },
-    "dependencies": {
-        "art-template": "^4.13.2",
-        "axios": "^0.21.1",
-        "cookie": "^0.4.1"
-    },
-    "description": "a tiny file index and manage program",
-    "devDependencies": {
-        "art-template-loader": "^1.4.3",
-        "eslint": "^7.16.0",
-        "eslint-config-prettier": "^7.1.0",
-        "eslint-plugin-prettier": "^3.3.0",
-        "prettier": "^2.2.1"
-    },
-    "files": [
-        "lib"
-    ],
-    "homepage": "https://github.com/ukuq/onepoint#readme",
-    "keywords": [
-        "onepoint",
-        "onedrive",
-        "google-drive",
-        "scf",
-        "serverless"
-    ],
-    "license": "MIT",
-    "main": "lib/app.js",
-    "name": "onepoint",
-    "prettier": {
-        "printWidth": 233,
-        "singleQuote": true,
-        "tabWidth": 4,
-        "trailingComma": "es5"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/ukuq/onepoint.git"
-    },
-    "scripts": {
-        "format": "eslint \"**/*.js\" --fix && prettier \"**/*.{js,json}\" --write",
-        "format:check": "eslint \"**/*.js\" && prettier \"**/*.{js,json}\" --check",
-        "start": "node lib/starters/node-http.js"
-    },
-    "time-version": "210227",
-    "version": "1.9.9"
+  "author": "ukuq",
+  "bugs": {
+    "url": "https://github.com/ukuq/onepoint/issues"
+  },
+  "dependencies": {
+    "art-template": "^4.13.2",
+    "axios": "^0.21.1",
+    "cookie": "^0.4.1"
+  },
+  "description": "a tiny file index and manage program",
+  "devDependencies": {
+    "art-template-loader": "^1.4.3",
+    "eslint": "^7.16.0",
+    "eslint-config-prettier": "^7.1.0",
+    "eslint-plugin-prettier": "^3.3.0",
+    "prettier": "^2.2.1"
+  },
+  "files": [
+    "lib"
+  ],
+  "homepage": "https://github.com/ukuq/onepoint#readme",
+  "keywords": [
+    "onepoint",
+    "onedrive",
+    "google-drive",
+    "scf",
+    "serverless"
+  ],
+  "license": "MIT",
+  "main": "lib/app.js",
+  "name": "onepoint",
+  "prettier": {
+    "printWidth": 233,
+    "singleQuote": true,
+    "tabWidth": 4,
+    "trailingComma": "es5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ukuq/onepoint.git"
+  },
+  "scripts": {
+    "format": "eslint \"**/*.js\" --fix && prettier \"**/*.{js,json}\" --write",
+    "format:check": "eslint \"**/*.js\" && prettier \"**/*.{js,json}\" --check",
+    "start": "node lib/starters/node-http.js"
+  },
+  "version": "2.0.0",
+  "version2": "210413"
 }

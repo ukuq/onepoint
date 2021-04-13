@@ -50,7 +50,7 @@
 
 ## 快速部署
 
-### github 测试版(1.9.9)
+### github 测试版(2.0.0)
 
 ~~~
 git clone https://github.com/ukuq/onepoint.git
@@ -69,6 +69,14 @@ npm start
 https://onepoint.onesrc.workers.dev/
 
 https://op-test.onesrc.workers.dev/
+
+## 更新说明
+
+### 210413
+
+增加了乐观锁，修改配置时有效，防止多次修改
+
+重写管理页面前端代码，支持了多图片、多音频预览功能, 非常建议更新~
 
 ## Thanks
 
