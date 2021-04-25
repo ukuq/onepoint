@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="utf-8">
     <meta name="github" content="https://github.com/ukuq/onepoint">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="shortcut icon" href="{{ $V.site.logo }}">
+    <meta name="referrer" content="same-origin">
     <link href="//cdn.staticfile.org/twitter-bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="//cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" rel="stylesheet">
-    <link rel="shortcut icon" href="{{ $V.site.logo }}">
     <title>{{ $V.site.name }}</title>
     <style>
         a:hover {
