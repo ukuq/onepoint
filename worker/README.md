@@ -24,4 +24,9 @@ https://github.com/ukuq/onepoint/blob/master/worker/script.js
 
 ### DEMO
 
-https://op-dev.onesrc.workers.dev/
+https://onepoint.onesrc.workers.dev/
+
+### DEV
+
+如需修改代码，可以 git clone，修改前后使用 wrangler build 打包
+

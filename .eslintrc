@@ -68,6 +68,7 @@
     "worker/**",
     "lib/utils/sys-template.js",
     "lib/utils/fetchAdapter.js",
-    "lib/starters/cf-worker.js"
+    "lib/starters/cf-worker.js",
+    "lib/views/"
   ]
 }

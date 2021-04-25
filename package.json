@@ -4,16 +4,16 @@
     "url": "https://github.com/ukuq/onepoint/issues"
   },
   "dependencies": {
-    "art-template": "^4.13.2",
     "axios": "^0.21.1",
     "cookie": "^0.4.1"
   },
   "description": "a tiny file index and manage program",
   "devDependencies": {
-    "art-template-loader": "^1.4.3",
+    "art-template": "^4.13.2",
     "eslint": "^7.16.0",
     "eslint-config-prettier": "^7.1.0",
     "eslint-plugin-prettier": "^3.3.0",
+    "html-minifier-terser": "^5.1.1",
     "prettier": "^2.2.1"
   },
   "files": [
@@ -46,5 +46,5 @@
     "start": "node lib/starters/node-http.js"
   },
   "version": "2.0.0",
-  "version2": "210413"
+  "version2": "210425"
 }

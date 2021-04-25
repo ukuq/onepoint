@@ -5,16 +5,8 @@
 项目地址：https://github.com/ukuq/onepoint
 
 ## 项目特点
-  
-- 轻量级，运行于nodejs，内存占用极小
-- 多平台，分离式架构，支持部署在传统linux服务器、cloudflare workers、云函数等平台
-- 多网盘，统一式接口，支持本地存储(node-fs)、onedrive网盘、GoogleDrive网盘、coding.net项目云盘文件、teambition项目云盘文件等平台
-- 文件列表，可将文件夹下的文件以列表的形式展示，便于用户浏览
-- 文件管理，留有简单的文件管理接口，支持对文件的移动、复制、新建、删除（具体实现多少，由模块负责）
-- 前后端分离，支持完全的前后端分离，便于用户扩展使用
-- 音视频预览，支持自定义主题，可由前端实现音视频预览
-- 任意路径挂载，可以分享云盘的某个文件夹，也可以将该分享挂载到任意路径（例如在/a/b/c/下挂载）
-- 路径寻址，以路径定位文件，根据路径确定访问的文件
+
+轻量级、多平台、多网盘
 
 ## 支持云盘
 
@@ -48,6 +40,12 @@
 
   基于nodejs自身fs api完成，仅用于挂载本机文件
 
+- alidrive
+
+  官网：https://www.aliyundrive.com/drive/
+
+  通过refresh_token访问
+
 ## 快速部署
 
 ### github 测试版(2.0.0)
@@ -68,9 +66,23 @@ npm start
 
 https://onepoint.onesrc.workers.dev/
 
-https://op-test.onesrc.workers.dev/
-
 ## 更新说明
+
+### 210425
+
+新增阿里云盘，支持翻页、id
+
+优化了 onedrive 模块，删除了 code 功能，只保留 refresh_token和share_url
+
+优化了 googledrive 模块，删除了 code 功能，只保留 refresh_token,支持自定义 client api
+
+删除了 art-template，改用 art 编译后的 js 文件生成 html
+
+删除了系统分页，只保留云盘模块自身的分页功能
+
+修复了因缓存而引起的文件下载链接过期的 bug
+
+优化了 w.w 主题，看起来更和谐了，感谢 naicfeng 提供的demo
 
 ### 210413
 

@@ -9,3 +9,5 @@ worker/
 lib/deprecated/
 
 package.json
+
+lib/views/

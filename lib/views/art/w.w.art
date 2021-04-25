@@ -2,40 +2,36 @@
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8">
+    <meta name="github" content="https://github.com/ukuq/onepoint">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="//cdn.staticfile.org/twitter-bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="//cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" rel="stylesheet">
-    <link rel="shortcut icon" href="{{@ $V.site.logo }}">
+    <link rel="shortcut icon" href="{{ $V.site.logo }}">
     <title>{{ $V.site.name }}</title>
-    <style>a#down-btn-a {
-        color: #6c757d;
-    }
-
-    a:hover, a#down-btn-a:hover {
-        color: red;
-        text-decoration: none;
-    }
-
-    @media (max-width: 768px) {
-        #op-list tr > th:nth-child(3), #op-list tr > td:nth-child(3) {
-            display: none;
+    <style>
+        a:hover {
+            color: red;
+            text-decoration: none;
         }
-    }
 
-    @media (max-width: 992px) {
-        #op-list tr > th:nth-child(2), #op-list tr > td:nth-child(2) {
-            display: none;
+        @media (max-width: 768px) {
+            #op-list tr > th:nth-child(3), #op-list tr > td:nth-child(3) {
+                display: none;
+            }
         }
-    }
+
+        @media (max-width: 992px) {
+            #op-list tr > th:nth-child(2), #op-list tr > td:nth-child(2) {
+                display: none;
+            }
+        }
     </style>
 </head>
-
 <body>
-
 <nav class="navbar sticky-top navbar-dark bg-dark navbar-expand-lg">
     <div class="container">
-        <a target="_blank" href="" class="navbar-brand">
-            <img src="{{@ $V.site.logo }}" alt="logo" class="d-inline-block align-top" style="width: 32px;">
+        <a href="#" class="navbar-brand">
+            <img src="{{ $V.site.logo }}" alt="logo" class="d-inline-block align-top" style="width: 32px;">
             {{ $V.site.name }}
         </a>
     </div>
@@ -45,39 +41,30 @@
         {{ set navs=$V.navs}}
         <ol class="breadcrumb">
             {{ each navs}}
-            {{ if $index===0 }}
-            <li class="breadcrumb-item"><a href="{{@ $value.href }}">Home</a></li>
-            {{ else if $index===navs.length-1 }}
-            <li class="breadcrumb-item active" aria-current="page">{{ $value.name }}</li>
-            {{else}}
-            <li class="breadcrumb-item"><a href="{{@ $value.href }}">{{ $value.name }}</a></li>
-            {{ /if }}
+            <li class="breadcrumb-item"><a href="{{ $value.href }}">{{ $index===0?'Home':$value.name }}</a></li>
             {{ /each }}
         </ol>
     </nav>
     {{ if response.isList }}
     <div class="border rounded mt-3 table-responsive">
-        {{ if $V.isEmpty }}
-        <p style="text-align: center;" class="m-3">这里空空如也!</p>
-        {{ else }}
         <table class="table table-hover mb-0" id="op-list">
             <thead class="thead-light">
             <tr>
-                <th scope="col">Name</th>
-                <th scope="col" style="min-width: 220px;">Time</th>
-                <th scope="col" class="text-right" style="min-width: 120px;">Size</th>
+                <th>Name</th>
+                <th style="min-width: 220px;width: 220px">Time</th>
+                <th class="text-right" style="min-width: 120px;width: 120px">Size</th>
             </tr>
             </thead>
             <tbody>
             {{ if $V.hasPrev }}
             <tr>
-                <td><a href="{{@ $V.prevHref }}">Previous...</a></td>
+                <td><a href="{{ $V.prevHref }}">👆Previous...</a></td>
                 <td></td>
                 <td></td>
             </tr>
             {{ else if $V.hasParent }}
             <tr>
-                <td><a href="../">..</a></td>
+                <td><a href="../">👈..</a></td>
                 <td></td>
                 <td></td>
             </tr>
@@ -85,9 +72,9 @@
 
             {{ each $V.list }}
             <tr>
-                <td><a href="{{@ $V.previewHref($value) }}"
+                <td><a href="{{ $V.previewHref($value) }}"
                        class="{{ $value.type===0?'file':'folder'}}"
-                >{{ $value.name + ($value.type===0?'':'/')}}</a></td>
+                >{{ ($value.type===0?'':'📁') + $value.name}}</a></td>
                 <td>{{ $value.time }}</td>
                 <td class="text-right">{{ $value.size }}</td>
             </tr>
@@ -95,7 +82,7 @@
 
             {{ if $V.hasNext }}
             <tr>
-                <td><a href="{{@ $V.nextHref }}">Next...</a></td>
+                <td><a href="{{ $V.nextHref }}">👇Next...</a></td>
                 <td></td>
                 <td></td>
             </tr>
@@ -103,41 +90,41 @@
             </tbody>
         </table>
         <script>
-            (function () {
-                function formatSize(size) {
-                    if (size === "" || size === "NaN") {
-                        return "";
-                    }
-                    size = Number(size);
-                    let count = 0;
-                    while (size >= 1024) {
-                        size /= 1024;
-                        count++;
-                    }
-                    return size.toFixed(2) + [' B', ' KB', ' MB', ' GB', ' TB'][count];
+            function formatSize(size) {
+                if (size === "" || size === "NaN") {
+                    return "";
                 }
+                size = Number(size);
+                let count = 0;
+                while (size >= 1024) {
+                    //faster than 1000
+                    size /= 1024;
+                    count++;
+                }
+                return size.toFixed(2) + [' B', ' KB', ' MB', ' GB', ' TB'][count];
+            }
 
-                function formatDate(str) {
-                    let oDate = new Date(str);
-                    if ('Invalid Date' === oDate.toString()) {
-                        return "";
-                    }
-                    let oYear = oDate.getFullYear(),
-                        oMonth = oDate.getMonth() < 9 ? "0" + (oDate.getMonth() + 1) : (oDate.getMonth() + 1),
-                        oDay = oDate.getDate() < 10 ? "0" + oDate.getDate() : oDate.getDate(),
-                        oHour = oDate.getHours() < 10 ? "0" + oDate.getHours() : oDate.getHours(),
-                        oMinute = oDate.getMinutes() < 10 ? "0" + oDate.getMinutes() : oDate.getMinutes(),
-                        oSecond = oDate.getSeconds() < 10 ? "0" + oDate.getSeconds() : oDate.getSeconds();
-                    return oYear + '-' + oMonth + '-' + oDay + " " + oHour + ":" + oMinute + ":" + oSecond;
+            function formatDate(str) {
+                let oDate = new Date(str);
+                if ('Invalid Date' === oDate.toString()) {
+                    return "";
                 }
+                let oYear = oDate.getFullYear(),
+                    oMonth = oDate.getMonth() < 9 ? "0" + (oDate.getMonth() + 1) : (oDate.getMonth() + 1),
+                    oDay = oDate.getDate() < 10 ? "0" + oDate.getDate() : oDate.getDate(),
+                    oHour = oDate.getHours() < 10 ? "0" + oDate.getHours() : oDate.getHours(),
+                    oMinute = oDate.getMinutes() < 10 ? "0" + oDate.getMinutes() : oDate.getMinutes(),
+                    oSecond = oDate.getSeconds() < 10 ? "0" + oDate.getSeconds() : oDate.getSeconds();
+                return oYear + '-' + oMonth + '-' + oDay + " " + oHour + ":" + oMinute + ":" + oSecond;
+            }
 
-                const pL = document.getElementById('op-list');
-                if (pL) {
-                    pL.querySelectorAll('tr>td:nth-child(2)').forEach(e => e.textContent = formatDate(e.textContent));
-                    pL.querySelectorAll('tr>td:nth-child(3)').forEach(e => e.textContent = formatSize(e.textContent));
-                }
-            })();
+            document.querySelectorAll('#op-list').forEach(e => {
+                e.querySelectorAll('tr>td:nth-child(2)').forEach(e => e.textContent = formatDate(e.textContent));
+                e.querySelectorAll('tr>td:nth-child(3)').forEach(e => e.textContent = formatSize(e.textContent));
+            });
         </script>
+        {{ if $V.isEmpty }}
+        <p style="text-align: center;" class="mt-2">Empty Folder!</p>
         {{ /if }}
     </div>
 
@@ -145,59 +132,32 @@
 
     {{ set type=$V.previewType }}
     {{ set url=$V.downloadUrl }}
+    {{ set oUrl=$V.previewHref($V.file,false)}}
     <div class="input-group">
-        <select class="custom-select" id="proxy-opt">
-            <option value="" selected>No Proxy (default)</option>
-            {{ each $V.site.proxy }}
-            <option value="{{ $value }}">{{ $value }}</option>
-            {{ /each }}
-        </select>
-
+        <input type="url" class="form-control" id="op-share-url">
         <div class="input-group-append">
-            <button class="btn btn-outline-secondary" id="proxy-submit" type="button">Proxy</button>
-            <button type="button" class="btn btn-outline-secondary"><a href="{{@ url }}" id="down-btn-a">Down</a>
+            <button type="button" class="btn btn-outline-secondary" id="op-share-btn"
+                    data-clipboard-target="#op-share-url" data-clipboard-action="cut">复 制
             </button>
-            <button type="button" class="btn btn-outline-secondary" id="op-share-btn">Share</button>
+            <a type="button" class="btn btn-outline-secondary" href="{{ oUrl }}" target="_blank">下 载</a>
         </div>
     </div>
 
     <div class="border rounded my-3 p-3" id="op-file">
         {{ if type === 'image' }}
-        <img src="{{@ url }}" class="rounded mx-auto d-block img-fluid" max-width="100%" alt="图片加载失败">
+        <img src="{{ url }}" class="rounded mx-auto d-block img-fluid" max-width="100%" alt="图片加载失败">
         {{ else if type === 'video' }}
-        <div id="op-preview-video"></div>
-        <div class="input-group mt-2">
-            <input type="url" id="op-preview-video-subtitle" class="form-control"
-                   placeholder="subtitle-url: http://example.com/" value="{{ $V.file.name+'.webvtt' }}"
-                   aria-label="url">
-            <div class="input-group-append">
-                <button type="button" class="btn btn-outline-secondary"
-                        onclick="window.location = (location.search||'?').replace(/&?subtitle=[^&]*/,'') + '&subtitle='+encodeURIComponent((document.querySelector('#op-preview-video-subtitle')||'').value || '')">
-                    尝试添加字幕
-                </button>
-            </div>
-        </div>
+        <div id="op-preview-video" data-url="{{ url }}"></div>
         <script src="//cdn.staticfile.org/dplayer/1.26.0/DPlayer.min.js"></script>
         <script>
-            const dpConfig = {
-                element: document.getElementById('op-preview-video'),
-                video: {url: '{{@ url }}', pic: '', type: 'auto'},
-            };
-            let t = new URL(location.href).searchParams.get('subtitle');
-            if (t) {
-                dpConfig.subtitle = {
-                    url: t,
-                    type: 'webvtt',
-                    fontSize: '25px',
-                    bottom: '10%',
-                    color: '#b7daff',
-                };
-                (document.querySelector('#op-preview-video-subtitle') || '').value = t;
-                (document.querySelector('#op-preview-video-subtitle') || '').setAttribute('placeHolder', 'using: ' + t);
-            }
-            window.dp = new DPlayer(dpConfig);</script>
+            dpElement = document.getElementById('op-preview-video');
+            window.dp = new DPlayer({
+                element: dpElement,
+                video: {url: dpElement.getAttribute('data-url'), pic: '', type: 'auto'},
+            });
+        </script>
         {{ else if type === 'audio' }}
-        <audio src="{{@ url }}" controls autoplay style="width: 75%;" class="rounded mx-auto d-block"></audio>
+        <audio src="{{ url }}" controls autoplay style="width: 75%;" class="rounded mx-auto d-block"></audio>
         {{ else if type === 'office' }}
         <ul style="margin: 0;">
             <li><a target="_blank"
@@ -209,29 +169,20 @@
                 预览</a></li>
         </ul>
         {{ else if type==='pdf' }}
-        <div id="op-preview-pdf"></div>
+        <div id="op-preview-pdf" data-url="{{ url }}"></div>
         <script src="//cdn.staticfile.org/pdfobject/2.2.4/pdfobject.min.js"></script>
-        <script>PDFObject.embed('{{@ url }}', "#op-preview-pdf");</script>
+        <script>PDFObject.embed(document.querySelector('#op-preview-pdf').getAttribute('data-url'), "#op-preview-pdf");</script>
         {{ else if type==='text' }}
-        <pre><code id="op-preview-text">loading...</code></pre>
+        <pre><code id="op-preview-text" data-url="{{ url }}">loading...</code></pre>
         <link href="//cdn.staticfile.org/highlight.js/10.4.1/styles/xcode.min.css" rel="stylesheet">
         <script src="//cdn.staticfile.org/highlight.js/10.4.1/highlight.min.js"></script>
         <script>
-            (function () {
-                const pT = document.getElementById('op-preview-text');
-                if (pT) {
-                    fetch('{{@ url }}').then(response => {
-                        if (response.ok) {
-                            return response.text();
-                        } else {
-                            throw new Error('response error');
-                        }
-                    }).then(data => {
-                        pT.textContent = data;
-                        hljs.highlightBlock(pT);
-                    }).catch(err => pT.textContent = "Oh, " + err);
-                }
-            })();
+            document.querySelectorAll('#op-preview-text').forEach(e => {
+                fetch(e.getAttribute('data-url')).then(response => response.ok ? response.text() : Promise.reject(new Error('response error'))).then(data => {
+                    e.textContent = data;
+                    hljs.highlightBlock(e);
+                }).catch(err => e.textContent = "Oh, " + err);
+            });
         </script>
         {{ else if type==='bigText'}}
         <p style="text-align: center;" class="mb-0">该文本文件太大, 不支持预览 :-(</p>
@@ -239,56 +190,12 @@
         <p style="text-align: center;" class="mb-0">此格式({{ $V.file.mime }})不支持预览 :-(</p>
         {{ /if }}
     </div>
-
-    <script src="https://cdn.bootcss.com/js-cookie/2.2.1/js.cookie.min.js"></script>
+    <script src="https://cdn.staticfile.org/clipboard.js/2.0.8/clipboard.min.js"></script>
     <script>
-        (function () {
-            const sB = document.getElementById('op-share-btn');
-            if (sB) {
-                sB.addEventListener('click', (event) => {
-                    copyTextContent(null, window.location.href);
-                    let target = event.target;
-                    let tt = target.textContent;
-                    target.innerHTML = '已复制';
-                    setTimeout(() => target.innerHTML = tt, 500);
-                });
-
-                function copyTextContent(source, text) {
-                    let result = false;
-                    let target = document.createElement('pre');
-                    target.style.opacity = '0';
-                    target.textContent = text || source.textContent;
-                    document.body.appendChild(target);
-                    try {
-                        let range = document.createRange();
-                        range.selectNode(target);
-                        window.getSelection().removeAllRanges();
-                        window.getSelection().addRange(range);
-                        document.execCommand('copy');
-                        window.getSelection().removeAllRanges();
-                        result = true;
-                    } catch (e) {
-                    }
-                    document.body.removeChild(target);
-                    return result;
-                }
-            }
-
-            if (Cookies.get('proxy')) {
-                let s = document.getElementById('proxy-opt').options;
-                let c = Cookies.get('PROXY_DOWN');
-                for (let i = 0; i < s.length; i++) {
-                    if (s[i].value === c) {
-                        s[i].selected = "selected";
-                        break;
-                    }
-                }
-            }
-            document.getElementById('proxy-submit').onclick = function () {
-                Cookies.set('PROXY_DOWN', document.getElementById('proxy-opt').value, {expires: 7});
-                window.location.reload();
-            };
-        })();
+        document.querySelectorAll('#op-share-url').forEach(e => {
+            e.value = new URL('?', window.location).href.slice(0, -1);
+            new ClipboardJS('#op-share-btn');
+        });
     </script>
 
     {{ else }}
@@ -312,26 +219,19 @@
     {{ /if }}
 
     <div class="card mt-3">
-        <div class="card-header">README.md</div>
-        <div class="card-body markdown-body" id="op-readme">{{ $V.readme}}</div>
-        <script src="https://cdn.bootcss.com/marked/1.2.7/marked.js"></script>
+        <div class="card-header">README</div>
+        <div class="card-body markdown-body" id="op-readme" data-url="{{ $V.readmeUrl }}">{{ $V.readme }}</div>
+        <script src="https://cdn.staticfile.org/marked/2.0.3/marked.min.js"></script>
+        <script>document.getElementById('op-readme').innerHTML = marked(document.getElementById('op-readme').textContent);</script>
+        {{ if $V.readmeUrl }}
         <script>
-            (function f() {
-                const pR = document.getElementById('op-readme');
-                pR.innerHTML = marked(pR.textContent);
-                const url = '{{@ $V.readmeUrl }}';
-                if (url) {
-                    fetch(url).then(response => {
-                        if (response.ok) {
-                            return response.text();
-                        } else {
-                            throw new Error('response error');
-                        }
-                    }).then(data => {
-                        pR.innerHTML = marked(data);
-                    }).catch(err => pR.innerHTML = "Oh, " + err);
-                }
-            })();</script>
+            document.querySelectorAll('#op-readme').forEach(e => fetch(e.getAttribute('data-url')).then(response => response.ok ? response.text() : Promise.reject(new Error('response error'))).then(data => e.innerHTML = marked(data)).catch(err => e.innerHTML = "Oh, " + err));
+        </script>
+        {{ /if }}
+    </div>
+    <div class="text-right py-3 pl-3">
+        <a class="text-muted" target="_blank" href="https://github.com/ukuq/onepoint">Just One Point.</a>
+        <a class="text-muted ml-2" href="{{$V.refreshHref}}">Cache {{ $V.cacheTime?'Hit':'Miss'}}.</a>
     </div>
     {{@ $V.site.html }}
 </div>
