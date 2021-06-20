@@ -148,8 +148,10 @@
     <div class="border rounded my-3 p-3" id="op-file">
         {{ if type === 'image' }}
         <img src="{{ url }}" class="rounded mx-auto d-block img-fluid" max-width="100%" alt="图片加载失败">
-        {{ else if type === 'video' }}
+        {{ else if type === 'video' || $V.file.name.endsWith('.m3u8') }}
         <div id="op-preview-video" data-url="{{ url }}"></div>
+        <script src="//cdn.staticfile.org/hls.js/1.0.4/hls.min.js"></script>
+        <script src="//cdn.staticfile.org/flv.js/1.5.0/flv.min.js"></script>
         <script src="//cdn.staticfile.org/dplayer/1.26.0/DPlayer.min.js"></script>
         <script>
             dpElement = document.getElementById('op-preview-video');

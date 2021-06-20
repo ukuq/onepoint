@@ -5,9 +5,9 @@
 
 ### 粘贴代码
 
-https://github.com/ukuq/onepoint/blob/master/worker/script.js
+https://github.com/ukuq/onepoint/blob/master/ncc/ncc_cf-worker.js
 
-或者 https://raw.githubusercontent.com/ukuq/onepoint/master/worker/script.js
+或者 https://raw.githubusercontent.com/ukuq/onepoint/master/ncc/ncc_cf-worker.js
 
 代码较多，保存可能要费点时间，不要心急！
 
@@ -28,5 +28,5 @@ https://onepoint.onesrc.workers.dev/
 
 ### DEV
 
-如需修改代码，可以 git clone，修改前后使用 wrangler build 打包
+如需修改代码，可以 git clone，修改前后使用 ncc 打包
 

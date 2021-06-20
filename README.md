@@ -68,6 +68,16 @@ https://onepoint.onesrc.workers.dev/
 
 ## 更新说明
 
+### 210620
+
+zero dependencies，零依赖
+
+去除了 axios、cookie 依赖，项目可使用 ncc 工具打包、提高了易读性、简洁性
+
+首次安装时不再需要输入密码登录，可以自定义设置用户名、salt和密码
+
+cloudflare worker 项目打包工具改用 ncc 完成
+
 ### 210425
 
 新增阿里云盘，支持翻页、id

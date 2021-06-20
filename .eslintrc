@@ -58,7 +58,9 @@
     "space-in-parens": 2,
     "space-infix-ops": 2,
     "space-unary-ops": 2,
-    "spaced-comment": 2
+    "spaced-comment": 2,
+    "no-undef": 1,
+    "no-empty": 1
   },
   "ignorePatterns": [
     "**/deprecated/**",
@@ -69,6 +71,8 @@
     "lib/utils/sys-template.js",
     "lib/utils/fetchAdapter.js",
     "lib/starters/cf-worker.js",
-    "lib/views/"
+    "lib/views/",
+    "ncc/**",
+    "lib/utils/tiny-sha1.js"
   ]
 }
