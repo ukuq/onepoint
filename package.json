@@ -3,12 +3,10 @@
   "bugs": {
     "url": "https://github.com/ukuq/onepoint/issues"
   },
-  "dependencies": {
-    "axios": "^0.21.1",
-    "cookie": "^0.4.1"
-  },
+  "dependencies": {},
   "description": "a tiny file index and manage program",
   "devDependencies": {
+    "@vercel/ncc": "^0.28.6",
     "art-template": "^4.13.2",
     "eslint": "^7.16.0",
     "eslint-config-prettier": "^7.1.0",
@@ -41,10 +39,13 @@
     "url": "git+https://github.com/ukuq/onepoint.git"
   },
   "scripts": {
+    "__local_start": "node lib/starters/local-test.js",
+    "__pre_commit": "node tmp/pre-commit.js",
+    "build:ncc": "node ncc/build.js",
     "format": "eslint \"**/*.js\" --fix && prettier \"**/*.{js,json}\" --write",
     "format:check": "eslint \"**/*.js\" && prettier \"**/*.{js,json}\" --check",
     "start": "node lib/starters/node-http.js"
   },
-  "version": "2.0.0",
-  "version2": "210425"
+  "version": "2.0.1",
+  "version2": "210620"
 }

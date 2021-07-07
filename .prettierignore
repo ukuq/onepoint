@@ -5,6 +5,7 @@ markdown/
 node_modules/
 tmp/
 worker/
+ncc/
 
 lib/deprecated/
 
