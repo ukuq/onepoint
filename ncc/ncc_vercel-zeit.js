@@ -2484,7 +2484,6 @@ module.exports = {
 /***/ 963:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-/* module decorator */ module = __nccwpck_require__.nmd(module);
 const fs = __nccwpck_require__(747);
 const app = __nccwpck_require__(417);
 const { request, P } = __nccwpck_require__(166);
@@ -2512,8 +2511,7 @@ async function writeConfig(config, { x_zeit_token, x_zeit_project_name }) {
     }
     return request
         .post(
-            'https://api.vercel.com/v12/now/deployments',
-            {
+            'https://api.vercel.com/v12/now/deployments', {
                 name: x_zeit_project_name,
                 files: [{ file: 'api/index.js', data: f }],
                 target: 'production',
@@ -2521,8 +2519,7 @@ async function writeConfig(config, { x_zeit_token, x_zeit_project_name }) {
                 functions: { 'api/index.js': { maxDuration: 10 } },
                 routes: [{ src: '/.*', dest: 'api/index.js' }],
                 projectSettings: { framework: null },
-            },
-            {
+            }, {
                 headers: {
                     Authorization: `Bearer ${x_zeit_token}`,
                 },
@@ -2555,10 +2552,13 @@ app.initialize({
     name: 'now.sh',
     readConfig,
     writeConfig,
-    params: [P('x_zeit_token', '', 'token', 8, '', false, true), P('x_zeit_project_name', 'onepoint', 'project name', 8, '', false, true)],
+    params: [
+        P('x_zeit_token', '', 'token', 8, '', false, true),
+        P('x_zeit_project_name', 'onepoint', 'project name', 8, '', false, true)
+    ]
 });
 
-module.exports = async (req, res) => {
+module.exports = async(req, res) => {
     try {
         if (META === undefined) {
             META = req.headers['x-vercel-deployment-url'];
@@ -2582,7 +2582,6 @@ module.exports = async (req, res) => {
         );
     }
 };
-
 
 /***/ }),
 
@@ -4135,7 +4134,7 @@ module.exports = {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"author":"ukuq","bugs":{"url":"https://github.com/ukuq/onepoint/issues"},"dependencies":{},"description":"a tiny file index and manage program","devDependencies":{"@vercel/ncc":"^0.28.6","art-template":"^4.13.2","eslint":"^7.16.0","eslint-config-prettier":"^7.1.0","eslint-plugin-prettier":"^3.3.0","html-minifier-terser":"^5.1.1","prettier":"^2.2.1"},"files":["lib"],"homepage":"https://github.com/ukuq/onepoint#readme","keywords":["onepoint","onedrive","google-drive","scf","serverless"],"license":"MIT","main":"lib/app.js","name":"onepoint","prettier":{"printWidth":233,"singleQuote":true,"tabWidth":4,"trailingComma":"es5"},"repository":{"type":"git","url":"git+https://github.com/ukuq/onepoint.git"},"scripts":{"__local_start":"node lib/starters/local-test.js","__pre_commit":"node tmp/pre-commit.js","build:ncc":"node ncc/build.js","format":"eslint \\"**/*.js\\" --fix && prettier \\"**/*.{js,json}\\" --write","format:check":"eslint \\"**/*.js\\" && prettier \\"**/*.{js,json}\\" --check","start":"node lib/starters/node-http.js"},"version":"2.0.1","version2":"211127"}');
+module.exports = JSON.parse('{"author":"ukuq","bugs":{"url":"https://github.com/ukuq/onepoint/issues"},"dependencies":{},"description":"a tiny file index and manage program","devDependencies":{"@vercel/ncc":"^0.28.6","art-template":"^4.13.2","eslint":"^7.16.0","eslint-config-prettier":"^7.1.0","eslint-plugin-prettier":"^3.3.0","html-minifier-terser":"^5.1.1","prettier":"^2.2.1"},"files":["lib"],"homepage":"https://github.com/ukuq/onepoint#readme","keywords":["onepoint","onedrive","google-drive","scf","serverless"],"license":"MIT","main":"lib/app.js","name":"onepoint","prettier":{"printWidth":233,"singleQuote":true,"tabWidth":4,"trailingComma":"es5"},"repository":{"type":"git","url":"git+https://github.com/ukuq/onepoint.git"},"scripts":{"__local_start":"node lib/starters/local-test.js","__pre_commit":"node tmp/pre-commit.js","build:ncc":"node ncc/build.js","format":"eslint \\"**/*.js\\" --fix && prettier \\"**/*.{js,json}\\" --write","format:check":"eslint \\"**/*.js\\" && prettier \\"**/*.{js,json}\\" --check","start":"node lib/starters/node-http.js"},"version":"2.0.1","version2":"210620"}');
 
 /***/ }),
 
@@ -4175,7 +4174,7 @@ module.exports = require("zlib");;
 /************************************************************************/
 /******/ 	// The module cache
 /******/ 	var __webpack_module_cache__ = {};
-/******/
+/******/ 	
 /******/ 	// The require function
 /******/ 	function __nccwpck_require__(moduleId) {
 /******/ 		// Check if module is in cache
@@ -4189,7 +4188,7 @@ module.exports = require("zlib");;
 /******/ 			// no module.loaded needed
 /******/ 			exports: {}
 /******/ 		};
-/******/
+/******/ 	
 /******/ 		// Execute the module function
 /******/ 		var threw = true;
 /******/ 		try {
@@ -4198,21 +4197,21 @@ module.exports = require("zlib");;
 /******/ 		} finally {
 /******/ 			if(threw) delete __webpack_module_cache__[moduleId];
 /******/ 		}
-/******/
+/******/ 	
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/
+/******/ 	
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat */
-/******/
+/******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";/************************************************************************/
-/******/
+/******/ 	
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module is referenced by other modules so it can't be inlined
 /******/ 	var __webpack_exports__ = __nccwpck_require__(963);
 /******/ 	module.exports = __webpack_exports__;
-/******/
+/******/ 	
 /******/ })()
 ;
