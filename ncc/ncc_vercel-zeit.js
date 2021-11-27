@@ -2494,7 +2494,7 @@ const op = __nccwpck_require__(525);
 let META; // process.env['VERCEL_URL'];
 
 async function readConfig() {
-    return module.CONFIG_OBJ || {};
+    return typeof CONFIG_OBJ === 'undefined' ? {} : CONFIG_OBJ;
 }
 
 async function writeConfig(config, { x_zeit_token, x_zeit_project_name }) {
@@ -2505,7 +2505,7 @@ async function writeConfig(config, { x_zeit_token, x_zeit_project_name }) {
     if (op.config.version !== 1 && !flag) {
         return Promise.reject(new Error('lock! 之前已经提交过部署了，请等待生效后再试'));
     }
-    const c = `module.CONFIG_OBJ=${JSON.stringify(config)};const r3030958164335045=19218526256549961;\n`;
+    const c = `const CONFIG_OBJ=${JSON.stringify(config)};const r3030958164335045=19218526256549961;\n`;
     let f = fs.readFileSync(__filename, 'utf-8').replace(/^const CONFIG_OBJ=.*;const r3030958164335045=19218526256549961;\n/, c);
     if (!f.startsWith('const CONFIG_OBJ=')) {
         f = c + f;
@@ -2516,6 +2516,7 @@ async function writeConfig(config, { x_zeit_token, x_zeit_project_name }) {
             {
                 name: x_zeit_project_name,
                 files: [{ file: 'api/index.js', data: f }],
+                target: 'production',
                 meta: { last: META },
                 functions: { 'api/index.js': { maxDuration: 10 } },
                 routes: [{ src: '/.*', dest: 'api/index.js' }],
@@ -2550,7 +2551,12 @@ async function checkDeployment(token) {
         });
 }
 
-app.initialize('now.sh', readConfig, writeConfig, [P('x_zeit_token', '', 'token', 8, '', false, true), P('x_zeit_project_name', 'onepoint', 'project name', 8, '', false, true)]);
+app.initialize({
+    name: 'now.sh',
+    readConfig,
+    writeConfig,
+    params: [P('x_zeit_token', '', 'token', 8, '', false, true), P('x_zeit_project_name', 'onepoint', 'project name', 8, '', false, true)],
+});
 
 module.exports = async (req, res) => {
     try {
@@ -4129,7 +4135,7 @@ module.exports = {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"author":"ukuq","bugs":{"url":"https://github.com/ukuq/onepoint/issues"},"dependencies":{},"description":"a tiny file index and manage program","devDependencies":{"@vercel/ncc":"^0.28.6","art-template":"^4.13.2","eslint":"^7.16.0","eslint-config-prettier":"^7.1.0","eslint-plugin-prettier":"^3.3.0","html-minifier-terser":"^5.1.1","prettier":"^2.2.1"},"files":["lib"],"homepage":"https://github.com/ukuq/onepoint#readme","keywords":["onepoint","onedrive","google-drive","scf","serverless"],"license":"MIT","main":"lib/app.js","name":"onepoint","prettier":{"printWidth":233,"singleQuote":true,"tabWidth":4,"trailingComma":"es5"},"repository":{"type":"git","url":"git+https://github.com/ukuq/onepoint.git"},"scripts":{"__local_start":"node lib/starters/local-test.js","__pre_commit":"node tmp/pre-commit.js","build:ncc":"node ncc/build.js","format":"eslint \\"**/*.js\\" --fix && prettier \\"**/*.{js,json}\\" --write","format:check":"eslint \\"**/*.js\\" && prettier \\"**/*.{js,json}\\" --check","start":"node lib/starters/node-http.js"},"version":"2.0.1","version2":"210620"}');
+module.exports = JSON.parse('{"author":"ukuq","bugs":{"url":"https://github.com/ukuq/onepoint/issues"},"dependencies":{},"description":"a tiny file index and manage program","devDependencies":{"@vercel/ncc":"^0.28.6","art-template":"^4.13.2","eslint":"^7.16.0","eslint-config-prettier":"^7.1.0","eslint-plugin-prettier":"^3.3.0","html-minifier-terser":"^5.1.1","prettier":"^2.2.1"},"files":["lib"],"homepage":"https://github.com/ukuq/onepoint#readme","keywords":["onepoint","onedrive","google-drive","scf","serverless"],"license":"MIT","main":"lib/app.js","name":"onepoint","prettier":{"printWidth":233,"singleQuote":true,"tabWidth":4,"trailingComma":"es5"},"repository":{"type":"git","url":"git+https://github.com/ukuq/onepoint.git"},"scripts":{"__local_start":"node lib/starters/local-test.js","__pre_commit":"node tmp/pre-commit.js","build:ncc":"node ncc/build.js","format":"eslint \\"**/*.js\\" --fix && prettier \\"**/*.{js,json}\\" --write","format:check":"eslint \\"**/*.js\\" && prettier \\"**/*.{js,json}\\" --check","start":"node lib/starters/node-http.js"},"version":"2.0.1","version2":"211127"}');
 
 /***/ }),
 
@@ -4169,7 +4175,7 @@ module.exports = require("zlib");;
 /************************************************************************/
 /******/ 	// The module cache
 /******/ 	var __webpack_module_cache__ = {};
-/******/ 	
+/******/
 /******/ 	// The require function
 /******/ 	function __nccwpck_require__(moduleId) {
 /******/ 		// Check if module is in cache
@@ -4179,11 +4185,11 @@ module.exports = require("zlib");;
 /******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = __webpack_module_cache__[moduleId] = {
-/******/ 			id: moduleId,
-/******/ 			loaded: false,
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
 /******/ 			exports: {}
 /******/ 		};
-/******/ 	
+/******/
 /******/ 		// Execute the module function
 /******/ 		var threw = true;
 /******/ 		try {
@@ -4192,33 +4198,21 @@ module.exports = require("zlib");;
 /******/ 		} finally {
 /******/ 			if(threw) delete __webpack_module_cache__[moduleId];
 /******/ 		}
-/******/ 	
-/******/ 		// Flag the module as loaded
-/******/ 		module.loaded = true;
-/******/ 	
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/ 	
+/******/
 /************************************************************************/
-/******/ 	/* webpack/runtime/node module decorator */
-/******/ 	(() => {
-/******/ 		__nccwpck_require__.nmd = (module) => {
-/******/ 			module.paths = [];
-/******/ 			if (!module.children) module.children = [];
-/******/ 			return module;
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/compat */
-/******/ 	
+/******/
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";/************************************************************************/
-/******/ 	
+/******/
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module is referenced by other modules so it can't be inlined
 /******/ 	var __webpack_exports__ = __nccwpck_require__(963);
 /******/ 	module.exports = __webpack_exports__;
-/******/ 	
+/******/
 /******/ })()
 ;
