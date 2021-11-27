@@ -2512,16 +2512,14 @@ async function writeConfig(config, { x_zeit_token, x_zeit_project_name }) {
     }
     return request
         .post(
-            'https://api.vercel.com/v12/now/deployments',
-            {
+            'https://api.vercel.com/v12/now/deployments', {
                 name: x_zeit_project_name,
                 files: [{ file: 'api/index.js', data: f }],
                 meta: { last: META },
                 functions: { 'api/index.js': { maxDuration: 10 } },
                 routes: [{ src: '/.*', dest: 'api/index.js' }],
                 projectSettings: { framework: null },
-            },
-            {
+            }, {
                 headers: {
                     Authorization: `Bearer ${x_zeit_token}`,
                 },
@@ -2550,9 +2548,17 @@ async function checkDeployment(token) {
         });
 }
 
-app.initialize('now.sh', readConfig, writeConfig, [P('x_zeit_token', '', 'token', 8, '', false, true), P('x_zeit_project_name', 'onepoint', 'project name', 8, '', false, true)]);
+app.initialize({
+    name: 'now.sh',
+    readConfig,
+    writeConfig,
+    params: [
+        P('x_zeit_token', '', 'token', 8, '', false, true),
+        P('x_zeit_project_name', 'onepoint', 'project name', 8, '', false, true)
+    ]
+});
 
-module.exports = async (req, res) => {
+module.exports = async(req, res) => {
     try {
         if (META === undefined) {
             META = req.headers['x-vercel-deployment-url'];
@@ -2576,7 +2582,6 @@ module.exports = async (req, res) => {
         );
     }
 };
-
 
 /***/ }),
 
